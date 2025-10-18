@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/base32"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -77,6 +78,7 @@ type dataHomeHandler struct {
 
 func (h *dataHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
 
 	if r.URL.RawQuery != "" {
 		w.Header().Set("Cache-Control", "no-store")
@@ -133,11 +135,13 @@ type dataExportData struct {
 	id    string
 	ready <-chan struct{}
 
-	err     error
-	csv     []byte
-	csvErr  error
-	json    []byte
-	jsonErr error
+	err      error
+	csv      []byte
+	csvETag  string
+	csvErr   error
+	json     []byte
+	jsonETag string
+	jsonErr  error
 }
 
 // lazy since not everything needs it, and to give a chance to set stuff like
@@ -155,6 +159,12 @@ func (h *dataExportHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
 		w.Header().Set("Allow", "GET, HEAD")
 		h.serveError(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -178,6 +188,16 @@ func (h *dataExportHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.serveError(w, "not found", http.StatusNotFound)
+}
+
+func (h *dataExportHandler) redirectFile(w http.ResponseWriter, spec, ext string) {
+	var u strings.Builder
+	u.WriteString(h.Base)
+	u.WriteString(spec)
+	u.WriteString(url.PathEscape(ext))
+	w.Header().Set("Location", u.String())
+	w.Header().Set("Content-Length", "0")
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 func (h *dataExportHandler) serveError(w http.ResponseWriter, message string, code int) {
@@ -208,11 +228,15 @@ func (h *dataExportHandler) serveSchemaCSV(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *dataExportHandler) serveCSV(w http.ResponseWriter, r *http.Request, spec string) {
-	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Cache-Control", "public, max-age=60")
 
-	buf, id, err := h.resolveCSV(r.Context(), spec)
+	buf, etag, id, err := h.resolveCSV(r.Context(), spec)
 	if err != nil {
-		h.serveError(w, "internal error: "+err.Error(), http.StatusInternalServerError)
+		if errors.Is(err, errInvalidSpecFormat) {
+			h.serveError(w, "invalid spec format "+strconv.Quote(spec), http.StatusBadRequest)
+		} else {
+			h.serveError(w, "internal error: "+err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 	if buf == nil {
@@ -220,22 +244,30 @@ func (h *dataExportHandler) serveCSV(w http.ResponseWriter, r *http.Request, spe
 		return
 	}
 
-	// compute the etag from the server hash and data hash
-	tag := sha1.Sum([]byte(exehash + id))
-	w.Header().Set("ETag", `W/"`+base32.StdEncoding.EncodeToString(tag[:])+`"`) // weak since zip compression may not be deterministic
+	// if it isn't the canonical URL, redirect it to the canonical one (for
+	// better caching) as long as it isn't a latest/latest-relative request (so
+	// refreshing will still get the latest one for that).
+	if !strings.HasPrefix(spec, "latest") && spec != id {
+		h.redirectFile(w, id, ".csv.zip")
+		return
+	}
 
-	// TODO: etag (binary hash and data id)
-
+	w.Header().Set("Cache-Control", "public, no-cache")
+	w.Header().Set("ETag", etag)
 	w.Header().Set("Content-Type", "application/zip")
 	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf))
 }
 
 func (h *dataExportHandler) serveJSON(w http.ResponseWriter, r *http.Request, spec string) {
-	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Cache-Control", "public, max-age=60")
 
-	buf, id, err := h.resolveJSON(r.Context(), spec)
+	buf, etag, id, err := h.resolveJSON(r.Context(), spec)
 	if err != nil {
-		h.serveError(w, "internal error: "+err.Error(), http.StatusInternalServerError)
+		if errors.Is(err, errInvalidSpecFormat) {
+			h.serveError(w, "invalid spec format "+strconv.Quote(spec), http.StatusBadRequest)
+		} else {
+			h.serveError(w, "internal error: "+err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 	if buf == nil {
@@ -243,15 +275,24 @@ func (h *dataExportHandler) serveJSON(w http.ResponseWriter, r *http.Request, sp
 		return
 	}
 
+	// if it isn't the canonical URL, redirect it to the canonical one (for
+	// better caching) as long as it isn't a latest/latest-relative request (so
+	// refreshing will still get the latest one for that).
+	if !strings.HasPrefix(spec, "latest") && spec != id {
+		h.redirectFile(w, id, ".json")
+		return
+	}
+
+	w.Header().Set("Cache-Control", "public, no-cache")
+
 	// TODO: negotiate and cache compression
 
-	// compute the etag from the server hash and data hash
-	tag := sha1.Sum([]byte(exehash + id))
-	w.Header().Set("ETag", `"`+base32.StdEncoding.EncodeToString(tag[:])+`"`)
-
+	w.Header().Set("ETag", etag)
 	w.Header().Set("Content-Type", "application/json")
 	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf))
 }
+
+var errInvalidSpecFormat = errors.New("invalid spec format")
 
 func (h *dataExportHandler) resolve(spec string) (*dataExportData, error) {
 	if spec == "" {
@@ -274,7 +315,7 @@ func (h *dataExportHandler) resolve(spec string) (*dataExportData, error) {
 		return nil, fmt.Errorf("resolve %q: %w", spec, err)
 	}
 	if !ok {
-		return nil, fmt.Errorf("invalid spec format %q", spec)
+		return nil, errInvalidSpecFormat
 	}
 	if id == "" {
 		return nil, nil
@@ -393,10 +434,17 @@ func (h *dataExportHandler) prepare(id string, cachedOnly bool) *dataExportData 
 			buf := templ.GetBuffer()
 			defer templ.ReleaseBuffer(buf)
 
+			// note: we could have used the exehash and data hash as the etag to
+			// be able to check it before actually doing the export, but export
+			// is cheap, and this is simple enough (and still saves bandwidth,
+			// which is the point)
+
 			if err := exportCSV(buf, exp); err != nil {
 				d.csvErr = err
 			} else {
+				sum := sha1.Sum(buf.Bytes())
 				d.csv = slices.Clone(buf.Bytes())
+				d.csvETag = `W/"` + base32.StdEncoding.EncodeToString(sum[:]) + `"`
 			}
 			d.csvErr = exportCSV(buf, exp)
 
@@ -405,7 +453,9 @@ func (h *dataExportHandler) prepare(id string, cachedOnly bool) *dataExportData 
 			if err := ottrecexp.WriteJSON(exp, buf); err != nil {
 				d.jsonErr = err
 			} else {
+				sum := sha1.Sum(buf.Bytes())
 				d.json = slices.Clone(buf.Bytes())
+				d.jsonETag = `W/"` + base32.StdEncoding.EncodeToString(sum[:]) + `"`
 			}
 			buf.Reset()
 
@@ -416,41 +466,41 @@ func (h *dataExportHandler) prepare(id string, cachedOnly bool) *dataExportData 
 	return d
 }
 
-func (h *dataExportHandler) resolveCSV(ctx context.Context, spec string) ([]byte, string, error) {
+func (h *dataExportHandler) resolveCSV(ctx context.Context, spec string) ([]byte, string, string, error) {
 	d, err := h.resolve(spec)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 	if d == nil {
-		return nil, "", nil
+		return nil, "", "", nil
 	}
 	select {
 	case <-ctx.Done():
-		return nil, d.id, ctx.Err()
+		return nil, "", d.id, ctx.Err()
 	case <-d.ready:
 		if d.err != nil {
-			return nil, d.id, err
+			return nil, "", d.id, err
 		}
-		return d.csv, d.id, d.csvErr
+		return d.csv, d.csvETag, d.id, d.csvErr
 	}
 }
 
-func (h *dataExportHandler) resolveJSON(ctx context.Context, spec string) ([]byte, string, error) {
+func (h *dataExportHandler) resolveJSON(ctx context.Context, spec string) ([]byte, string, string, error) {
 	d, err := h.resolve(spec)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 	if d == nil {
-		return nil, "", nil
+		return nil, "", "", nil
 	}
 	select {
 	case <-ctx.Done():
-		return nil, d.id, ctx.Err()
+		return nil, "", d.id, ctx.Err()
 	case <-d.ready:
 		if d.err != nil {
-			return nil, d.id, err
+			return nil, "", d.id, err
 		}
-		return d.json, d.id, d.jsonErr
+		return d.json, d.jsonETag, d.id, d.jsonErr
 	}
 }
 
