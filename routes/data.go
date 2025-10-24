@@ -32,14 +32,10 @@ import (
 )
 
 type DataConfig struct {
-	Host  string
 	Cache *ottrecdata.Cache
 }
 
 func Data(cfg DataConfig) (http.Handler, error) {
-	if cfg.Host == "" {
-		return nil, fmt.Errorf("no host specified")
-	}
 	if cfg.Cache == nil {
 		return nil, fmt.Errorf("no cache specified")
 	}
@@ -49,7 +45,6 @@ func Data(cfg DataConfig) (http.Handler, error) {
 	// TODO: visual low-level historical diff? maybe this should be a separate service?
 
 	mux.Handle("/{$}", &dataHomeHandler{
-		Host:                  cfg.Host,
 		Cache:                 cfg.Cache,
 		MaxHistoricalVersions: 50,
 	})
@@ -102,7 +97,7 @@ func (h *dataHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return nil, http.StatusServiceUnavailable, fmt.Errorf("data not available, try again later")
 		}
 		return templates.DataHome(templates.DataHomeParams{
-			Canonical: reqScheme(r) + "://" + h.Host + "/",
+			Canonical: "https://data.ottrec.ca/",
 			Latest:    versions[0],
 			Versions:  versions,
 		}), http.StatusOK, nil

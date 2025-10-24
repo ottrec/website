@@ -24,8 +24,7 @@ import (
 var (
 	EnvPrefix    = "OTTREC_WEBSITE_"
 	Addr         = pflag.StringP("addr", "a", ":8083", "listen address")
-	Host         = pflag.StringP("host", "H", "ottrec.localhost", "canonical url host")
-	Data         = pflag.StringP("data", "d", "http://data.ottrec.localhost:8082/v1/latest/pb", "url or path to data protobuf")
+	Data         = pflag.StringP("data", "d", "http://localhost:8082/v1/latest/pb", "url or path to data protobuf")
 	DataInterval = pflag.DurationP("data-interval", "i", time.Minute*15, "poll interval for data")
 	LogLevel     = pflagx.LevelP("log-level", "L", slog.LevelInfo, "log level")
 	LogJSON      = pflag.Bool("log-json", false, "use json logs")
@@ -125,7 +124,6 @@ func run() error {
 	}()
 
 	handler, err := routes.Website(routes.WebsiteConfig{
-		Host: *Host,
 		Data: getData,
 	})
 	if err != nil {

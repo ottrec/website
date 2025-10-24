@@ -12,20 +12,15 @@ import (
 )
 
 type WebsiteConfig struct {
-	Host string
 	Data func() (ottrecidx.DataRef, bool)
 }
 
 func Website(cfg WebsiteConfig) (http.Handler, error) {
-	if cfg.Host == "" {
-		return nil, fmt.Errorf("no host specified")
-	}
 	if cfg.Data == nil {
 		return nil, fmt.Errorf("no data getter specified")
 	}
 
 	base := websiteHandlerBase{
-		Host: cfg.Host,
 		Data: cfg.Data,
 	}
 	mux := http.NewServeMux()
@@ -68,7 +63,7 @@ func (h *websiteHandlerBase) render(w http.ResponseWriter, r *http.Request, fn f
 }
 
 func (h *websiteHandlerBase) base(r *http.Request) string {
-	return reqScheme(r) + "://" + h.Host + "/"
+	return "https://ottrec.ca/"
 }
 
 type websiteHomeHandler struct {

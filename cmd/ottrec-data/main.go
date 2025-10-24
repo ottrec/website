@@ -27,7 +27,6 @@ import (
 var (
 	EnvPrefix    = "OTTREC_DATA_"
 	Addr         = pflag.StringP("addr", "a", ":8082", "listen address")
-	Host         = pflag.StringP("host", "H", "data.ottrec.localhost", "canonical url host")
 	Cache        = pflag.StringP("cache", "c", "/tmp/ottrec-data.db", "cache database path (will be wiped and recreated if doesn't exist or outdated)")
 	Repo         = pflag.StringP("repo", "r", "/tmp/ottrec-data.git", "data git repo path (if not set, db will be treated as read-only) (will be initialized as a bare repo if empty)")
 	RepoRemote   = pflag.String("repo-remote", "https://github.com/pgaskin/ottrec-data.git", "remote to fetch")
@@ -155,7 +154,6 @@ func run() error {
 	}
 
 	handler, err := routes.Data(routes.DataConfig{
-		Host:  *Host,
 		Cache: cache,
 	})
 	if err != nil {
