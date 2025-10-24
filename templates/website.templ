@@ -1,42 +1,172 @@
 package templates
 
-import "github.com/pgaskin/ottrec-website/static"
+import (
+	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/static"
+	"time"
+)
 
-type WebsitePageParams struct {
-	Title       string
-	Description string
-	Canonical   string
+// TODO: favicon
+
+type WebsiteParams struct {
+	Base string
+	Data ottrecidx.DataRef
 }
 
-templ WebsitePage(params WebsitePageParams) {
+templ WebsiteHomePage(params WebsiteParams) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			if params.Canonical != "" {
-				<link rel="canonical" href={ params.Canonical }/>
+			if params.Base != "" {
+				<link rel="canonical" href={ params.Base }/>
 			}
-			<base href="/"/>
-			// TODO: favicon
+			<title>Ottawa Recreation Schedules</title>
+			<meta name="description" content="The all-in-one place to quickly find City of Ottawa recreation facilities and schedules."/>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
-			<title>{ params.Title }</title>
-			if params.Description != "" {
-				<meta name="description" content={ params.Description }/>
-			}
 		</head>
 		<body>
-			{ children... }
+			<div class="homepage">
+				<header>
+					<h1>ottrec.ca</h1>
+					<p>A better way to find City of Ottawa drop-in activities.</p>
+					<time class="updated" datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>updated { params.Data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time>
+				</header>
+				<main>
+					<nav class="biglinks">
+						<header>
+							<h1>Facilities</h1>
+							<p>View and filter recreation facilities.</p>
+						</header>
+						<ul>
+							<li>
+								<a href="/facilities" data-icon="map">
+									<h2>Map</h2>
+									<p>Map of all facilities, filterable by activity.</p>
+									<p class="fakelink">View Map</p>
+								</a>
+							</li>
+							<li>
+								<a href="/activities" data-icon="overview">
+									<h2>Activities</h2>
+									<p>List of facilities offering different activities.</p>
+									<p class="fakelink">View Map</p>
+								</a>
+							</li>
+						</ul>
+					</nav>
+					<nav class="biglinks">
+						<header>
+							<h1>Schedules</h1>
+							<p>View and filter drop-in schedules across all facilities on a single page.</p>
+						</header>
+						<ul>
+							<li>
+								<a href="/schedules/swimming" data-icon="pool">
+									<h2>Swimming</h2> <!-- note: add a note saying where to find aquafit -->
+									<p>Public, lane, and wave swims.</p> <!-- and sauna -->
+									<p class="fakelink">View Schedule</p>
+								</a>
+							</li>
+							<li>
+								<a href="/schedules/skating" data-icon="ice_skating">
+									<h2>Skating</h2> <!-- note: add a note saying where to find hockey -->
+									<p>Public, adult, family, senior, and figure skating.</p>
+									<p class="fakelink">View Schedule</p>
+								</a>
+							</li>
+							<li>
+								<a href="/schedules/sports" data-icon="sports_and_outdoors">
+									<h2>Sports</h2>
+									<p>Gym sports, racquet sports, hockey, stick-and-puck.</p>
+									<p class="fakelink">View Schedule</p>
+								</a>
+							</li>
+							<li>
+								<a href="/schedules/aquafit" data-icon="water">
+									<h2>Aquafit</h2>
+									<p>Aquafit and aqua lite.</p>
+									<p class="fakelink">View Schedule</p>
+								</a>
+							</li>
+							<li>
+								<a href="/schedules/fitness" data-icon="fitness_center">
+									<h2>Fitness</h2>
+									<p>Group fitness classes, weight room.</p>
+									<p class="fakelink">View Schedule</p>
+								</a>
+							</li>
+							<li>
+								<a href="/schedules" data-icon="more_horiz">
+									<h2>Everything</h2>
+									<p>All activities.</p>
+									<p class="fakelink">View Schedule</p>
+								</a>
+							</li>
+						</ul>
+					</nav>
+					<nav class="biglinks">
+						<header>
+							<h1>Advanced</h1>
+							<p>Tools for advanced users.</p>
+						</header>
+						<ul>
+							<li>
+								<a href="/custom" data-icon="search">
+									<h2>Custom</h2>
+									<p>Create a custom page of schedules for the activities and facilities you want.</p>
+									<p class="fakelink">Create</p>
+								</a>
+							</li>
+							<li>
+								<a data-icon="history">
+									<h2>Time Machine</h2>
+									<p>View changes to the schedules over time.</p>
+									<p class="fakelink">Coming Soon</p>
+								</a>
+							</li>
+							<li>
+								<a href="https://data.ottrec.ca" data-icon="code_blocks">
+									<h2>Data</h2>
+									<p>Get the raw schedule data as JSON or CSV.</p>
+									<p class="fakelink">Download</p>
+								</a>
+							</li>
+						</ul>
+					</nav>
+				</main>
+				<footer class="site-footer">
+					<p>
+						Copyright 2025 Patrick Gaskin.
+					</p>
+					<nav>
+						<ul>
+							<li><a href="/about">About</a></li>
+							<li><a href="/about">Terms</a></li>
+							<li><a href="/about">Data Sources</a></li>
+						</ul>
+					</nav>
+				</footer>
+			</div>
 		</body>
 	</html>
 }
 
 templ WebsiteErrorPage(title, message string) {
-	@WebsitePage(WebsitePageParams{
-		Title: title,
-	}) {
-		<section class="error">
-			{ message }
-		</section>
-	}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="robots" content="noindex"/>
+			<title>{ title }</title>
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+		</head>
+		<body>
+			<div class="error-page">
+				{ message }
+			</div>
+		</body>
+	</html>
 }

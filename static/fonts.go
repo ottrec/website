@@ -51,6 +51,15 @@ func main() {
 			'\ue5d2', // menu
 			'\ue80d', // share
 			'\ue89e', // open_in_new
+			'\ue4a7', // overview
+			'\ue50b', // ice_skating
+			'\uf084', // water
+			'\uefb8', // sports_and_outdoors
+			'\ueb43', // fitness_center
+			'\ue5d4', // more_vert
+			'\ue5d3', // more_horiz
+			'\ue889', // history
+			'\uf84d', // code_blocks
 		})},
 	})
 

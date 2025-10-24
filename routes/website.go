@@ -67,6 +67,10 @@ func (h *websiteHandlerBase) render(w http.ResponseWriter, r *http.Request, fn f
 	}
 }
 
+func (h *websiteHandlerBase) base(r *http.Request) string {
+	return reqScheme(r) + "://" + h.Host + "/"
+}
+
 type websiteHomeHandler struct {
 	websiteHandlerBase
 }
@@ -81,9 +85,12 @@ func (h *websiteHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: cache headers
+
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
-		return templates.WebsitePage(templates.WebsitePageParams{
-			Title: "test",
+		return templates.WebsiteHomePage(templates.WebsiteParams{
+			Base: h.base(r),
+			Data: data,
 		}), http.StatusOK, nil
 	})
 }
