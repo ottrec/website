@@ -14,6 +14,7 @@ git clone https://github.com/pgaskin/ottrec ottrec
 git clone https://github.com/pgaskin/ottrec-website website
 git clone https://github.com/pgaskin/ottrec-data data --filter=blob:none
 git clone https://github.com/pgaskin/ottrec-misc misc
+git clone https://github.com/pgaskin/ottrec-infra infra
 git -C data worktree add ../cache cache
 
 # set up the go workspace
@@ -21,6 +22,9 @@ go work init
 go work use ./ottrec
 go work use ./website
 go work use ./misc
+
+# set up tofu
+env -C infra/terraform tofu init
 
 # optional: define some useful aliases
 alias ottrec-root='dirname "$(go env GOWORK)"'
@@ -35,6 +39,9 @@ alias croot='cd "$(ottrec-root)"'
 - [`aaron-bond.better-comments`](https://marketplace.visualstudio.com/items?itemName=aaron-bond.better-comments)
 - [`dnut.rewrap-revived`](https://marketplace.visualstudio.com/items?itemName=dnut.rewrap-revived) - for rewrapping comments (Alt+A)
 - [`yo1dog.cursor-align`](https://marketplace.visualstudio.com/items?itemName=yo1dog.cursor-align)
+- [`opentofu.vscode-opentofu`](https://marketplace.visualstudio.com/items?itemName=OpenTofu.vscode-opentofu)
+- [`hangxingliu.vscode-systemd-support`](https://marketplace.visualstudio.com/items?itemName=hangxingliu.vscode-systemd-support)
+- [`PKief.material-icon-theme`](https://marketplace.visualstudio.com/items?itemName=PKief.material-icon-theme)
 
 #### VSCode settings
 
@@ -44,6 +51,9 @@ alias croot='cd "$(ottrec-root)"'
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
         },
+        "editor.rulers": [
+            80
+        ],
         "editor.formatOnSave": true,
     },
     "[templ]": {
@@ -51,6 +61,10 @@ alias croot='cd "$(ottrec-root)"'
         "editor.formatOnSave": true,
         "editor.wordWrap": "on",
     },
+    "[opentofu]": {
+        "editor.formatOnSave": true
+    },
+    "workbench.iconTheme": "material-icon-theme",
 }
 ```
 
@@ -129,4 +143,19 @@ go run ./website/pkg/ottrecidx/profile.go -check
 go run ./pkg/ottrecidx/profile.go -cpuprofile /tmp/cpu.pprof -memprofile /tmp/mem.pprof
 go tool pprof -http :6060 /tmp/cpu.pprof
 go tool pprof -http :6061 /tmp/mem.pprof
+```
+
+### Infra
+
+```bash
+cd infra/terraform
+git pull
+tofu apply
+git commit -a
+```
+
+```bash
+cd infra/ansible
+ansible-playbook -i inventory.yml playbook.yml # everything
+ansible-playbook -i inventory.yml playbook.yml -t ottrec # only ottrec
 ```
