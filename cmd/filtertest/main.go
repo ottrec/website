@@ -394,13 +394,104 @@ func (f *Filter) Encode() string {
 func (f *Filter) Apply(data ottrecidx.DataRef) ottrecidx.DataRef {
 	mut := data.Mutate()
 
-	// TODO
+	if f.Date != nil {
+		mut.FilterScheduleGroups(func(ref ottrecidx.ScheduleGroupRef) bool {
+			return true // TODO
+		})
+	}
+
+	for _, clause := range f.Clause {
+		if clause == nil || clause.Exclude {
+			continue
+		}
+		mut.FilterFacilities(func(ref ottrecidx.FacilityRef) bool {
+			for _, clause := range f.Clause {
+				if clause == nil || clause.Exclude {
+					continue
+				}
+				var (
+					inc = clause.Facility
+					exc = clause.NotFacility
+				)
+				if hasInc, hasExc := len(inc) != 0, len(exc) != 0; hasInc || hasExc {
+					s := normalizeText(ref.GetName(), false, true)
+					if hasInc && !containsOneOf(s, inc) {
+						continue
+					}
+					if hasExc && containsOneOf(s, exc) {
+						continue
+					}
+				}
+				return true
+			}
+			return false
+		})
+		mut.FilterActivities(func(ref ottrecidx.ActivityRef) bool {
+			for _, clause := range f.Clause {
+				if clause == nil || clause.Exclude {
+					continue
+				}
+				var (
+					inc = clause.Activity
+					exc = clause.NotActivity
+				)
+				if hasInc, hasExc := len(inc) != 0, len(exc) != 0; hasInc || hasExc {
+					s := normalizeText(ref.GetName(), false, true)
+					if hasInc && !containsOneOf(s, inc) {
+						continue
+					}
+					if hasExc && containsOneOf(s, exc) {
+						continue
+					}
+				}
+				return true
+			}
+			return false
+		})
+		mut.FilterTimes(func(ref ottrecidx.TimeRef) bool {
+			for _, clause := range f.Clause {
+				if clause == nil || clause.Exclude {
+					continue
+				}
+				return true // TODO
+			}
+			return false
+		})
+		break
+	}
+
+	for _, clause := range f.Clause {
+		if clause == nil || !clause.Exclude {
+			continue
+		}
+		// TODO
+	}
 
 	mut.Elide()
 	return mut.Data()
 }
 
+// TODO: function to emit warnings if Activity/NotActivity doesn't match any activity, same for Facility/NotFacility
+
 // TODO: write tests for round-tripping, canonicalization, etc
+
+func containsOneOf(s string, substr []string) bool {
+	for _, substr := range substr {
+		if strings.Contains(s, substr) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsNoneOf(s string, substr []string) bool {
+	for _, substr := range substr {
+		if strings.Contains(s, substr) {
+			return false
+		}
+	}
+	return true
+}
 
 func takePrefix(s, cutset string) (prefix, rest string) {
 	rest = strings.TrimLeft(s, cutset)
