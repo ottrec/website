@@ -170,3 +170,31 @@ templ WebsiteErrorPage(title, message string) {
 		</body>
 	</html>
 }
+
+templ WebsiteTestPage(params WebsiteParams, mode string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="robots" content="noindex"/>
+			<title>test</title>
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+		</head>
+		<body style="margin: 2rem">
+			{{
+			mut := params.Data.Mutate()
+			mut.Elide()
+			data := mut.Data()
+			}}
+			switch mode {
+				case "grid":
+					@ScheduleGrid(data)
+				case "list":
+					@ScheduleList(data)
+				case "text":
+					@ScheduleText(data)
+			}
+		</body>
+	</html>
+}

@@ -1,0 +1,203 @@
+package templates
+
+import (
+	"cmp"
+	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"strconv"
+)
+
+templ ScheduleGrid(data ottrecidx.DataRef) {
+	<div class="ScheduleGrid">
+		for facility := range data.Facilities() {
+			@ScheduleGridFacility(facility)
+		}
+	</div>
+}
+
+templ ScheduleGridFacility(facility ottrecidx.FacilityRef) {
+	<section class="ScheduleGridFacility">
+		for group := range facility.ScheduleGroups() {
+			@ScheduleGridGroup(group)
+		}
+	</section>
+}
+
+templ ScheduleGridGroup(group ottrecidx.ScheduleGroupRef) {
+	<section class="ScheduleGridGroup">
+		for schedule := range group.Schedules() {
+			{ schedule.GetCaption() }
+		}
+	</section>
+}
+
+templ ScheduleList(data ottrecidx.DataRef) {
+	<div class="ScheduleList">
+		<table>
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Day</th>
+					<th>Time</th>
+					<th>Activity</th>
+					<th></th>
+				</tr>
+			</thead>
+			for facility := range data.Facilities() {
+				<tbody>
+					<tr>
+						<th colspan="4">
+							<label>
+								<input type="checkbox" autocomplete="off" title="collapse facility" oninput="var tbody=this.parentElement.parentElement.parentElement.parentElement;if(this.checked&amp;&amp;tbody.getBoundingClientRect().top<0)tbody.scrollIntoView({block:'start',behavior:'smooth'});return false"/>
+								<span>{ facility.GetName() }</span>
+							</label>
+						</th>
+						<td>
+							if html := facility.GetNotificationsHTML(); html != "" {
+								<button onclick={ templ.JSUnsafeFuncCall("document.getElementById('facilitynotifications-" + strconv.Itoa(ottrecidx.RefObj(facility)) + "').showModal();return false") }>Notifications</button>
+							}
+							if html := facility.GetSpecialHoursHTML(); html != "" {
+								<button onclick={ templ.JSUnsafeFuncCall("document.getElementById('facilityhours-" + strconv.Itoa(ottrecidx.RefObj(facility)) + "').showModal();return false") }>Special Hours</button>
+							}
+						</td>
+					</tr>
+					for tm := range facility.Times() {
+						<tr>
+							if d, ok := tm.SingleDate(); ok {
+								<td>
+									{ d.Format("Jan 2") }
+								</td>
+								<td>
+									{ d.Format("Monday") }
+								</td>
+							} else {
+								<td>
+									if from, to, ok := tm.Schedule().ComputeEffectiveDateRange(); ok {
+										if to.IsZero() {
+											starting { from.Format("Jan 2") }
+										} else if from.IsZero() {
+											until { to.Format("Jan 2") }
+										} else {
+											{ from.Format("Jan 2") } - { to.Format("Jan 2") }
+										}
+									} else if d := tm.Schedule().GetDate(); d != "" {
+										{ d }
+									} else {
+										{ "?" }
+									}
+								</td>
+								<td>
+									if wkday, ok := tm.GetWeekday(); ok {
+										{ wkday }
+									} else {
+										{ tm.GetScheduleDay() }
+									}
+								</td>
+							}
+							<td>
+								if r, ok := tm.GetRange(); ok {
+									{ r.Start.Format(false) } - { r.End.Format(false) }
+								} else {
+									{ tm.GetLabel() }
+								}
+							</td>
+							<td>
+								{ tm.Activity().GetName() }
+								if resv, definite := tm.Activity().GuessReservationRequirement(); resv {
+									<span class="chip">reserved</span>
+								} else if !definite {
+									<!-- <span class="chip">might need reservation</span> -->
+								}
+							</td>
+							<td>
+								if resv, _ := tm.Activity().GuessReservationRequirement(); resv {
+									if !iterEmpty(tm.ScheduleGroup().GetReservationLinks()) {
+										<button onclick={ templ.JSUnsafeFuncCall("document.getElementById('reservationlinks-" + strconv.Itoa(ottrecidx.RefObj(tm.ScheduleGroup())) + "').showModal();return false") }>Reserve</button>
+									}
+								}
+								if html := tm.ScheduleGroup().GetScheduleChangesHTML(); html != "" {
+									<button onclick={ templ.JSUnsafeFuncCall("document.getElementById('schedulechanges-" + strconv.Itoa(ottrecidx.RefObj(tm.ScheduleGroup())) + "').showModal();return false") }>Schedule Changes</button>
+								}
+							</td>
+						</tr>
+					}
+				</tbody>
+			}
+		</table>
+		for facility := range data.Facilities() {
+			if html := facility.GetNotificationsHTML(); html != "" {
+				<dialog id={ "facilitynotifications-" + strconv.Itoa(ottrecidx.RefObj(facility)) }>
+					<header>
+						<h1>Notifications - { facility.GetName() }</h1>
+						<form method="dialog"><button>Close</button></form>
+					</header>
+					<div class="ott-html">
+						@templ.Raw(html)
+					</div>
+				</dialog>
+			}
+			if html := facility.GetSpecialHoursHTML(); html != "" {
+				<dialog id={ "facilityhours-" + strconv.Itoa(ottrecidx.RefObj(facility)) }>
+					<header>
+						<h1>Special Hours - { facility.GetName() }</h1>
+						<form method="dialog"><button>Close</button></form>
+					</header>
+					<div class="ott-html">
+						@templ.Raw(html)
+					</div>
+				</dialog>
+			}
+		}
+		for group := range data.ScheduleGroups() {
+			if lnk := group.GetReservationLinks(); !iterEmpty(lnk) {
+				<dialog id={ "reservationlinks-" + strconv.Itoa(ottrecidx.RefObj(group)) }>
+					<header>
+						<h1>Reserve - { group.GetTitle() } - { group.Facility().GetName() }</h1>
+						<form method="dialog"><button>Close</button></form>
+					</header>
+					for lnk := range lnk {
+						<a href={ lnk.URL }>{ cmp.Or(lnk.Label, lnk.URL) }</a>
+					}
+				</dialog>
+			}
+			if html := group.GetScheduleChangesHTML(); html != "" {
+				<dialog id={ "schedulechanges-" + strconv.Itoa(ottrecidx.RefObj(group)) }>
+					<header>
+						<h1>Schedule Changes - { group.GetTitle() } - { group.Facility().GetName() }</h1>
+						<form method="dialog"><button>Close</button></form>
+					</header>
+					<div class="ott-html">
+						@templ.Raw(html)
+					</div>
+				</dialog>
+			}
+		}
+	</div>
+}
+
+templ ScheduleText(data ottrecidx.DataRef) {
+	<div class="ScheduleText">
+		for facility := range data.Facilities() {
+			@ScheduleTextFacility(facility)
+		}
+	</div>
+}
+
+templ ScheduleTextFacility(facility ottrecidx.FacilityRef) {
+	<section class="ScheduleTextFacility">
+		<header>
+			<h1>{ facility.GetName() }</h1>
+		</header>
+		for group := range facility.ScheduleGroups() {
+			@ScheduleTextGroup(group)
+		}
+	</section>
+}
+
+templ ScheduleTextGroup(group ottrecidx.ScheduleGroupRef) {
+	<section class="ScheduleTextGroup">
+		for schedule := range group.Schedules() {
+			{ schedule.GetName() }
+			{ schedule.GetDate() }
+		}
+	</section>
+}

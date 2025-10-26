@@ -221,6 +221,207 @@ nav.biglinks {
     }
 }
 
+div.ScheduleGrid {
+
+}
+
+section.ScheduleGridFacility {
+
+}
+
+section.ScheduleGridGroup {
+
+}
+
+div.ScheduleList {
+    --border: 1px solid light-dark(#666, #333);
+    --cell-padding: .25em 1.5em;
+
+    position: relative;
+    border: var(--border);
+    min-width: min-content;
+
+    > table {
+        border-collapse: collapse;
+        table-layout: auto;
+        width: 100%;
+
+        tr > :is(th, td) {
+            font-weight: normal;
+            text-align: left;
+            padding: var(--cell-padding);
+            white-space: nowrap;
+
+            &:last-child {
+                text-align: right;
+            }
+        }
+        > thead > tr > :is(th, td) {
+            background-color: light-dark(#ddd, #333);
+            font-weight: bold;
+
+            position: sticky;
+            top: 0;
+            height: 2.5em;
+        }
+        > tbody {
+            > tr:nth-child(odd) {
+                background: light-dark(#f5f5f5, #161616);
+            }
+            > tr:first-child {
+                > :is(th, td) {
+                    background: light-dark(#eee, #222);
+                    padding: var(--cell-padding);
+                    border-top: var(--border);
+
+                    position: sticky;
+                    top: 2.45em;
+                    height: 2.5em;
+                }
+                > th:first-child {
+                    font-weight: bold;
+                    line-height: 1;
+                    white-space: nowrap;
+                    text-align: left;
+
+                    &:has(> label) {
+                        padding: 0;
+                    }
+
+                    > label {
+                        display: flex;
+                        height: 100%;
+                        flex-direction: row;
+                        align-items: center;
+                        padding: var(--cell-padding);
+                        padding-left: .25em;
+
+                        > input[type="checkbox"] {
+                            display: none;
+                        }
+                    }
+                }
+            }
+            @supports selector(:has(> tr:first-child > th:first-child > label > input[type="checkbox"]:checked) > tr:not(:first-child)) {
+                &:has(> tr:first-child > th:first-child > label > input[type="checkbox"]) {
+                    &:has(tr:first-child > th:first-child > label:hover) > tr:first-child > :is(th, td) {
+                        background-color: light-dark(#ddd, #2a2a2a);
+                    }
+                    &:has(tr:first-child > th:first-child > label:active) > tr:first-child > :is(th, td) {
+                        background-color: light-dark(#ccc, #333);
+                    }
+                    > tr:first-child > th:first-child > label {
+                        &::before {
+                            font-family: 'Material Symbols Outlined';
+                            font-variation-settings:
+                                'FILL' 0,
+                                'wght' 300,
+                                'GRAD' 0,
+                                'opsz' 24;
+                            font-weight: normal;
+                            font-style: normal;
+                            line-height: 1;
+                            letter-spacing: normal;
+                            text-transform: none;
+                            display: inline-block;
+                            white-space: nowrap;
+                            word-wrap: normal;
+                            direction: ltr;
+                            -moz-osx-font-smoothing: grayscale;
+
+                            display: inline-block;
+                            vertical-align: top;
+                            content: '\e944';
+                            margin-right: .25em;
+                        }
+                    }
+                }
+                &:has(> tr:first-child > th:first-child > label > input[type="checkbox"]:checked) {
+                    > tr:first-child > th:first-child > label::before {
+                        content: '\e946';
+                    }
+                    > tr:not(:first-child) {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+    span.chip {
+        display: inline-block;
+        font-size: .825em;
+        background: light-dark(#0001, #fff1);
+        color: light-dark(#0008, #fff8);
+        vertical-align: middle;
+        padding: .15em .5em;
+        border-radius: .5em;
+        user-select: none;
+        margin-left: 1em;
+    }
+    button {
+        /* TODO */
+    }
+    dialog {
+        position: fixed;
+        inset: 0;
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0 12px 0 #0008;
+        padding: 1rem;
+        font-size: 1rem;
+        background-color: light-dark(#fff, #222);
+        color: light-dark(#000, #fff);
+
+        > header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: .5rem;
+
+            > h1 {
+                flex: 1;
+                min-width: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin: 0;
+                font-size: 1.3rem;
+                font-weight: 700;
+            }
+            > form {
+                flex: 0 0 auto;
+            }
+        }
+        &::backdrop {
+            background-color: #0002;
+            backdrop-filter: blur(2px);
+        }
+    }
+}
+
+div.ScheduleText {
+    
+}
+
+section.ScheduleTextFacility {
+    margin-left: 1rem;
+
+    > header {
+        margin-left: -1rem;
+
+        > h1 {
+            margin: 0 auto;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+    }
+}
+
+section.ScheduleTextGroup {
+
+}
+ 
 footer.site-footer {
     p, nav.footer {
         margin: .25rem 0;

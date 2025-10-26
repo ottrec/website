@@ -32,6 +32,9 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /{$}", &websiteHomeHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /test", &websiteTestHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("/static/", static.Handler(static.Website))
 
 	return commonMiddleware(mux), nil
@@ -87,5 +90,21 @@ func (h *websiteHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Base: h.base(r),
 			Data: data,
 		}), http.StatusOK, nil
+	})
+}
+
+type websiteTestHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteTestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "private, no-cache")
+
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		return templates.WebsiteTestPage(templates.WebsiteParams{
+			Base: h.base(r),
+			Data: data,
+		}, r.URL.Query().Get("mode")), http.StatusOK, nil
 	})
 }

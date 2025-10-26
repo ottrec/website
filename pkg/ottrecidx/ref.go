@@ -453,6 +453,13 @@ func (ref ActivityRef) DayTimes(i int) TimeSeq {
 	})
 }
 
+// RefObj returns an opaque number representing a ref, unique within the Index.
+// Whether this is stable across Index instances is an internal implementation
+// detail.
+func RefObj(ref anyRef) int {
+	return int(ref.reflect().obj)
+}
+
 // TODO: more helpers
 
 func mustOK[T any](x T, ok bool) T {

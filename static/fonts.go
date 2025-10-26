@@ -60,6 +60,8 @@ func main() {
 			'\ue5d3', // more_horiz
 			'\ue889', // history
 			'\uf84d', // code_blocks
+			'\ue944', // collapse_all
+			'\ue946', // expand_all
 		})},
 	})
 

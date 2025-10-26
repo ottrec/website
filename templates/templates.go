@@ -214,8 +214,3 @@ var exehash = func() string {
 	sum := sha1.Sum(buf)
 	return base32.StdEncoding.EncodeToString(sum[:])
 }()
-
-func cutBefore(s, sep string) string {
-	before, _, _ := strings.Cut(s, sep)
-	return before
-}
