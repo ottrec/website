@@ -138,6 +138,7 @@ func (ref baseRef) deref() any {
 // typedRef extends [baseRef] with type-safe helpers and additional checks.
 type typedRef[T schemaObj] struct {
 	baseRef
+	_ [0]*T // prevent direct conversions between typedRef types
 }
 
 // typeBitmap returns the index bitmap for objects of the specified type, or a nil
@@ -216,7 +217,7 @@ func (ref typedRef[T]) typeNotChildBitmap() bitmap[refObj] {
 // withFilter returns a copy of ref with a clone of the filter, or a new filter
 // including everything.
 func (ref typedRef[T]) withFilter() typedRef[T] {
-	return typedRef[T]{ref.baseRef.withFilter()}
+	return typedRef[T]{baseRef: ref.baseRef.withFilter()}
 }
 
 // nthOfType returns the index of ref from all objects of the same type,
