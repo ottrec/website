@@ -203,6 +203,11 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 		to = time.Date(year, month, day+1, 0, 0, 0, 0, TZ).Add(-time.Nanosecond)
 	}
 
+	// TODO: if there's a newer schedule which overlaps the current date, increment the year of the older one? or something to handle:
+	//	on 2025-12-19:
+	//		September 15 to December 21
+	//		January 3 to March 22
+
 	// if the range is empty, skip it
 	if from.IsZero() && to.IsZero() {
 		return from, to, false
