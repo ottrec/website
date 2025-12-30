@@ -121,6 +121,8 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 		return from, to, false
 	}
 
+	var hadExplicitFromOrToYear bool
+
 	// parse the from date
 	if x := r.From; !x.IsZero() {
 		var (
@@ -142,6 +144,8 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 				return from, to, false // no current year
 			}
 			year, yearOK = scheduleDate.Year(), true
+		} else {
+			hadExplicitFromOrToYear = true
 		}
 		// if there's no day set, use 1
 		if !dayOK {
@@ -194,6 +198,8 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 					year++
 				}
 			}
+		} else {
+			hadExplicitFromOrToYear = true
 		}
 		// if there's no day set, use the last day of the month
 		if !dayOK {
@@ -201,6 +207,44 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 		}
 		// compute the date
 		to = time.Date(year, month, day+1, 0, 0, 0, 0, TZ).Add(-time.Nanosecond)
+	}
+
+	// to handle cases like (note: 2025-12-24 is a good dataset to test on):
+	//  - schedule date "2025-12-19"
+	//  - one schedule "September 15 to December 21" (implied 2025)
+	//  - another schedule "January 3 to March 22" (implied 2026)
+	//
+	// if all the following are true:
+	//  - neither the schedule from nor to had an explicit year
+	//  - the start date assuming the schedule year is in the past
+	//  - the start date being after the current schedule year would be less
+	//    than an arbitrary threshold of 6 months from the current schedule date
+	//  - the end date being the current schedule year would be further from the
+	//    schedule date than the distance of the start date being after the
+	//    current schedule date (to account for cases where the schedule date
+	//    spans the majority of a year)
+	//  - if we don't have an end date, then take the one closest to the
+	//    schedule date instead
+	//
+	// then increment the assumed year by one
+	if !hadExplicitFromOrToYear && !from.IsZero() {
+		if fromInPast := from.Before(scheduleDate); fromInPast {
+			// note: since we had no explicit year, this will always be the schedule year + 1
+			fromInc := from.AddDate(1, 0, 0)
+			if toNewFrom := fromInc.Sub(scheduleDate); toNewFrom < 6*30*24*time.Hour { // approximate (and we're assuming that they wouldn't post a schedule more than 6 months ahead or leave an old schedule up that long)
+				if !to.IsZero() {
+					if toOldTo := abs(scheduleDate.Sub(to)); toOldTo > toNewFrom {
+						// note: since we had no explicit year, this will always the same as the from year, or the next if the day/month is earlier
+						toInc := to.AddDate(1, 0, 0)
+						from, to = fromInc, toInc
+					}
+				} else {
+					if toOldFrom := scheduleDate.Sub(from); toNewFrom < toOldFrom {
+						from = fromInc
+					}
+				}
+			}
+		}
 	}
 
 	// if the range is empty, skip it
@@ -274,4 +318,11 @@ func (ref TimeRef) SingleDate() (time.Time, bool) {
 
 func daysInMonth(year int, month time.Month) int {
 	return time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}
+
+func abs[T ~int | ~int8 | ~int16 | ~int32 | ~int64](x T) T {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
