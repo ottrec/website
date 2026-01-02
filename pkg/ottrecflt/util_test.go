@@ -1,6 +1,7 @@
 package ottrecflt
 
 import (
+	"math"
 	"strings"
 	"testing"
 )
@@ -143,6 +144,25 @@ func TestCutWord(t *testing.T) {
 				}
 				prev = rest
 			}
+		}
+	}
+}
+
+func TestDistanceBetween(t *testing.T) {
+	for _, tc := range []struct {
+		Lat1, Lng1, Lat2, Lng2, Distance float64
+	}{
+		{0, 0, 0, 0, 0},                             // same point = 0
+		{1, 1, 1, 1, 0},                             // same point = 0
+		{0, 0, 0, 180, 20015},                       // straight line across the equator = ~ half of the earth's circumference
+		{0, 0, 90, 0, 10007},                        // equator to north pole = ~ quarter of the earth's circumference
+		{0, -90, 0, 90, 20015},                      // two points opposite each other = ~ quarter of the earth's circumference
+		{40.7128, -74.0060, 51.5074, -0.1278, 5570}, // ny to london
+	} {
+		distance := distanceBetween(tc.Lat1, tc.Lng1, tc.Lat2, tc.Lng2)
+		distance = math.Floor(distance)
+		if distance != tc.Distance {
+			t.Errorf("distanceBetween(%v°N %v°W, %v°N %v°W): expected %vkm, got %vkm", tc.Lat1, tc.Lng1, tc.Lat2, tc.Lng2, tc.Distance, distance)
 		}
 	}
 }

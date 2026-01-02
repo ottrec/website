@@ -1,6 +1,7 @@
 package ottrecflt
 
 import (
+	"math"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -132,4 +133,29 @@ func cutWord(s string) (word, rest string, ok bool) {
 		j = len(s)
 	}
 	return s[:j], s[j:], true
+}
+
+// distanceBetween uses the Haversine formula to get the distance (kilometers)
+// between two coordinates (degrees).
+func distanceBetween(lat1, lng1, lat2, lng2 float64) float64 {
+	const earthRadiusKm = 6371
+
+	lat1 = deg2rad(lat1)
+	lng1 = deg2rad(lng1)
+	lat2 = deg2rad(lat2)
+	lng2 = deg2rad(lng2)
+
+	dlat := lat2 - lat1
+	dlng := lng2 - lng1
+
+	a := math.Pow(math.Sin(dlat/2), 2) + math.Cos(lat1)*math.Cos(lat2)*math.Pow(math.Sin(dlng/2), 2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	d := c * earthRadiusKm
+
+	return d
+}
+
+// deg2rad converts d from degrees to radians.
+func deg2rad(d float64) float64 {
+	return d * math.Pi / 180
 }

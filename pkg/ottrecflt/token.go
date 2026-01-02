@@ -20,7 +20,7 @@ const (
 	tokenMatchTime     // time ([WEEKDAY|DATE...] @ [TIME|TIMERANGE...]) - matches activities on the specified weekdays/dates and/or times/ranges (matches any combination of date and time) (space-separated) (@ is only required if including both dates and times)
 	tokenMatchFacility // facility (STRING, ...) - matches facilities with a name including any of the specified double-quoted substrings (case-insensitive, normalized, fuzzy) (comma-separated) (parenthesis are optional if only one)
 	tokenMatchActivity // activity (STRING, ...) - matches activities with a name including any of the specified double-quoted substrings (case-insensitive, normalized, fuzzy) (comma-separated) (parenthesis are optional if only one)
-	tokenMatchLngLat   // lnglat (lng, lat, km) - matches facilities the specified distance from the provided longitude/latitude values
+	tokenMatchLatlng   // latlng (lat, lng, km) - matches facilities the specified distance from the provided longitude/latitude values
 
 	// operators
 	tokenLParen // (
@@ -61,8 +61,8 @@ func (t token) String() string {
 		return "facility()"
 	case tokenMatchActivity:
 		return "activity()"
-	case tokenMatchLngLat:
-		return "lnglat()"
+	case tokenMatchLatlng:
+		return "latlng()"
 	case tokenLParen:
 		return "lparen"
 	case tokenRParen:
