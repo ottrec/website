@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ottrecql</title>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+      color: #a0a0a0;
+    }
+
+    .examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .examples > section > h2 {
+      margin: 0 0 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #606060;
+    }
+
+    .editor {
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #2a2a2a;
+    }
+
+    .editor .cm-editor {
+      max-height: 240px;
+    }
+
+    .editor .cm-scroller {
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Examples</h1>
+
+  <section class="examples">
+    <section>
+      <h2>Finding schedules valid as of a certain date</h2>
+      <div class="editor" data-query="schdate(today)
+schdate(2026-01-02)
+schdate(today) or schdate(2025-12-25)"></div>
+    </section>
+
+    <section>
+      <h2>Filtering activity times</h2>
+      <div class="editor" data-query="time(Mon @ 9:00)
+time(Mon Tue Wed Thu Fri @ 9:00am 5:00pm)
+time(Sat Sun @ 18:00-21:00)
+time(@ now)"></div>
+    </section>
+
+    <section>
+      <h2>Filtering activity times for specific dates</h2>
+      <div class="editor" data-query="time(2025-06-15 @ 9:00am-12:00pm)
+time(today @ 8:00 9:00 10:00)
+time(2025-12-24 2025-12-25)"></div>
+    </section>
+
+    <section>
+      <h2>Filtering by facility or activity names (fuzzy word matches)</h2>
+      <div class="editor" data-query='facility("st laurent complex")
+facility("tom brown", "jim durrell", "sandy hill arena")
+activity("lane swim", "public swim")
+activity()'></div>
+    </section>
+
+    <section>
+      <h2>Filtering by location (lat, lng, km distance)</h2>
+      <div class="editor" data-query="latlng(1.234, -5.678, 10)"></div>
+    </section>
+
+    <section>
+      <h2>Operators</h2>
+      <div class="editor" data-query="not time(09:00-17:00)
+schdate(today) and time(today @ 8:00am)
+time(sa su @ 10:00-22:00) or time(mo tu we th fr @ 6:00am-8:00am)
+!facility(&quot;plant&quot;) && activity(&quot;lane swim&quot;)
+schdate(today) || schdate(2025-12-24)"></div>
+    </section>
+
+    <section>
+      <h2>Grouping</h2>
+      <div class="editor" data-query="(schdate(today) or schdate(2025-12-24)) and time(Mon @ 09:00)
+not (facility(&quot;A&quot;) or facility(&quot;B&quot;))
+schdate(today) and (time(Mon @ 9:00) or time(Tue @ 10:00))"></div>
+    </section>
+
+    <section>
+      <h2>Complex queries</h2>
+      <div class="editor" data-query='schdate(today)
+  && time(Mon Tue Wed Thu Fri @ 4:00p-10:00pm)
+  && activity("skate")
+  && !activity("adult")'></div>
+    </section>
+  </section>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "@codemirror/state":      "https://esm.sh/@codemirror/state@6",
+        "@codemirror/view":       "https://esm.sh/@codemirror/view@6",
+        "@codemirror/language":   "https://esm.sh/@codemirror/language@6",
+        "@codemirror/commands":   "https://esm.sh/@codemirror/commands@6",
+        "@codemirror/theme-one-dark": "https://esm.sh/@codemirror/theme-one-dark@6",
+        "@lezer/highlight":       "https://esm.sh/@lezer/highlight@1"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import { StreamLanguage, LanguageSupport } from "@codemirror/language"
+    import { tags } from "@lezer/highlight"
+
+    const weekdays = new Set([
+      "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
+      "sun", "mon", "tue", "wed", "thu", "fri", "sat",
+      "su", "mo", "tu", "we", "th", "fr", "sa",
+    ])
+    const functions = new Set(["schdate", "time", "facility", "activity", "latlng"])
+
+    const timeRe = /\d{1,2}:\d{2}(?:[aApP][mM]?)?(?![a-zA-Z0-9])/y
+    const dateRe = /\d{4}-\d{2}-\d{2}/y
+    const numberRe = /\d+(?:\.\d+)?/y
+    const identRe = /[a-zA-Z][a-zA-Z0-9]*/y
+
+    const ottrecqlLang = StreamLanguage.define({
+      name: "query",
+
+      token(stream) {
+        if (stream.eatSpace()) return null
+        const ch = stream.peek()
+
+        // string
+        if (ch === '"') {
+          stream.next()
+          while (!stream.eol()) {
+            const c = stream.next()
+            if (c === "\\") { stream.next(); continue }
+            if (c === '"') break
+          }
+          return "qStr"
+        }
+
+        // two-character operators
+        if (stream.match("&&") || stream.match("||")) return "qOp"
+
+        // single-character symbolic operators and delimiters
+        if (stream.match("!")) return "qOp"
+        if (stream.match("(") || stream.match(")")) return "qParen"
+        if (stream.match(",") || stream.match("@") || stream.match("-")) return "qPunct"
+
+        // date, time, or number
+        if (ch >= "0" && ch <= "9") {
+          dateRe.lastIndex = stream.pos
+          if (dateRe.test(stream.string) && dateRe.lastIndex > stream.pos) {
+            const end = dateRe.lastIndex
+            while (stream.pos < end) stream.next()
+            return "qDate"
+          }
+          timeRe.lastIndex = stream.pos
+          if (timeRe.test(stream.string) && timeRe.lastIndex > stream.pos) {
+            const end = timeRe.lastIndex
+            while (stream.pos < end) stream.next()
+            return "qTime"
+          }
+          numberRe.lastIndex = stream.pos
+          numberRe.test(stream.string)
+          const end = numberRe.lastIndex
+          while (stream.pos < end) stream.next()
+          return "qNum"
+        }
+
+        // keywords and functions
+        if ((ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z")) {
+          identRe.lastIndex = stream.pos
+          identRe.test(stream.string)
+          const end = identRe.lastIndex
+          while (stream.pos < end) stream.next()
+          const word = stream.current().toLowerCase()
+          if (word === "not" || word === "and" || word === "or") return "qOp"
+          if (word === "today") return "qDate"
+          if (word === "now") return "qTime"
+          if (weekdays.has(word)) return "qWeekday"
+          if (functions.has(word)) return "qFunc"
+          return null
+        }
+
+        stream.next()
+        return null
+      },
+
+      tokenTable: {
+        qStr: tags.string,
+        qOp: tags.operator,
+        qParen: tags.paren,
+        qPunct: tags.punctuation,
+        qDate: tags.special(tags.number),
+        qTime: tags.special(tags.string),
+        qNum: tags.number,
+        qWeekday: tags.atom,
+        qFunc: tags.function(tags.variableName),
+      },
+    })
+    function ottrecql() { return new LanguageSupport(ottrecqlLang) }
+
+    import { EditorState } from "@codemirror/state"
+    import { EditorView, keymap } from "@codemirror/view"
+    import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
+    import { bracketMatching } from "@codemirror/language"
+    import { oneDark } from "@codemirror/theme-one-dark"
+
+    for (const el of document.querySelectorAll("section.examples > section > .editor")) {
+      new EditorView({
+        state: EditorState.create({
+          doc: el.dataset.query,
+          extensions: [
+            history(),
+            keymap.of([...defaultKeymap, ...historyKeymap]),
+            ottrecql(),
+            bracketMatching(),
+            oneDark,
+            EditorView.theme({
+              "&.cm-focused": { outline: "none" },
+              ".cm-content": { padding: "12px 0" },
+              ".cm-line": { padding: "0 14px" },
+            }),
+            EditorView.lineWrapping,
+          ],
+        }),
+        parent: el,
+      })
+    }
+  </script>
+</body>
+
+</html>
