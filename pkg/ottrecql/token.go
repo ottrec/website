@@ -32,7 +32,7 @@ const (
 	TokenTime    // HH:MM[a|am|p|pm], now
 	TokenWeekday // weekday name (2-letter, 3-letter, or full)
 	TokenNumber  // numeric literal (float32)
-	TokenKeyword // lowercase alphanumeric identifier (i.e., match function)
+	TokenIdent   // lowercase alphanumeric identifier (i.e., match function)
 )
 
 // String returns the human-readable name of the token type.
@@ -68,8 +68,8 @@ func (t TokenType) String() string {
 		return "weekday"
 	case TokenNumber:
 		return "number"
-	case TokenKeyword:
-		return "keyword"
+	case TokenIdent:
+		return "identifier"
 	default:
 		return fmt.Sprintf("TokenType(%d)", int(t))
 	}
@@ -253,7 +253,7 @@ func (t *Tokenizer) scanTimePeriod() {
 }
 
 // scanIdent sets the token type to a specific kind of identifier if known,
-// otherwise [TokenKeyword].
+// otherwise [TokenIdent].
 func (t *Tokenizer) scanIdent() {
 	for t.cur < len(t.str) && isAlphaNum(t.str[t.cur]) {
 		t.cur++
@@ -269,7 +269,7 @@ func (t *Tokenizer) scanIdent() {
 		} else if _, ok := parseWeekday(lower); ok {
 			t.tok = TokenWeekday
 		} else {
-			t.tok = TokenKeyword
+			t.tok = TokenIdent
 		}
 	}
 }

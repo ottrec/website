@@ -59,7 +59,7 @@ func ownCost(e Node) int {
 		return 1 + c
 	case *FacilityNode:
 		var c int
-		for _, s := range e.Strings {
+		for _, s := range e.FuzzyName {
 			if isASCII(s) {
 				c += len(s) * 2
 			} else {
@@ -69,7 +69,7 @@ func ownCost(e Node) int {
 		return 1 + c
 	case *ActivityNode:
 		var c int
-		for _, s := range e.Strings {
+		for _, s := range e.FuzzyName {
 			if isASCII(s) {
 				c += len(s) * 2
 			} else {

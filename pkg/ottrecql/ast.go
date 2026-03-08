@@ -92,13 +92,13 @@ type TimeNode struct {
 // FacilityNode represents facility([string...]).
 type FacilityNode struct {
 	Pos
-	Strings []string
+	FuzzyName []string
 }
 
 // ActivityNode represents activity([string...]).
 type ActivityNode struct {
 	Pos
-	Strings []string
+	FuzzyName []string
 }
 
 // LatLngNode represents latlng(lat, lng, km).

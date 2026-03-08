@@ -125,9 +125,9 @@ func (c *compileCtx) compile(e Node) (cNode, error) {
 		}
 		return &cTime{d: ds, ct: ct, cr: cr}, nil
 	case *FacilityNode:
-		return &cFacility{m: c.fuzzies(e.Strings)}, nil
+		return &cFacility{m: c.fuzzies(e.FuzzyName)}, nil
 	case *ActivityNode:
-		return &cActivity{m: c.fuzzies(e.Strings)}, nil
+		return &cActivity{m: c.fuzzies(e.FuzzyName)}, nil
 	case *LatLngNode:
 		return &cLatLng{lat: float64(e.Lat), lng: float64(e.Lng), dist: float64(e.Dist)}, nil
 	default:

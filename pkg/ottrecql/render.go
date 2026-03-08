@@ -38,9 +38,9 @@ func renderExpr(e Node, parentBP int) string {
 	case *TimeNode:
 		return renderTimeExpr(e)
 	case *FacilityNode:
-		return "facility(" + renderStringList(e.Strings) + ")"
+		return "facility(" + renderStringList(e.FuzzyName) + ")"
 	case *ActivityNode:
-		return "activity(" + renderStringList(e.Strings) + ")"
+		return "activity(" + renderStringList(e.FuzzyName) + ")"
 	case *LatLngNode:
 		return "latlng(" + renderFloat(e.Lat) + ", " + renderFloat(e.Lng) + ", " + renderFloat(e.Dist) + ")"
 	default:

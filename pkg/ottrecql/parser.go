@@ -110,7 +110,7 @@ func (p *parser) parsePrefix() (Node, error) {
 		}
 		return expr, nil
 
-	case TokenKeyword:
+	case TokenIdent:
 		return p.parseMatch()
 
 	default:
@@ -238,7 +238,7 @@ func (p *parser) parseMatchFacility(pos Pos) (Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &FacilityNode{Pos: pos, Strings: strs}, nil
+	return &FacilityNode{Pos: pos, FuzzyName: strs}, nil
 }
 
 // parseMatchActivity parses the body of activity([string...]).
@@ -247,7 +247,7 @@ func (p *parser) parseMatchActivity(pos Pos) (Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ActivityNode{Pos: pos, Strings: strs}, nil
+	return &ActivityNode{Pos: pos, FuzzyName: strs}, nil
 }
 
 // parseMatchLatLng parses the body of latlng(number, number, number).
