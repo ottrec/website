@@ -84,6 +84,10 @@ type Index struct {
 	cached_ScheduleRef_ComputeEffectiveDateRange_to   []time.Time
 	cached_ScheduleRef_ComputeEffectiveDateRange_ok   bitmap[refObj]
 
+	// precomputed: TimeRef.SingleDate
+	cached_TimeRef_SingleDate   bool
+	cached_TimeRef_SingleDate_t []time.Time
+
 	// precomputed: Index.Updated
 	updated time.Time
 
@@ -122,7 +126,7 @@ func (dxr *Indexer) Load(pb []byte) (*Index, error) {
 func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 	now := time.Now()
 
-	var n, nFac, nGrp, nSch, nAct int
+	var n, nFac, nGrp, nSch, nAct, nTm int
 	n++
 	for _, fac := range data.GetFacilities() {
 		n++
@@ -140,6 +144,7 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 						// no increment
 						for range day.GetTimes() {
 							n++
+							nTm++
 						}
 					}
 				}
@@ -172,6 +177,8 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 		cached_ScheduleRef_ComputeEffectiveDateRange_from: make([]time.Time, nSch),
 		cached_ScheduleRef_ComputeEffectiveDateRange_to:   make([]time.Time, nSch),
 		cached_ScheduleRef_ComputeEffectiveDateRange_ok:   makeBitmap[refObj](n),
+
+		cached_TimeRef_SingleDate_t: make([]time.Time, nTm),
 	}
 
 	idx.durScan, now = time.Since(now), time.Now()
@@ -232,6 +239,17 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 		}
 	}
 	idx.cached_ScheduleRef_ComputeEffectiveDateRange = true
+
+	for tm := range idx.Data().Times() {
+		i := tm.nthOfType()
+		t, ok := tm.SingleDate()
+		if ok {
+			idx.cached_TimeRef_SingleDate_t[i] = t
+		} else {
+			idx.cached_TimeRef_SingleDate_t[i] = time.Time{}
+		}
+	}
+	idx.cached_TimeRef_SingleDate = true
 
 	for fac := range idx.Data().Facilities() {
 		if d := fac.GetSourceDate(); !d.IsZero() && d.After(idx.updated) {

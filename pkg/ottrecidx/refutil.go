@@ -267,6 +267,12 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 // the date range for the special short-term schedules, but still put the
 // correct date in the day header.
 func (ref TimeRef) SingleDate() (time.Time, bool) {
+	if idx := ref.index(); idx.cached_TimeRef_SingleDate {
+		i := ref.nthOfType()
+		t := ref.idx.cached_TimeRef_SingleDate_t[i]
+		return t, !t.IsZero()
+	}
+
 	sch := ref.Schedule()
 
 	d, ok := sch.GetDayDate(ref.GetScheduleDayIndex())
