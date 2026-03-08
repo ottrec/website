@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+// Pos represents the position of a token.
+type Pos struct {
+	// Offset is the byte offset from the start of the input.
+	Offset int
+}
+
 // TokenType is the type of a lexical token.
 type TokenType int
 
@@ -72,7 +78,7 @@ func (t TokenType) String() string {
 // Tokenizer scans an input string into tokens.
 type Tokenizer struct {
 	str   string
-	pos   int
+	cur   int
 	start int
 	end   int
 	tok   TokenType
@@ -88,8 +94,8 @@ func NewTokenizer(s string) *Tokenizer {
 // Token returns the current token type.
 func (t *Tokenizer) Token() TokenType { return t.tok }
 
-// Offset returns the byte offset of the current token in the input.
-func (t *Tokenizer) Offset() int { return t.start }
+// Pos returns the position of the current token in the input.
+func (t *Tokenizer) Pos() Pos { return Pos{Offset: t.start} }
 
 // Len returns the byte length of the current token.
 func (t *Tokenizer) Len() int { return t.end - t.start }
@@ -101,40 +107,40 @@ func (t *Tokenizer) Text() string { return t.str[t.start:t.end] }
 // [TokenInvalid]. It always moves forwards, setting [TokenEOF] at the end of
 // the input.
 func (t *Tokenizer) Next() {
-	for t.pos < len(t.str) && isSpace(t.str[t.pos]) {
-		t.pos++
+	for t.cur < len(t.str) && isSpace(t.str[t.cur]) {
+		t.cur++
 	}
-	t.start = t.pos
-	if t.pos >= len(t.str) {
+	t.start = t.cur
+	if t.cur >= len(t.str) {
 		t.tok = TokenEOF
-		t.end = t.pos
+		t.end = t.cur
 		return
 	}
-	ch := t.str[t.pos]
+	ch := t.str[t.cur]
 	switch {
 	case ch == '(':
-		t.pos++
+		t.cur++
 		t.tok = TokenLParen
 	case ch == ')':
-		t.pos++
+		t.cur++
 		t.tok = TokenRParen
 	case ch == ',':
-		t.pos++
+		t.cur++
 		t.tok = TokenComma
 	case ch == '@':
-		t.pos++
+		t.cur++
 		t.tok = TokenAt
 	case ch == '-':
-		t.pos++
+		t.cur++
 		t.tok = TokenDash
 	case ch == '!':
-		t.pos++
+		t.cur++
 		t.tok = TokenNot
-	case ch == '&' && t.pos+1 < len(t.str) && t.str[t.pos+1] == '&':
-		t.pos += 2
+	case ch == '&' && t.cur+1 < len(t.str) && t.str[t.cur+1] == '&':
+		t.cur += 2
 		t.tok = TokenAnd
-	case ch == '|' && t.pos+1 < len(t.str) && t.str[t.pos+1] == '|':
-		t.pos += 2
+	case ch == '|' && t.cur+1 < len(t.str) && t.str[t.cur+1] == '|':
+		t.cur += 2
 		t.tok = TokenOr
 	case ch == '"':
 		t.scanString()
@@ -143,21 +149,21 @@ func (t *Tokenizer) Next() {
 	case isLetter(ch):
 		t.scanIdent()
 	default:
-		t.pos++
+		t.cur++
 		t.tok = TokenInvalid
 	}
-	t.end = t.pos
+	t.end = t.cur
 }
 
 // scanString consumes a double-quoted string with backslash escapes.
 func (t *Tokenizer) scanString() {
-	t.pos++ // consume opening "
-	for t.pos < len(t.str) {
-		ch := t.str[t.pos]
-		t.pos++
+	t.cur++ // consume opening "
+	for t.cur < len(t.str) {
+		ch := t.str[t.cur]
+		t.cur++
 		switch ch {
 		case '\\':
-			t.pos++ // skip escaped character
+			t.cur++ // skip escaped character
 		case '"':
 			t.tok = TokenString
 			return
@@ -169,11 +175,11 @@ func (t *Tokenizer) scanString() {
 // scanNumeric consumes a token starting with a digit.
 func (t *Tokenizer) scanNumeric() {
 	// count leading digits
-	p := t.pos
+	p := t.cur
 	for p < len(t.str) && isDigit(t.str[p]) {
 		p++
 	}
-	nDigits := p - t.pos
+	nDigits := p - t.cur
 
 	// date (YYYY-MM-DD)
 	if nDigits == 4 && p < len(t.str) && t.str[p] == '-' {
@@ -191,7 +197,7 @@ func (t *Tokenizer) scanNumeric() {
 				q++
 			}
 			if dd == 2 {
-				t.pos = q
+				t.cur = q
 				t.tok = TokenDate
 				return
 			}
@@ -207,7 +213,7 @@ func (t *Tokenizer) scanNumeric() {
 			q++
 		}
 		if mn == 2 {
-			t.pos = q
+			t.cur = q
 			t.scanTimePeriod()
 			t.tok = TokenTime
 			return
@@ -215,11 +221,11 @@ func (t *Tokenizer) scanNumeric() {
 	}
 
 	// number
-	t.pos = p
-	if t.pos < len(t.str) && t.str[t.pos] == '.' {
-		t.pos++
-		for t.pos < len(t.str) && isDigit(t.str[t.pos]) {
-			t.pos++
+	t.cur = p
+	if t.cur < len(t.str) && t.str[t.cur] == '.' {
+		t.cur++
+		for t.cur < len(t.str) && isDigit(t.str[t.cur]) {
+			t.cur++
 		}
 	}
 	t.tok = TokenNumber
@@ -228,31 +234,31 @@ func (t *Tokenizer) scanNumeric() {
 // scanTimePeriod consumes an optional a/am/p/pm suffix, but only when followed
 // by a word boundary.
 func (t *Tokenizer) scanTimePeriod() {
-	if t.pos >= len(t.str) {
+	if t.cur >= len(t.str) {
 		return
 	}
-	ch := t.str[t.pos]
+	ch := t.str[t.cur]
 	if ch != 'a' && ch != 'A' && ch != 'p' && ch != 'P' {
 		return
 	}
-	save := t.pos
-	t.pos++
-	if t.pos < len(t.str) && (t.str[t.pos] == 'm' || t.str[t.pos] == 'M') {
-		t.pos++
+	save := t.cur
+	t.cur++
+	if t.cur < len(t.str) && (t.str[t.cur] == 'm' || t.str[t.cur] == 'M') {
+		t.cur++
 	}
 	// require word boundary, backtrack if not
-	if t.pos < len(t.str) && isAlphaNum(t.str[t.pos]) {
-		t.pos = save
+	if t.cur < len(t.str) && isAlphaNum(t.str[t.cur]) {
+		t.cur = save
 	}
 }
 
 // scanIdent sets the token type to a specific kind of identifier if known,
 // otherwise [TokenKeyword].
 func (t *Tokenizer) scanIdent() {
-	for t.pos < len(t.str) && isAlphaNum(t.str[t.pos]) {
-		t.pos++
+	for t.cur < len(t.str) && isAlphaNum(t.str[t.cur]) {
+		t.cur++
 	}
-	switch lower := strings.ToLower(t.str[t.start:t.pos]); lower {
+	switch lower := strings.ToLower(t.str[t.start:t.cur]); lower {
 	case "today":
 		t.tok = TokenDate
 	case "now":

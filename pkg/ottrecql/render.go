@@ -7,19 +7,19 @@ import (
 
 // Render converts a expression node back to its normalized plain-text
 // representation with minimal parenthesis.
-func Render(e Expr) string {
+func Render(e Node) string {
 	return renderExpr(e, 0)
 }
 
 // renderExpr renders e, wrapping in parentheses if its binding power is less
 // than parentBP (i.e. the context requires tighter binding).
-func renderExpr(e Expr, parentBP int) string {
+func renderExpr(e Node, parentBP int) string {
 	switch e := e.(type) {
-	case *NotExpr:
+	case *NotNode:
 		// NOT has higher precedence than AND/OR; recurse at bpAnd so that an OR
 		// or AND operand gets parenthesised: not (a or b).
 		return "not " + renderExpr(e.Expr, bpAnd)
-	case *AndExpr:
+	case *AndNode:
 		//	- left: no parens at same precedence (left-associative)
 		//	- right: parens at same precedence to preserve right grouping
 		s := renderExpr(e.Left, bpAnd) + " and " + renderExpr(e.Right, bpAnd+1)
@@ -27,35 +27,35 @@ func renderExpr(e Expr, parentBP int) string {
 			return "(" + s + ")"
 		}
 		return s
-	case *OrExpr:
+	case *OrNode:
 		s := renderExpr(e.Left, bpOr) + " or " + renderExpr(e.Right, bpOr+1)
 		if parentBP > bpOr {
 			return "(" + s + ")"
 		}
 		return s
-	case *SchDateExpr:
+	case *SchDateNode:
 		return "schdate(" + renderDate(e.Date) + ")"
-	case *TimeExpr:
+	case *TimeNode:
 		return renderTimeExpr(e)
-	case *FacilityExpr:
+	case *FacilityNode:
 		return "facility(" + renderStringList(e.Strings) + ")"
-	case *ActivityExpr:
+	case *ActivityNode:
 		return "activity(" + renderStringList(e.Strings) + ")"
-	case *LatLngExpr:
-		return "latlng(" + renderFloat(e.Lat) + ", " + renderFloat(e.Lng) + ", " + renderFloat(e.Kilometers) + ")"
+	case *LatLngNode:
+		return "latlng(" + renderFloat(e.Lat) + ", " + renderFloat(e.Lng) + ", " + renderFloat(e.Dist) + ")"
 	default:
-		return "invalid expression"
+		panic("invalid node")
 	}
 }
 
-func renderDate(d Date) string {
+func renderDate(d DateLit) string {
 	if d.IsToday {
 		return "today"
 	}
 	return pad(d.Year, 4) + "-" + pad(int(d.Month), 2) + "-" + pad(d.Day, 2)
 }
 
-func renderTime(t Time) string {
+func renderTime(t TimeLit) string {
 	if t.IsNow {
 		return "now"
 	}
@@ -73,15 +73,15 @@ func renderTime(t Time) string {
 
 func renderTimeSpec(ts TimeSpec) string {
 	switch v := ts.(type) {
-	case Time:
+	case TimeLit:
 		return renderTime(v)
-	case TimeRange:
+	case TimeRangeLit:
 		return renderTime(v.Start) + "-" + renderTime(v.End)
 	}
 	return ""
 }
 
-func renderTimeExpr(e *TimeExpr) string {
+func renderTimeExpr(e *TimeNode) string {
 	var b strings.Builder
 	b.WriteString("time(")
 	for i, d := range e.Days {
@@ -89,10 +89,10 @@ func renderTimeExpr(e *TimeExpr) string {
 			b.WriteString(", ")
 		}
 		switch v := d.(type) {
-		case WeekdaySpec:
+		case WeekdayLit:
 			b.WriteString(v.Weekday.String())
-		case DateSpec:
-			b.WriteString(renderDate(v.Date))
+		case DateLit:
+			b.WriteString(renderDate(v))
 		}
 	}
 	if len(e.Days) > 0 && len(e.Times) > 0 {

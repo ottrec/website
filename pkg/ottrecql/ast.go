@@ -2,18 +2,63 @@ package ottrecql
 
 import "time"
 
-// Date represents a date literal (YYYY-MM-DD or the special value "today").
-type Date struct {
-	Offset  int
+// Node is implemented by all AST expression nodes.
+// Each node also carries the character offset into the input where it begins.
+type Node interface{ exprNode() }
+
+func (*NotNode) exprNode()      {}
+func (*AndNode) exprNode()      {}
+func (*OrNode) exprNode()       {}
+func (*SchDateNode) exprNode()  {}
+func (*TimeNode) exprNode()     {}
+func (*FacilityNode) exprNode() {}
+func (*ActivityNode) exprNode() {}
+func (*LatLngNode) exprNode()   {}
+
+// DaySpec is a day argument inside time() ([WeekdayLit] or [DateLit]).
+type DaySpec interface{ daySpec() }
+
+func (WeekdayLit) daySpec() {}
+func (DateLit) daySpec()    {}
+
+// TimeSpec is a time argument inside time() ([TimeLit] or [TimeRangeLit]).
+type TimeSpec interface{ timeSpec() }
+
+func (TimeLit) timeSpec()      {}
+func (TimeRangeLit) timeSpec() {}
+
+// NotNode is a logical NOT: not <expr> or !<expr>.
+type NotNode struct {
+	Pos
+	Expr Node
+}
+
+// AndNode is a logical AND: <left> and <right> or <left> && <right>.
+type AndNode struct {
+	Pos
+	Left  Node
+	Right Node
+}
+
+// OrNode is a logical OR: <left> or <right> or <left> || <right>.
+type OrNode struct {
+	Pos
+	Left  Node
+	Right Node
+}
+
+// DateLit represents a date literal (YYYY-MM-DD or the special value "today").
+type DateLit struct {
+	Pos
 	IsToday bool // if true, everything else is ignored
 	Year    int
 	Month   time.Month
 	Day     int
 }
 
-// Time represents a time literal (HH:MM[a|am|p|pm] or the special value "now").
-type Time struct {
-	Offset    int
+// TimeLit represents a time literal (HH:MM[a|am|p|pm] or the special value "now").
+type TimeLit struct {
+	Pos
 	IsNow     bool // if true, everything else is ignored
 	Hour      int
 	Minute    int
@@ -21,111 +66,47 @@ type Time struct {
 	HasPeriod bool // true if an AM/PM suffix was present (12-hour format)
 }
 
-// TimeRange represents a time range (start-end).
-type TimeRange struct {
-	Start Time
-	End   Time
-}
-
-// Expr is implemented by all AST expression nodes.
-// Each node also carries the character offset into the input where it begins.
-type Expr interface {
-	exprNode()
-}
-
-// NotExpr is a logical NOT: not <expr> or !<expr>.
-type NotExpr struct {
-	Offset int
-	Expr   Expr
-}
-
-func (*NotExpr) exprNode() {}
-
-// AndExpr is a logical AND: <left> and <right> or <left> && <right>.
-type AndExpr struct {
-	Offset int
-	Left   Expr
-	Right  Expr
-}
-
-func (*AndExpr) exprNode() {}
-
-// OrExpr is a logical OR: <left> or <right> or <left> || <right>.
-type OrExpr struct {
-	Offset int
-	Left   Expr
-	Right  Expr
-}
-
-func (*OrExpr) exprNode() {}
-
-// SchDateExpr represents schdate(date).
-type SchDateExpr struct {
-	Offset int
-	Date   Date
-}
-
-func (*SchDateExpr) exprNode() {}
-
-// DaySpec is a day argument inside time(): either a Weekday or a Date.
-type DaySpec interface {
-	daySpec()
-}
-
-// WeekdaySpec is a weekday argument in time().
-type WeekdaySpec struct {
-	Offset  int
+// WeekdayLit is a weekday literal.
+type WeekdayLit struct {
+	Pos
 	Weekday time.Weekday
 }
 
-func (WeekdaySpec) daySpec() {}
-
-// DateSpec is a date argument in time().
-type DateSpec struct {
-	Date Date
+// TimeRangeLit represents a time range (start-end).
+type TimeRangeLit struct {
+	Start TimeLit
+	End   TimeLit
 }
 
-func (DateSpec) daySpec() {}
-
-// TimeSpec is a time argument inside time(): either a single Time or a TimeRange.
-type TimeSpec interface {
-	timeSpec()
+// SchDateNode represents schdate(date).
+type SchDateNode struct {
+	Pos
+	Date DateLit
 }
 
-func (Time) timeSpec()      {}
-func (TimeRange) timeSpec() {}
-
-// TimeExpr represents time([weekday...|date...] @ [time...|timerange...]).
-type TimeExpr struct {
-	Offset int
-	Days   []DaySpec  // OR'd weekdays/dates, empty if omitted
-	Times  []TimeSpec // OR'd times/ranges, empty if omitted
+// TimeNode represents time([weekday...|date...] @ [time...|timerange...]).
+type TimeNode struct {
+	Pos
+	Days  []DaySpec  // OR'd weekdays/dates, empty if omitted
+	Times []TimeSpec // OR'd times/ranges, empty if omitted
 }
 
-func (*TimeExpr) exprNode() {}
-
-// FacilityExpr represents facility([string...]).
-type FacilityExpr struct {
-	Offset  int
+// FacilityNode represents facility([string...]).
+type FacilityNode struct {
+	Pos
 	Strings []string
 }
 
-func (*FacilityExpr) exprNode() {}
-
-// ActivityExpr represents activity([string...]).
-type ActivityExpr struct {
-	Offset  int
+// ActivityNode represents activity([string...]).
+type ActivityNode struct {
+	Pos
 	Strings []string
 }
 
-func (*ActivityExpr) exprNode() {}
-
-// LatLngExpr represents latlng(lat, lng, km).
-type LatLngExpr struct {
-	Offset     int
-	Lat        float32
-	Lng        float32
-	Kilometers float32
+// LatLngNode represents latlng(lat, lng, km).
+type LatLngNode struct {
+	Pos
+	Lat  float32
+	Lng  float32
+	Dist float32
 }
-
-func (*LatLngExpr) exprNode() {}

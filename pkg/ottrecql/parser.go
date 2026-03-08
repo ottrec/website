@@ -9,7 +9,7 @@ import (
 
 // ParseError is a parse error at a specific offset in the input.
 type ParseError struct {
-	Offset  int
+	Pos
 	Message string
 }
 
@@ -20,7 +20,7 @@ func (e *ParseError) Error() string {
 // TODO: error pretty-print
 
 // Parse parses a query expression and returns the root AST node.
-func Parse(input string) (Expr, error) {
+func Parse(input string) (Node, error) {
 	p := &parser{tok: NewTokenizer(input)}
 	expr, err := p.parseExpr(0)
 	if err != nil {
@@ -28,7 +28,7 @@ func Parse(input string) (Expr, error) {
 	}
 	if p.tok.Token() != TokenEOF {
 		return nil, &ParseError{
-			Offset:  p.tok.Offset(),
+			Pos:     p.tok.Pos(),
 			Message: fmt.Sprintf("unexpected token %q", p.tok.Text()),
 		}
 	}
@@ -58,7 +58,7 @@ func infixBP(tok TokenType) int {
 
 // parseExpr is the Pratt-style expression parser.
 // It consumes infix operators whose binding power exceeds minBP.
-func (p *parser) parseExpr(minBP int) (Expr, error) {
+func (p *parser) parseExpr(minBP int) (Node, error) {
 	left, err := p.parsePrefix()
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (p *parser) parseExpr(minBP int) (Expr, error) {
 		if bp <= minBP {
 			break
 		}
-		offset := p.tok.Offset()
+		pos := p.tok.Pos()
 		opTok := p.tok.Token()
 		p.tok.Next()
 		// left-associative: recurse with same power so equal-precedence operators stop
@@ -78,17 +78,17 @@ func (p *parser) parseExpr(minBP int) (Expr, error) {
 		}
 		switch opTok {
 		case TokenAnd:
-			left = &AndExpr{Offset: offset, Left: left, Right: right}
+			left = &AndNode{Pos: pos, Left: left, Right: right}
 		case TokenOr:
-			left = &OrExpr{Offset: offset, Left: left, Right: right}
+			left = &OrNode{Pos: pos, Left: left, Right: right}
 		}
 	}
 	return left, nil
 }
 
 // parsePrefix handles prefix expressions: unary NOT, grouped expressions, and calls.
-func (p *parser) parsePrefix() (Expr, error) {
-	offset := p.tok.Offset()
+func (p *parser) parsePrefix() (Node, error) {
+	pos := p.tok.Pos()
 	switch p.tok.Token() {
 	case TokenNot:
 		p.tok.Next()
@@ -97,7 +97,7 @@ func (p *parser) parsePrefix() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &NotExpr{Offset: offset, Expr: expr}, nil
+		return &NotNode{Pos: pos, Expr: expr}, nil
 
 	case TokenLParen:
 		p.tok.Next()
@@ -115,7 +115,7 @@ func (p *parser) parsePrefix() (Expr, error) {
 
 	default:
 		return nil, &ParseError{
-			Offset:  offset,
+			Pos:     pos,
 			Message: fmt.Sprintf("unexpected token %q", p.tok.Text()),
 		}
 	}
@@ -124,7 +124,7 @@ func (p *parser) parsePrefix() (Expr, error) {
 func (p *parser) expect(tok TokenType, what string) error {
 	if p.tok.Token() != tok {
 		return &ParseError{
-			Offset:  p.tok.Offset(),
+			Pos:     p.tok.Pos(),
 			Message: fmt.Sprintf("expected %s, got %q", what, p.tok.Text()),
 		}
 	}
@@ -133,30 +133,30 @@ func (p *parser) expect(tok TokenType, what string) error {
 }
 
 // parseMatch parses a match function.
-func (p *parser) parseMatch() (Expr, error) {
-	offset := p.tok.Offset()
+func (p *parser) parseMatch() (Node, error) {
+	pos := p.tok.Pos()
 	name := p.tok.Text()
 	p.tok.Next()
 	if err := p.expect(TokenLParen, "opening ( after match function name"); err != nil {
 		return nil, err
 	}
 	var (
-		expr Expr
+		expr Node
 		err  error
 	)
 	switch name {
 	case "schdate":
-		expr, err = p.parseMatchSchDate(offset)
+		expr, err = p.parseMatchSchDate(pos)
 	case "time":
-		expr, err = p.parseMatchTime(offset)
+		expr, err = p.parseMatchTime(pos)
 	case "facility":
-		expr, err = p.parseMatchFacility(offset)
+		expr, err = p.parseMatchFacility(pos)
 	case "activity":
-		expr, err = p.parseMatchActivity(offset)
+		expr, err = p.parseMatchActivity(pos)
 	case "latlng":
-		expr, err = p.parseMatchLatLng(offset)
+		expr, err = p.parseMatchLatLng(pos)
 	default:
-		return nil, &ParseError{Offset: offset, Message: fmt.Sprintf("unknown match function %q", name)}
+		return nil, &ParseError{Pos: pos, Message: fmt.Sprintf("unknown match function %q", name)}
 	}
 	if err != nil {
 		return nil, err
@@ -168,34 +168,34 @@ func (p *parser) parseMatch() (Expr, error) {
 }
 
 // parseMatchSchDate parses the body of schdate(date).
-func (p *parser) parseMatchSchDate(offset int) (Expr, error) {
+func (p *parser) parseMatchSchDate(pos Pos) (Node, error) {
 	d, err := p.parseDate()
 	if err != nil {
 		return nil, err
 	}
-	return &SchDateExpr{Offset: offset, Date: d}, nil
+	return &SchDateNode{Pos: pos, Date: d}, nil
 }
 
 // parseMatchTime parses the body of time([weekday...|date...] @ [time...|timerange...]).
-func (p *parser) parseMatchTime(offset int) (Expr, error) {
-	expr := &TimeExpr{Offset: offset}
+func (p *parser) parseMatchTime(pos Pos) (Node, error) {
+	expr := &TimeNode{Pos: pos}
 
 	// parse day specs (weekday or date tokens), comma-separated (comma optional)
 	for p.tok.Token() == TokenWeekday || p.tok.Token() == TokenDate {
-		dayOffset := p.tok.Offset()
+		dayPos := p.tok.Pos()
 		if p.tok.Token() == TokenWeekday {
 			wd, ok := parseWeekday(strings.ToLower(p.tok.Text()))
 			if !ok {
-				return nil, &ParseError{Offset: dayOffset, Message: fmt.Sprintf("unknown weekday %q", p.tok.Text())}
+				return nil, &ParseError{Pos: dayPos, Message: fmt.Sprintf("unknown weekday %q", p.tok.Text())}
 			}
-			expr.Days = append(expr.Days, WeekdaySpec{Offset: dayOffset, Weekday: wd})
+			expr.Days = append(expr.Days, WeekdayLit{Pos: dayPos, Weekday: wd})
 			p.tok.Next()
 		} else {
 			d, err := p.parseDate()
 			if err != nil {
 				return nil, err
 			}
-			expr.Days = append(expr.Days, DateSpec{Date: d})
+			expr.Days = append(expr.Days, d)
 		}
 		if p.tok.Token() == TokenComma {
 			p.tok.Next()
@@ -233,25 +233,25 @@ func (p *parser) parseMatchTime(offset int) (Expr, error) {
 }
 
 // parseMatchFacility parses the body of facility([string...]).
-func (p *parser) parseMatchFacility(offset int) (Expr, error) {
+func (p *parser) parseMatchFacility(pos Pos) (Node, error) {
 	strs, err := p.parseStringList("list of facility name substrings")
 	if err != nil {
 		return nil, err
 	}
-	return &FacilityExpr{Offset: offset, Strings: strs}, nil
+	return &FacilityNode{Pos: pos, Strings: strs}, nil
 }
 
 // parseMatchActivity parses the body of activity([string...]).
-func (p *parser) parseMatchActivity(offset int) (Expr, error) {
+func (p *parser) parseMatchActivity(pos Pos) (Node, error) {
 	strs, err := p.parseStringList("list of activity name substrings")
 	if err != nil {
 		return nil, err
 	}
-	return &ActivityExpr{Offset: offset, Strings: strs}, nil
+	return &ActivityNode{Pos: pos, Strings: strs}, nil
 }
 
 // parseMatchLatLng parses the body of latlng(number, number, number).
-func (p *parser) parseMatchLatLng(offset int) (Expr, error) {
+func (p *parser) parseMatchLatLng(pos Pos) (Node, error) {
 	lat, err := p.parseNumber("latitude")
 	if err != nil {
 		return nil, err
@@ -270,7 +270,7 @@ func (p *parser) parseMatchLatLng(offset int) (Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &LatLngExpr{Offset: offset, Lat: lat, Lng: lng, Kilometers: km}, nil
+	return &LatLngNode{Pos: pos, Lat: lat, Lng: lng, Dist: km}, nil
 }
 
 // parseStringList parses the arguments of a match function taking a list of
@@ -281,7 +281,7 @@ func (p *parser) parseStringList(of string) ([]string, error) {
 		s, err := strconv.Unquote(p.tok.Text())
 		if err != nil {
 			return nil, &ParseError{
-				Offset:  p.tok.Offset(),
+				Pos:     p.tok.Pos(),
 				Message: fmt.Sprintf("invalid string %q in %s: %v", p.tok.Text(), of, err),
 			}
 		}
@@ -301,16 +301,16 @@ func (p *parser) parseStringList(of string) ([]string, error) {
 
 // parseNumber parses an optionally-negated float32.
 func (p *parser) parseNumber(what string) (float32, error) {
-	offset := p.tok.Offset()
+	pos := p.tok.Pos()
 	neg := false
 	if p.tok.Token() == TokenDash {
 		neg = true
 		p.tok.Next()
-		offset = p.tok.Offset()
+		pos = p.tok.Pos()
 	}
 	if p.tok.Token() != TokenNumber {
 		return 0, &ParseError{
-			Offset:  offset,
+			Pos:     pos,
 			Message: fmt.Sprintf("expected number (%s), got %q", what, p.tok.Text()),
 		}
 	}
@@ -318,7 +318,7 @@ func (p *parser) parseNumber(what string) (float32, error) {
 	p.tok.Next()
 	f, err := strconv.ParseFloat(text, 32)
 	if err != nil {
-		return 0, &ParseError{Offset: offset, Message: fmt.Sprintf("invalid number %q (%s): %v", text, what, err)}
+		return 0, &ParseError{Pos: pos, Message: fmt.Sprintf("invalid number %q (%s): %v", text, what, err)}
 	}
 	if neg {
 		f = -f
@@ -327,47 +327,49 @@ func (p *parser) parseNumber(what string) (float32, error) {
 }
 
 // parseDate consumes a TokenDate and returns a Date value.
-func (p *parser) parseDate() (Date, error) {
-	offset := p.tok.Offset()
+func (p *parser) parseDate() (DateLit, error) {
+	pos := p.tok.Pos()
 	if p.tok.Token() != TokenDate {
-		return Date{}, &ParseError{
-			Offset:  offset,
+		return DateLit{}, &ParseError{
+			Pos:     pos,
 			Message: fmt.Sprintf("expected date, got %q", p.tok.Text()),
 		}
 	}
 	text := p.tok.Text()
 	p.tok.Next()
 	if strings.EqualFold(text, "today") {
-		return Date{Offset: offset, IsToday: true}, nil
+		return DateLit{Pos: pos, IsToday: true}, nil
 	}
-	parts := strings.SplitN(text, "-", 3)
-	if len(parts) != 3 {
-		return Date{}, &ParseError{Offset: offset, Message: fmt.Sprintf("invalid date %q", text)}
+	p0, p1, ok1 := strings.Cut(text, "-")
+	p1, p2, ok2 := strings.Cut(p1, "-")
+	p2, _, nok3 := strings.Cut(p2, "-")
+	if !ok1 || !ok2 || nok3 {
+		return DateLit{}, &ParseError{Pos: pos, Message: fmt.Sprintf("invalid date %q", text)}
 	}
-	year, e1 := strconv.Atoi(parts[0])
-	month, e2 := strconv.Atoi(parts[1])
-	day, e3 := strconv.Atoi(parts[2])
+	year, e1 := strconv.Atoi(p0)
+	month, e2 := strconv.Atoi(p1)
+	day, e3 := strconv.Atoi(p2)
 	if e1 != nil || e2 != nil || e3 != nil {
-		return Date{}, &ParseError{Offset: offset, Message: fmt.Sprintf("invalid date %q", text)}
+		return DateLit{}, &ParseError{Pos: pos, Message: fmt.Sprintf("invalid date %q", text)}
 	}
-	return Date{Offset: offset, Year: year, Month: time.Month(month), Day: day}, nil
+	return DateLit{Pos: pos, Year: year, Month: time.Month(month), Day: day}, nil
 }
 
 // parseTime consumes a TokenTime and returns a Time value.
-func (p *parser) parseTime() (Time, error) {
-	offset := p.tok.Offset()
+func (p *parser) parseTime() (TimeLit, error) {
+	pos := p.tok.Pos()
 	if p.tok.Token() != TokenTime {
-		return Time{}, &ParseError{
-			Offset:  offset,
+		return TimeLit{}, &ParseError{
+			Pos:     pos,
 			Message: fmt.Sprintf("expected time, got %q", p.tok.Text()),
 		}
 	}
 	text := p.tok.Text()
 	p.tok.Next()
 	if strings.EqualFold(text, "now") {
-		return Time{Offset: offset, IsNow: true}, nil
+		return TimeLit{Pos: pos, IsNow: true}, nil
 	}
-	t := Time{Offset: offset}
+	t := TimeLit{Pos: pos}
 	lower := strings.ToLower(text)
 	switch {
 	case strings.HasSuffix(lower, "pm"):
@@ -385,14 +387,14 @@ func (p *parser) parseTime() (Time, error) {
 		t.HasPeriod = true
 		text = text[:len(text)-1]
 	}
-	colon := strings.IndexByte(text, ':')
-	if colon < 0 {
-		return Time{}, &ParseError{Offset: offset, Message: fmt.Sprintf("invalid time %q", text)}
+	hourStr, minuteStr, ok := strings.Cut(text, ":")
+	if !ok {
+		return TimeLit{}, &ParseError{Pos: pos, Message: fmt.Sprintf("invalid time %q", text)}
 	}
-	hour, e1 := strconv.Atoi(text[:colon])
-	minute, e2 := strconv.Atoi(text[colon+1:])
+	hour, e1 := strconv.Atoi(hourStr)
+	minute, e2 := strconv.Atoi(minuteStr)
 	if e1 != nil || e2 != nil {
-		return Time{}, &ParseError{Offset: offset, Message: fmt.Sprintf("invalid time %q", text)}
+		return TimeLit{}, &ParseError{Pos: pos, Message: fmt.Sprintf("invalid time %q", text)}
 	}
 	t.Hour = hour
 	t.Minute = minute
@@ -411,7 +413,7 @@ func (p *parser) parseTimeSpec() (TimeSpec, error) {
 		if err != nil {
 			return nil, err
 		}
-		return TimeRange{Start: t, End: end}, nil
+		return TimeRangeLit{Start: t, End: end}, nil
 	}
 	return t, nil
 }
