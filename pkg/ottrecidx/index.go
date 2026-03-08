@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"encoding/base32"
 	"iter"
+	"math"
 	"slices"
 	"time"
 
@@ -117,10 +118,25 @@ func (dxr *Indexer) Load(pb []byte) (*Index, error) {
 		if err := proto.Unmarshal(pb, &msg); err != nil {
 			return nil, err
 		}
+		fixLngLatRegression(&msg)
 		idx = dxr.index(hash, &msg)
 		dxr.idx[hash] = idx
 	}
 	return idx, nil
+}
+
+// fixLngLatRegression fixes the longitude/latitude mixup in the scraper from
+// bc9be9b7098f8daaba3121daa564fcbeb4b85784 (2025-11-18) to
+// 6ec0cae178db0f405b6c9451a43e53566e541e22 (2026-03-09).
+func fixLngLatRegression(msg *schema.Data) {
+	for _, fac := range msg.GetFacilities() {
+		if lnglat := fac.GetXLnglat(); lnglat != nil {
+			if lng, lat := lnglat.GetLng(), lnglat.GetLat(); math.Trunc(float64(lng)/10) == 4 && math.Trunc(float64(lat)/10) == -7 {
+				lnglat.SetLat(lng)
+				lnglat.SetLng(lat)
+			}
+		}
+	}
 }
 
 func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
