@@ -270,6 +270,18 @@ func (p *parser) parseMatchLatLng(pos Pos) (Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	if !isValidLatLng(lat, lng) {
+		return nil, &ParseError{
+			Pos:     pos,
+			Message: fmt.Sprintf("invalid lat/lng %v %v", lat, lng),
+		}
+	}
+	if km <= 0 {
+		return nil, &ParseError{
+			Pos:     pos,
+			Message: fmt.Sprintf("invalid distance %v", km),
+		}
+	}
 	return &LatLngNode{Pos: pos, Lat: lat, Lng: lng, Dist: km}, nil
 }
 
@@ -349,7 +361,7 @@ func (p *parser) parseDate() (DateLit, error) {
 	year, e1 := strconv.Atoi(p0)
 	month, e2 := strconv.Atoi(p1)
 	day, e3 := strconv.Atoi(p2)
-	if e1 != nil || e2 != nil || e3 != nil {
+	if e1 != nil || e2 != nil || e3 != nil || !isValidDate(year, time.Month(month), day) {
 		return DateLit{}, &ParseError{Pos: pos, Message: fmt.Sprintf("invalid date %q", text)}
 	}
 	return DateLit{Pos: pos, Year: year, Month: time.Month(month), Day: day}, nil
@@ -371,20 +383,19 @@ func (p *parser) parseTime() (TimeLit, error) {
 	}
 	t := TimeLit{Pos: pos}
 	lower := strings.ToLower(text)
+	var hasPeriod, pm bool
 	switch {
 	case strings.HasSuffix(lower, "pm"):
-		t.HasPeriod = true
-		t.PM = true
+		hasPeriod, pm = true, true
 		text = text[:len(text)-2]
 	case strings.HasSuffix(lower, "am"):
-		t.HasPeriod = true
+		hasPeriod, pm = true, false
 		text = text[:len(text)-2]
 	case strings.HasSuffix(lower, "p"):
-		t.HasPeriod = true
-		t.PM = true
+		hasPeriod, pm = true, true
 		text = text[:len(text)-1]
 	case strings.HasSuffix(lower, "a"):
-		t.HasPeriod = true
+		hasPeriod, pm = true, false
 		text = text[:len(text)-1]
 	}
 	hourStr, minuteStr, ok := strings.Cut(text, ":")
@@ -393,10 +404,10 @@ func (p *parser) parseTime() (TimeLit, error) {
 	}
 	hour, e1 := strconv.Atoi(hourStr)
 	minute, e2 := strconv.Atoi(minuteStr)
-	if e1 != nil || e2 != nil {
+	if e1 != nil || e2 != nil || !isValidTime(hour, minute, hasPeriod, pm) {
 		return TimeLit{}, &ParseError{Pos: pos, Message: fmt.Sprintf("invalid time %q", text)}
 	}
-	t.Hour = hour
+	t.Hour = h12to24(hour, hasPeriod, pm)
 	t.Minute = minute
 	return t, nil
 }
@@ -418,4 +429,48 @@ func (p *parser) parseTimeSpec() (TimeSpec, error) {
 	return t, nil
 }
 
-// TODO: validate time/date/latlng
+func isValidLatLng(lat, lng float32) bool {
+	return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180
+}
+
+func isValidDate(year int, month time.Month, day int) bool {
+	if year < 2000 || year >= 3000 {
+		return false
+	}
+	if month < 1 || month > 12 {
+		return false
+	}
+	if day < 1 || day > daysInMonth(year, month) {
+		return false
+	}
+	return true
+}
+
+func isValidTime(hour, minute int, hasPeriod, pm bool) bool {
+	if minute < 0 || minute > 59 {
+		return false
+	}
+	if hasPeriod {
+		return hour >= 1 && hour <= 12
+	}
+	return hour >= 0 && hour <= 23
+}
+
+func h12to24(hour int, hasPeriod, pm bool) int {
+	if hasPeriod {
+		if pm {
+			if hour != 12 {
+				hour += 12
+			}
+		} else {
+			if hour == 12 {
+				hour = 0
+			}
+		}
+	}
+	return hour
+}
+
+func daysInMonth(year int, month time.Month) int {
+	return time.Date(year, month+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}

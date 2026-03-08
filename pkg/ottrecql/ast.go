@@ -59,11 +59,9 @@ type DateLit struct {
 // TimeLit represents a time literal (HH:MM[a|am|p|pm] or the special value "now").
 type TimeLit struct {
 	Pos
-	IsNow     bool // if true, everything else is ignored
-	Hour      int
-	Minute    int
-	PM        bool // true if PM was specified (only meaningful when HasPeriod is true)
-	HasPeriod bool // true if an AM/PM suffix was present (12-hour format)
+	IsNow  bool // if true, everything else is ignored
+	Hour   int
+	Minute int
 }
 
 // WeekdayLit is a weekday literal.

@@ -59,16 +59,7 @@ func renderTime(t TimeLit) string {
 	if t.IsNow {
 		return "now"
 	}
-	if !t.HasPeriod {
-		return pad(t.Hour, 2) + ":" + pad(t.Minute, 2)
-	}
-	s := strconv.Itoa(t.Hour) + ":" + pad(t.Minute, 2)
-	if t.PM {
-		s += "pm"
-	} else {
-		s += "am"
-	}
-	return s
+	return pad(t.Hour, 2) + ":" + pad(t.Minute, 2)
 }
 
 func renderTimeSpec(ts TimeSpec) string {

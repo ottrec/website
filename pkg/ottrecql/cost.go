@@ -33,7 +33,7 @@ func ownCost(e Node) int {
 	case *OrNode:
 		return 1
 	case *SchDateNode:
-		return 3
+		return 16
 	case *TimeNode:
 		var c int
 		for _, d := range e.Days {
