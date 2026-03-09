@@ -32,10 +32,14 @@ type compileCtx struct {
 }
 
 func newCompileCtx(c *Context) *compileCtx {
+	if c == nil {
+		c = new(Context)
+	}
 	now := c.Now
 	if now.IsZero() {
 		now = time.Now()
 	}
+	now = now.In(ottrecidx.TZ)
 	cc := &compileCtx{
 		now:     now,
 		fuzzy:   make(map[string]func(string) bool),
