@@ -247,39 +247,90 @@ func (ref ScheduleRef) Index() *Index      { return ref.index() }
 func (ref ActivityRef) Index() *Index      { return ref.index() }
 func (ref TimeRef) Index() *Index          { return ref.index() }
 
+// GetAttribution returns the data attribution strings.
 func (ref DataRef) GetAttribution() iter.Seq[string] { return slices.Values(ref.deref().Attribution) }
 
-func (ref FacilityRef) GetName() string          { return ref.deref().Name }
-func (ref FacilityRef) GetSourceURL() string     { return ref.deref().SourceURL }
+// GetName returns the facility name.
+func (ref FacilityRef) GetName() string { return ref.deref().Name }
+
+// GetSourceURL returns the source URL for the facility.
+func (ref FacilityRef) GetSourceURL() string { return ref.deref().SourceURL }
+
+// GetSourceDate returns the date the facility data was sourced.
 func (ref FacilityRef) GetSourceDate() time.Time { return ref.deref().SourceDate }
-func (ref FacilityRef) GetAddress() string       { return ref.deref().Address }
+
+// GetAddress returns the facility address.
+func (ref FacilityRef) GetAddress() string { return ref.deref().Address }
+
+// GetLngLat returns the longitude and latitude of the facility, parsed by the
+// scraper on a best-effort basis. If no coordinates are available, ok is false.
 func (ref FacilityRef) GetLngLat() (lng float32, lat float32, ok bool) {
 	x := ref.deref()
 	lng, lat = x.Longitude, x.Latitude
 	ok = lng != 0 || lat != 0
 	return
 }
-func (ref FacilityRef) GetNotificationsHTML() string { return ref.deref().NotificationsHTML }
-func (ref FacilityRef) GetSpecialHoursHTML() string  { return ref.deref().SpecialHoursHTML }
-func (ref FacilityRef) GetErrors() iter.Seq[string]  { return slices.Values(ref.deref().Errors) }
 
+// GetNotificationsHTML returns the raw HTML for facility notifications.
+func (ref FacilityRef) GetNotificationsHTML() string { return ref.deref().NotificationsHTML }
+
+// GetSpecialHoursHTML returns the raw HTML for facility special hours.
+func (ref FacilityRef) GetSpecialHoursHTML() string { return ref.deref().SpecialHoursHTML }
+
+// GetErrors returns scrape errors for the facility (e.g., failed time parsing).
+func (ref FacilityRef) GetErrors() iter.Seq[string] { return slices.Values(ref.deref().Errors) }
+
+// GetLabel returns the schedule group label.
 func (ref ScheduleGroupRef) GetLabel() string { return ref.deref().Label }
+
+// GetTitle returns the schedule group title, parsed from the label and
+// normalized during scraping, and in title case, for display and filtering.
 func (ref ScheduleGroupRef) GetTitle() string { return ref.deref().Title }
+
+// GetReservationLinks returns the reservation links for the schedule group.
 func (ref ScheduleGroupRef) GetReservationLinks() iter.Seq[ReservationLink] {
 	return slices.Values(ref.deref().ReservationLinks)
 }
-func (ref ScheduleGroupRef) GetScheduleChangesHTML() string { return ref.deref().ScheduleChangesHTML }
-func (ref ScheduleGroupRef) GetNoResv() bool                { return ref.deref().NoResv }
 
+// GetScheduleChangesHTML returns the raw HTML for schedule changes.
+func (ref ScheduleGroupRef) GetScheduleChangesHTML() string { return ref.deref().ScheduleChangesHTML }
+
+// GetNoResv reports whether top-level text explicitly states that reservations
+// are not required. See also [ActivityRef.GetResv].
+//
+// You probably want to use [ActivityRef.GuessReservationRequirement] instead.
+func (ref ScheduleGroupRef) GetNoResv() bool { return ref.deref().NoResv }
+
+// GetCaption returns the schedule caption.
 func (ref ScheduleRef) GetCaption() string { return ref.deref().Caption }
-func (ref ScheduleRef) GetName() string    { return ref.deref().Name }
-func (ref ScheduleRef) GetDate() string    { return ref.deref().Date }
+
+// GetName returns the schedule name, parsed from the caption and normalized
+// without the facility name or date range during scraping, in lowercase, for
+// filtering.
+func (ref ScheduleRef) GetName() string { return ref.deref().Name }
+
+// GetDate returns the raw date range string extracted from the caption during
+// scraping. Empty if no date-like string can be found in the caption.
+func (ref ScheduleRef) GetDate() string { return ref.deref().Date }
+
+// GetDateRange returns the inclusive from and to dates in YYYYMMDDW format. ok
+// is false if not set, a parse error occurred, or the date was ambiguous. This
+// is parsed from the date in the caption during scraping.
 func (ref ScheduleRef) GetDateRange() (schema.DateRange, bool) {
 	v := ref.deref().DateRange
 	return v, v.From != 0 || v.To != 0
 }
-func (ref ScheduleRef) NumDays() int        { return len(ref.deref().Days) }
+
+// NumDays returns the number of days in the schedule.
+func (ref ScheduleRef) NumDays() int { return len(ref.deref().Days) }
+
+// GetDay returns the free-form day label at index i, usually the day of the
+// week.
 func (ref ScheduleRef) GetDay(i int) string { return ref.deref().Days[i] }
+
+// GetDayDate returns the best-effort parsed date (YYYYMMDDW format) for day i.
+// ok is false if the date could not be parsed unambiguously. This is parsed
+// from the day label during scraping.
 func (ref ScheduleRef) GetDayDate(i int) (schema.Date, bool) {
 	v := ref.deref().DayDates
 	if i >= len(v) {
@@ -289,19 +340,42 @@ func (ref ScheduleRef) GetDayDate(i int) (schema.Date, bool) {
 	return d, d != 0
 }
 
+// GetLabel returns the activity label.
 func (ref ActivityRef) GetLabel() string { return ref.deref().Label }
-func (ref ActivityRef) GetName() string  { return ref.deref().Name }
-func (ref ActivityRef) GetResv() (bool, bool) {
+
+// GetName returns the activity name, cleaned up, normalized, and lowercased
+// during scraping, for filtering.
+//
+// Activity verbs are generally normalized to the infinitive form for recognized
+// activities (e.g., skate rather than skating, swim rather than swimming).
+func (ref ActivityRef) GetName() string { return ref.deref().Name }
+
+// GetResv returns the reservation requirement for the activity. hasResv is
+// false if no explicit reservation requirement is stated; otherwise resv
+// indicates whether reservations are required.
+//
+// You probably want to use [ActivityRef.GuessReservationRequirement] instead.
+func (ref ActivityRef) GetResv() (resv bool, hasResv bool) {
 	v := ref.deref()
 	return v.Resv, v.HasResv
 }
 
+// GetScheduleDayIndex returns the index into the parent schedule's days for
+// this time entry.
 func (ref TimeRef) GetScheduleDayIndex() int { return ref.deref().ScheduleDay }
-func (ref TimeRef) GetLabel() string         { return ref.deref().Label }
+
+// GetLabel returns the time range label.
+func (ref TimeRef) GetLabel() string { return ref.deref().Label }
+
+// GetWeekday returns the weekday parsed from the time range label during
+// scraping, where Sunday = 0. If parsing failed, ok is false.
 func (ref TimeRef) GetWeekday() (time.Weekday, bool) {
 	v := ref.deref().Weekday
 	return v, v != -1
 }
+
+// GetRange returns the clock range parsed from the time range label during
+// scraping, in minutes from 00:00. If parsing failed, ok is false.
 func (ref TimeRef) GetRange() (schema.ClockRange, bool) {
 	v := ref.deref().Range
 	return v, v.Start != 0 || v.End != 0
@@ -315,48 +389,85 @@ func parentRef[T, U schemaObj](ref typedRef[T]) typedRef[U] {
 	}
 	panic("cannot get parent reference of special object")
 }
+
+// Data returns the direct parent data.
 func (ref FacilityRef) Data() DataRef {
 	return DataRef{parentRef[xFacility, xData](ref.typedRef)}
 }
+
+// Data returns the ancestor data (skipping over the facility).
 func (ref ScheduleGroupRef) Data() DataRef {
 	return DataRef{parentRef[xScheduleGroup, xData](ref.typedRef)}
 }
+
+// Facility returns the direct parent facility.
 func (ref ScheduleGroupRef) Facility() FacilityRef {
 	return FacilityRef{parentRef[xScheduleGroup, xFacility](ref.typedRef)}
 }
+
+// Data returns the ancestor data (skipping over the facility and schedule
+// group).
 func (ref ScheduleRef) Data() DataRef {
 	return DataRef{parentRef[xSchedule, xData](ref.typedRef)}
 }
+
+// Facility returns the ancestor facility (skipping over the schedule group).
 func (ref ScheduleRef) Facility() FacilityRef {
 	return FacilityRef{parentRef[xSchedule, xFacility](ref.typedRef)}
 }
+
+// ScheduleGroup returns the direct parent schedule group.
 func (ref ScheduleRef) ScheduleGroup() ScheduleGroupRef {
 	return ScheduleGroupRef{parentRef[xSchedule, xScheduleGroup](ref.typedRef)}
 }
+
+// Data returns the ancestor data (skipping over the facility, schedule group,
+// and schedule).
 func (ref ActivityRef) Data() DataRef {
 	return DataRef{parentRef[xActivity, xData](ref.typedRef)}
 }
+
+// Facility returns the ancestor facility (skipping over the schedule group and
+// schedule).
 func (ref ActivityRef) Facility() FacilityRef {
 	return FacilityRef{parentRef[xActivity, xFacility](ref.typedRef)}
 }
+
+// ScheduleGroup returns the ancestor schedule group (skipping over the
+// schedule).
 func (ref ActivityRef) ScheduleGroup() ScheduleGroupRef {
 	return ScheduleGroupRef{parentRef[xActivity, xScheduleGroup](ref.typedRef)}
 }
+
+// Schedule returns the direct parent schedule.
 func (ref ActivityRef) Schedule() ScheduleRef {
 	return ScheduleRef{parentRef[xActivity, xSchedule](ref.typedRef)}
 }
+
+// Data returns the ancestor data (skipping over the facility, schedule group,
+// schedule, and activity).
 func (ref TimeRef) Data() DataRef {
 	return DataRef{parentRef[xTime, xData](ref.typedRef)}
 }
+
+// Facility returns the ancestor facility (skipping over the schedule group,
+// schedule, and activity).
 func (ref TimeRef) Facility() FacilityRef {
 	return FacilityRef{parentRef[xTime, xFacility](ref.typedRef)}
 }
+
+// ScheduleGroup returns the ancestor schedule group (skipping over the
+// schedule and activity).
 func (ref TimeRef) ScheduleGroup() ScheduleGroupRef {
 	return ScheduleGroupRef{parentRef[xTime, xScheduleGroup](ref.typedRef)}
 }
+
+// Schedule returns the ancestor schedule (skipping over the activity).
 func (ref TimeRef) Schedule() ScheduleRef {
 	return ScheduleRef{parentRef[xTime, xSchedule](ref.typedRef)}
 }
+
+// Activity returns the direct parent activity.
 func (ref TimeRef) Activity() ActivityRef {
 	return ActivityRef{parentRef[xTime, xActivity](ref.typedRef)}
 }
@@ -388,60 +499,105 @@ func childRefSeq[T, U schemaObj](ref typedRef[T]) iter.Seq[typedRef[U]] {
 		}
 	}
 }
+
+// Facilities returns the direct child facilities.
 func (ref DataRef) Facilities() FacilitySeq {
 	return facilitySeq(childRefSeq[xData, xFacility](ref.typedRef))
 }
+
+// ScheduleGroups returns all schedule groups nested within this data
+// (across all facilities).
 func (ref DataRef) ScheduleGroups() ScheduleGroupSeq {
 	return scheduleGroupSeq(childRefSeq[xData, xScheduleGroup](ref.typedRef))
 }
+
+// Schedules returns all schedules nested within this data (across all
+// facilities and schedule groups).
 func (ref DataRef) Schedules() ScheduleSeq {
 	return scheduleSeq(childRefSeq[xData, xSchedule](ref.typedRef))
 }
+
+// Activities returns all activities nested within this data (across all
+// facilities, schedule groups, and schedules).
 func (ref DataRef) Activities() ActivitySeq {
 	return activitySeq(childRefSeq[xData, xActivity](ref.typedRef))
 }
+
+// Times returns all time entries nested within this data (across all
+// facilities, schedule groups, schedules, and activities).
 func (ref DataRef) Times() TimeSeq {
 	return timeSeq(childRefSeq[xData, xTime](ref.typedRef))
 }
+
+// ScheduleGroups returns the direct child schedule groups.
 func (ref FacilityRef) ScheduleGroups() ScheduleGroupSeq {
 	return scheduleGroupSeq(childRefSeq[xFacility, xScheduleGroup](ref.typedRef))
 }
+
+// Schedules returns all schedules nested within this facility (across all
+// schedule groups).
 func (ref FacilityRef) Schedules() ScheduleSeq {
 	return scheduleSeq(childRefSeq[xFacility, xSchedule](ref.typedRef))
 }
+
+// Activities returns all activities nested within this facility (across all
+// schedule groups and schedules).
 func (ref FacilityRef) Activities() ActivitySeq {
 	return activitySeq(childRefSeq[xFacility, xActivity](ref.typedRef))
 }
+
+// Times returns all time entries nested within this facility (across all
+// schedule groups, schedules, and activities).
 func (ref FacilityRef) Times() TimeSeq {
 	return timeSeq(childRefSeq[xFacility, xTime](ref.typedRef))
 }
+
+// Schedules returns the direct child schedules.
 func (ref ScheduleGroupRef) Schedules() ScheduleSeq {
 	return scheduleSeq(childRefSeq[xScheduleGroup, xSchedule](ref.typedRef))
 }
+
+// Activities returns all activities nested within this schedule group (across
+// all schedules).
 func (ref ScheduleGroupRef) Activities() ActivitySeq {
 	return activitySeq(childRefSeq[xScheduleGroup, xActivity](ref.typedRef))
 }
+
+// Times returns all time entries nested within this schedule group (across all
+// schedules and activities).
 func (ref ScheduleGroupRef) Times() TimeSeq {
 	return timeSeq(childRefSeq[xScheduleGroup, xTime](ref.typedRef))
 }
+
+// Activities returns the direct child activities.
 func (ref ScheduleRef) Activities() ActivitySeq {
 	return activitySeq(childRefSeq[xSchedule, xActivity](ref.typedRef))
 }
+
+// Times returns all time entries nested within this schedule (across all
+// activities).
 func (ref ScheduleRef) Times() TimeSeq {
 	return timeSeq(childRefSeq[xSchedule, xTime](ref.typedRef))
 }
+
+// Times returns the direct child time entries.
 func (ref ActivityRef) Times() TimeSeq {
 	return timeSeq(childRefSeq[xActivity, xTime](ref.typedRef))
 }
 
+// GetScheduleDay calls [ScheduleRef.GetDay] for the schedule day corresponding
+// to this [TimeRef].
 func (ref TimeRef) GetScheduleDay() string {
 	return ref.Schedule().GetDay(ref.deref().ScheduleDay)
 }
 
+// GetScheduleDay calls [ScheduleRef.GetDayDate] for the schedule day
+// corresponding to this [TimeRef].
 func (ref TimeRef) GetScheduleDayDate() (schema.Date, bool) {
 	return ref.Schedule().GetDayDate(ref.deref().ScheduleDay)
 }
 
+// DayTimes returns the direct child time entries for schedule day index i.
 func (ref ActivityRef) DayTimes(i int) TimeSeq {
 	return TimeSeq(func(yield func(TimeRef) bool) {
 		for tm := range ref.Times() {

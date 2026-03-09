@@ -266,6 +266,11 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 // [ScheduleRef.ComputeEffectiveDateRange], as they sometimes make mistakes in
 // the date range for the special short-term schedules, but still put the
 // correct date in the day header.
+//
+// This is intended for more accurate filtering. If you just want to display the
+// day date header for all times in a day, you probably want to use
+// [ScheduleRef.GetDayDate], which includes whichver of day/month/year/weekday
+// were explicitly specified in the scraped column header.
 func (ref TimeRef) SingleDate() (time.Time, bool) {
 	if idx := ref.index(); idx.cached_TimeRef_SingleDate {
 		i := ref.nthOfType()
