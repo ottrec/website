@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"time"
+	"unsafe"
 
 	"github.com/pgaskin/ottrec/schema"
 )
@@ -104,7 +105,7 @@ func (ref baseRef) withFilter() baseRef {
 }
 
 // deref returns the schema object the ref points to.
-func (ref baseRef) deref() any {
+func (ref baseRef) deref() unsafe.Pointer {
 	if !ref.Valid() {
 		panic("cannot deref nil reference")
 	}
@@ -180,17 +181,24 @@ func reference[T schemaObj](ref anyRef, obj refObj) typedRef[T] {
 	return nref
 }
 
+// objRef is a type which holds a pointer to a [schemaObj] referenced by a
+// [refObj].
+type objRef = unsafe.Pointer // to have Go type-checking, use = any, but that significantly increases the memory overhead per indexed dataset
+
 // deref returns the schema object the ref points to.
 func (ref typedRef[T]) deref() *T {
 	v := ref.baseRef.deref()
 	if !ref.obj.isSpecial() && !ref.typeBitmap().Contains(ref.obj) {
 		panic("invalid ref: obj type doesn't match typedRef type")
 	}
-	x, ok := v.(*T)
-	if !ok {
-		panic("wtf: inconsistent index bitmap or baseRef.deref implementation")
-	}
-	return x
+	/*
+		x, ok := v.(*T)
+		if !ok {
+			panic("wtf: inconsistent index bitmap or baseRef.deref implementation")
+		}
+		return x
+	*/
+	return (*T)(v) // safe as long as the index bitmaps aren't buggy
 }
 
 // typeBitmap returns the bitmap of all other objects of the current type.

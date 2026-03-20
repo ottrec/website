@@ -47,7 +47,7 @@ type Indexer struct {
 	//  - 172 Index{hash:I3XTO3RT obj:3702 scan:74.89µs import:0s precompute:3ms dataUpdated:2025-10-12}
 	//  - 173 Index{hash:DQHVZUJ7 obj:3714 scan:62.88µs import:0s precompute:2ms dataUpdated:2025-10-11}
 	init bool
-	ia   *arena           // this had 27936272 bytes (bitmaps and precomputed values; mostly evenly split across schedules)
+	ia   *arena           // this had 21901264 bytes (bitmaps and precomputed values; mostly evenly split across schedules)
 	a    *arena           // this had 13612204 bytes (data; amortized across schedules due to deduplication: raw protobufs were 41646361 bytes, in-memory unmarshaled protobufs take more space)
 	sa   stringInterner   // this had 386179 bytes over 2 chunks (ratio 0.020)
 	ac   activityInterner // this had 522 items over 522 chunks (ratio 0.004)
@@ -60,7 +60,7 @@ type Index struct {
 	hash string
 
 	// base object array and bitmaps
-	obj            []any          // flattened data->facility[]->schedule_group[]->schedule[]->activity[]->time[]
+	obj            []objRef       // flattened data->facility[]->schedule_group[]->schedule[]->activity[]->time[]
 	bData          bitmap[refObj] // will only have the first bit set since there's only one data (it's easier to do this than to special case it everywhere)
 	bFacility      bitmap[refObj] // obj[i].(type) == *xFacility
 	bScheduleGroup bitmap[refObj] // obj[i].(type) == *xScheduleGroup
@@ -180,7 +180,7 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 		a:    dxr.a,
 		hash: hash,
 
-		obj:            arenaMakeSlice[any](dxr.ia, 0, n),
+		obj:            arenaMakeSlice[objRef](dxr.ia, 0, n),
 		bData:          arenaMakeBitmap[refObj](dxr.ia, n),
 		bFacility:      arenaMakeBitmap[refObj](dxr.ia, n),
 		bScheduleGroup: arenaMakeBitmap[refObj](dxr.ia, n),
@@ -296,7 +296,7 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 
 func addObj[T schemaObj](idx *Index, x *T) refObj {
 	i := refObj(len(idx.obj))
-	idx.obj = append(idx.obj, x)
+	idx.obj = append(idx.obj, objRef(x))
 	bm := typeBitmap[T](idx)
 	if bm.IsNil() {
 		panic("wtf: cannot add special object to array")
