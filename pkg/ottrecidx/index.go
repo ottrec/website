@@ -6,11 +6,10 @@ import (
 	"crypto/sha1"
 	"encoding/base32"
 	"iter"
-	"math"
 	"slices"
 	"time"
 
-	"github.com/pgaskin/ottrec/schema"
+	"buf.build/go/hyperpb"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -100,6 +99,8 @@ type Index struct {
 	durPrecompute  time.Duration
 }
 
+var schemaType = hyperpb.CompileMessageDescriptor(_data)
+
 // Load loads data from a binary protobuf. Note that this has quadratic
 // complexity, as the indexer focuses on optimizing memory usage and read-only
 // queries.
@@ -119,51 +120,36 @@ func (dxr *Indexer) Load(pb []byte) (*Index, error) {
 	hash := base32.StdEncoding.EncodeToString(sum[:])
 	idx, ok := dxr.idx[hash]
 	if !ok {
-		var msg schema.Data
-		if err := proto.Unmarshal(pb, &msg); err != nil {
+		msg := hyperpb.NewMessage(schemaType)
+		if err := proto.Unmarshal(pb, msg); err != nil {
 			return nil, err
 		}
-		fixLngLatRegression(&msg)
-		idx = dxr.index(hash, &msg)
+		idx = dxr.index(hash, msg)
 		dxr.idx[hash] = idx
 	}
 	return idx, nil
 }
 
-// fixLngLatRegression fixes the longitude/latitude mixup in the scraper from
-// bc9be9b7098f8daaba3121daa564fcbeb4b85784 (2025-11-18) to
-// 6ec0cae178db0f405b6c9451a43e53566e541e22 (2026-03-09).
-func fixLngLatRegression(msg *schema.Data) {
-	for _, fac := range msg.GetFacilities() {
-		if lnglat := fac.GetXLnglat(); lnglat != nil {
-			if lng, lat := lnglat.GetLng(), lnglat.GetLat(); math.Trunc(float64(lng)/10) == 4 && math.Trunc(float64(lat)/10) == -7 {
-				lnglat.SetLat(lng)
-				lnglat.SetLng(lat)
-			}
-		}
-	}
-}
-
-func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
+func (dxr *Indexer) index(hash string, data *hyperpb.Message) *Index {
 	now := time.Now()
 
 	var n, nFac, nGrp, nSch, nAct, nTm int
 	n++
-	for _, fac := range data.GetFacilities() {
+	for _, fac := range iterMessageList(data.Get(_data_facilities)) {
 		n++
 		nFac++
-		for _, grp := range fac.GetScheduleGroups() {
+		for _, grp := range iterMessageList(fac.Get(_fac_schedule_groups)) {
 			n++
 			nGrp++
-			for _, sch := range grp.GetSchedules() {
+			for _, sch := range iterMessageList(grp.Get(_grp_schedules)) {
 				n++
 				nSch++
-				for _, act := range sch.GetActivities() {
+				for _, act := range iterMessageList(sch.Get(_sch_activities)) {
 					n++
 					nAct++
-					for _, day := range act.GetDays() {
+					for _, day := range iterMessageList(act.Get(_act_days)) {
 						// no increment
-						for range day.GetTimes() {
+						for range iterMessageList(day.Get(_day_times)) {
 							n++
 							nTm++
 						}
@@ -205,16 +191,16 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 	idx.durScan, now = time.Since(now), time.Now()
 
 	addObj(idx, newData(dxr.a, &dxr.sa, data))
-	for _, fac := range data.GetFacilities() {
+	for _, fac := range iterMessageList(data.Get(_data_facilities)) {
 		addObj(idx, newFacility(dxr.a, &dxr.sa, fac))
-		for _, grp := range fac.GetScheduleGroups() {
+		for _, grp := range iterMessageList(fac.Get(_fac_schedule_groups)) {
 			addObj(idx, newScheduleGroup(dxr.a, &dxr.sa, grp))
-			for _, sch := range grp.GetSchedules() {
+			for _, sch := range iterMessageList(grp.Get(_grp_schedules)) {
 				addObj(idx, newSchedule(dxr.a, &dxr.sa, sch))
-				for _, act := range sch.GetActivities() {
+				for _, act := range iterMessageList(sch.Get(_sch_activities)) {
 					addObj(idx, dxr.ac.newActivity(act))
-					for i, day := range act.GetDays() {
-						for _, tm := range day.GetTimes() {
+					for i, day := range iterMessageList(act.Get(_act_days)) {
+						for _, tm := range iterMessageList(day.Get(_day_times)) {
 							addObj(idx, dxr.tc.newTime(i, tm))
 						}
 					}
@@ -355,7 +341,7 @@ func sanityCheck(idx *Index, n int) {
 	}
 }
 
-func sanityCheck1(idx *Index, data *schema.Data) {
+func sanityCheck1(idx *Index, data *hyperpb.Message) {
 	req := func(a ...anyRef) {
 		if slices.ContainsFunc(a, func(b anyRef) bool {
 			ar, br := a[0].reflect(), b.reflect()
@@ -373,16 +359,16 @@ func sanityCheck1(idx *Index, data *schema.Data) {
 		}
 	}
 	var nfac, ngrp, nsch, nact, ntm int
-	for _, fac := range data.GetFacilities() {
+	for _, fac := range iterMessageList(data.Get(_data_facilities)) {
 		nfac++
-		for _, grp := range fac.GetScheduleGroups() {
+		for _, grp := range iterMessageList(fac.Get(_fac_schedule_groups)) {
 			ngrp++
-			for _, sch := range grp.GetSchedules() {
+			for _, sch := range iterMessageList(grp.Get(_grp_schedules)) {
 				nsch++
-				for _, act := range sch.GetActivities() {
+				for _, act := range iterMessageList(sch.Get(_sch_activities)) {
 					nact++
-					for _, day := range act.GetDays() {
-						for range day.GetTimes() {
+					for _, day := range iterMessageList(act.Get(_act_days)) {
+						for range iterMessageList(day.Get(_day_times)) {
 							ntm++
 						}
 					}

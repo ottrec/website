@@ -8,6 +8,7 @@ tool (
 )
 
 require (
+	buf.build/go/hyperpb v0.1.3
 	github.com/a-h/templ v0.3.943
 	github.com/fastschema/qjs v0.0.4
 	github.com/kelindar/bitmap v1.5.3
@@ -27,6 +28,7 @@ require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cli/browser v1.3.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/evanw/esbuild v0.25.11 // indirect
 	github.com/fatih/color v1.16.0 // indirect
@@ -37,9 +39,13 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
+	github.com/timandy/routine v1.1.5 // indirect
 	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
