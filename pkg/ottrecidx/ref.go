@@ -91,16 +91,6 @@ func (ref baseRef) object() refObj {
 	return ref.obj
 }
 
-// applyFilter returns a newly allocated bitmap of the specified bitmap AND'd with
-// the applyFilter.
-func (ref baseRef) applyFilter(b bitmap[refObj]) bitmap[refObj] {
-	b = b.Clone()
-	if !ref.flt.IsNil() {
-		b.And(ref.flt)
-	}
-	return b
-}
-
 // withFilter returns a copy of ref with a clone of the withFilter, or a new
 // filter including everything.
 func (ref baseRef) withFilter() baseRef {
@@ -489,7 +479,7 @@ func childRefSeq[T, U schemaObj](ref typedRef[T]) iter.Seq[typedRef[U]] {
 			until = refObj(len(ref.idx.obj)) // end
 		}
 		if mask := typeBitmap[U](ref.index()); !mask.IsNil() {
-			for obj := range ref.applyFilter(mask).RangeBetween(start, until) {
+			for obj := range mask.RangeBetweenAnd(start, until, ref.flt) {
 				if !yield(reference[U](ref, obj)) {
 					return
 				}

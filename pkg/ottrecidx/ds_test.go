@@ -160,7 +160,7 @@ func TestBitmap(t *testing.T) {
 		})
 	})
 
-	t.Run("RangeBetween", func(t *testing.T) {
+	t.Run("RangeBetweenAnd", func(t *testing.T) {
 		var zero bitmap[uint32]
 		for _, tc := range [][2]uint32{
 			{0, 0},
@@ -170,7 +170,7 @@ func TestBitmap(t *testing.T) {
 			{0, 100},
 			{25, 75},
 		} {
-			if act := slices.Collect(zero.RangeBetween(tc[0], tc[1])); len(act) != 0 {
+			if act := slices.Collect(zero.RangeBetweenAnd(tc[0], tc[1], nilBitmap[uint32]())); len(act) != 0 {
 				t.Errorf("range of empty bitmap should be empty, got %v", act)
 			}
 		}
@@ -178,22 +178,30 @@ func TestBitmap(t *testing.T) {
 		b := bitmapOf(0, 1, 63, 64, 65, 127, 128, 200)
 		for _, tc := range []struct {
 			start, end uint32
+			flt        bitmap[uint32]
 			want       []uint32
 		}{
-			{0, 201, []uint32{0, 1, 63, 64, 65, 127, 128, 200}}, // all
-			{0, 200, []uint32{0, 1, 63, 64, 65, 127, 128}},      // end exclusive
-			{1, 64, []uint32{1, 63}},                            // within first block
-			{64, 128, []uint32{64, 65, 127}},                    // within second block
-			{63, 65, []uint32{63, 64}},                          // crosses block boundary
-			{0, 0, nil},                                         // empty range
-			{5, 5, nil},                                         // empty range
-			{10, 5, nil},                                        // inverted range
-			{50, 63, []uint32{}},                                // no set bits in range
-			{201, 300, nil},                                     // beyond all set bits
+			{0, 201, nilBitmap[uint32](), []uint32{0, 1, 63, 64, 65, 127, 128, 200}}, // all
+			{0, 201, bitmapOf(0, 1, 2, 64, 201, 300), []uint32{0, 1, 64}},            // filtered
+			{0, 200, nilBitmap[uint32](), []uint32{0, 1, 63, 64, 65, 127, 128}},      // end exclusive
+			{1, 64, nilBitmap[uint32](), []uint32{1, 63}},                            // within first block
+			{64, 128, nilBitmap[uint32](), []uint32{64, 65, 127}},                    // within second block
+			{63, 65, nilBitmap[uint32](), []uint32{63, 64}},                          // crosses block boundary
+			{0, 0, nilBitmap[uint32](), nil},                                         // empty range
+			{5, 5, nilBitmap[uint32](), nil},                                         // empty range
+			{10, 5, nilBitmap[uint32](), nil},                                        // inverted range
+			{50, 63, nilBitmap[uint32](), []uint32{}},                                // no set bits in range
+			{201, 300, nilBitmap[uint32](), nil},                                     // beyond all set bits
 		} {
-			got := slices.Collect(b.RangeBetween(tc.start, tc.end))
+			if tc.flt.IsNil() {
+				got := slices.Collect(b.RangeBetweenAnd(tc.start, tc.end, b))
+				if !slices.Equal(got, tc.want) && !(len(got) == 0 && len(tc.want) == 0) {
+					t.Errorf("RangeBetweenAnd(%d, %d, self) = %v, want %v", tc.start, tc.end, got, tc.want)
+				}
+			}
+			got := slices.Collect(b.RangeBetweenAnd(tc.start, tc.end, tc.flt))
 			if !slices.Equal(got, tc.want) && !(len(got) == 0 && len(tc.want) == 0) {
-				t.Errorf("RangeBetween(%d, %d) = %v, want %v", tc.start, tc.end, got, tc.want)
+				t.Errorf("RangeBetweenAnd(%d, %d, %v) = %v, want %v", tc.start, tc.end, slices.Collect(tc.flt.Range()), got, tc.want)
 			}
 		}
 
@@ -209,9 +217,9 @@ func TestBitmap(t *testing.T) {
 				{0, 64, []uint32{63}},
 				{128, 129, []uint32{128}},
 			} {
-				got := slices.Collect(b.RangeBetween(tc.start, tc.end))
+				got := slices.Collect(b.RangeBetweenAnd(tc.start, tc.end, nilBitmap[uint32]()))
 				if !slices.Equal(got, tc.want) && !(len(got) == 0 && len(tc.want) == 0) {
-					t.Errorf("RangeBetween(%d, %d) = %v, want %v", tc.start, tc.end, got, tc.want)
+					t.Errorf("RangeBetweenAnd(%d, %d, nil) = %v, want %v", tc.start, tc.end, got, tc.want)
 				}
 			}
 		})
@@ -222,7 +230,7 @@ func TestBitmap(t *testing.T) {
 				b1 := makeBitmap[uint32](64)
 				b1.kb[0] = i
 				b2 := makeBitmap[uint32](64)
-				for v := range b1.RangeBetween(0, 64) {
+				for v := range b1.RangeBetweenAnd(0, 64, nilBitmap[uint32]()) {
 					b2.Set(v)
 				}
 				if b1.kb[0] != b2.kb[0] {

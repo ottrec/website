@@ -381,15 +381,31 @@ func (dst bitmap[T]) Range() iter.Seq[T] {
 	}
 }
 
-// RangeBetween is like [bitmapExt.Range], but only returns start <= v < end.
-func (dst bitmap[T]) RangeBetween(start, end T) iter.Seq[T] {
+// RangeBetweenAnd is like [bitmapExt.Range], but only for bits where (start <=
+// v < end) && (flt.IsNil() || flt[v]).
+func (dst bitmap[T]) RangeBetweenAnd(start, end T, flt bitmap[T]) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		if start >= end {
 			return
 		}
-		blkStart, blkEnd := int(start>>6), int((end-1)>>6)
-		for blkAt := blkStart; blkAt <= blkEnd && blkAt < len(dst.kb); blkAt++ {
+
+		// compute limits
+		blkStart := int(start >> 6)            // block containing start bit
+		blkEnd := int((end - 1) >> 6)          // block containing end bit
+		blkLimit := min(len(dst.kb), blkEnd+1) // upper limit for block iteration
+
+		// apply flt if not nil
+		if !flt.IsNil() {
+			blkLimit = min(blkLimit, len(flt.kb))
+		}
+
+		for blkAt := blkStart; blkAt < blkLimit; blkAt++ {
 			blk := dst.kb[blkAt]
+
+			// apply flt if not nil
+			if !flt.IsNil() {
+				blk &= flt.kb[blkAt]
+			}
 
 			// skip empty blocks
 			if blk == 0x0 {
