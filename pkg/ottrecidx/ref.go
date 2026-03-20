@@ -94,7 +94,7 @@ func (ref baseRef) object() refObj {
 // applyFilter returns a newly allocated bitmap of the specified bitmap AND'd with
 // the applyFilter.
 func (ref baseRef) applyFilter(b bitmap[refObj]) bitmap[refObj] {
-	b = b.Clone(nil)
+	b = b.Clone()
 	if !ref.flt.IsNil() {
 		b.And(ref.flt)
 	}
@@ -108,7 +108,7 @@ func (ref baseRef) withFilter() baseRef {
 		ref.flt = makeBitmap[refObj](len(ref.index().obj))
 		ref.flt.Ones()
 	} else {
-		ref.flt = ref.flt.Clone(nil)
+		ref.flt = ref.flt.Clone()
 	}
 	return ref
 }

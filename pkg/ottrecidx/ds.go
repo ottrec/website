@@ -3,6 +3,7 @@ package ottrecidx
 import (
 	"bytes"
 	"iter"
+	"math/bits"
 	"slices"
 	"unsafe"
 
@@ -172,14 +173,6 @@ func (dst *bitmap[T]) Set(v T) {
 	dst.kbmut().Set(uint32(v))
 }
 
-func (dst *bitmap[T]) Remove(v T) {
-	dst.kbmut().Remove(uint32(v))
-}
-
-func (dst *bitmap[T]) Ones() {
-	dst.kbmut().Ones()
-}
-
 func (dst *bitmap[T]) Or(other bitmap[T], extra ...bitmap[T]) {
 	dst.kbmut().Or(other.kb, kbs(extra...)...)
 }
@@ -192,31 +185,67 @@ func (dst bitmap[T]) Count() int {
 	return dst.kb.Count()
 }
 
-func (dst bitmap[T]) CountTo(until T) int {
-	return dst.kb.CountTo(uint32(until))
+func (dst bitmap[T]) Clone() bitmap[T] {
+	return bitmap[T]{dst.kb.Clone(nil)}
 }
 
-func (dst bitmap[T]) Clone(into *bitmap[T]) bitmap[T] {
-	return bitmap[T]{dst.kb.Clone(into.kbmut())}
+func (dst *bitmap[T]) Remove(v T) {
+	b := dst.kbmut()
+	if blkAt := int(uint32(v) >> 6); blkAt < len(*b) {
+		bitAt := int(uint32(v) % 64)
+		(*b)[blkAt] &^= (1 << bitAt)
+	}
+}
+
+func (dst *bitmap[T]) Ones() {
+	b := *dst.kbmut()
+	for i := range b {
+		b[i] = 0xffffffffffffffff
+	}
+}
+
+func (dst bitmap[T]) CountTo(until T) int {
+	if len(dst.kb) == 0 {
+		return 0
+	}
+	if maxUntil := T(len(dst.kb) << 6); until > maxUntil {
+		until = maxUntil
+	}
+	blkUntil := until >> 6
+	bitUntil := until % 64
+	sum := dst.kb[:blkUntil].Count()
+	if bitUntil > 0 {
+		sum += bits.OnesCount64(dst.kb[blkUntil] << (64 - uint64(bitUntil)))
+	}
+	return sum
 }
 
 func (dst bitmap[T]) Contains(x T) bool {
-	return dst.kb.Contains(uint32(x))
+	blkAt := int(uint32(x) >> 6)
+	if size := len(dst.kb); blkAt >= size {
+		return false
+	}
+	bitAt := int(uint32(x) % 64)
+	return (dst.kb[blkAt] & (1 << bitAt)) > 0
 }
 
 func (dst bitmap[T]) Min() (T, bool) {
-	v, ok := dst.kb.Min()
-	return T(v), ok
+	for blkAt, blk := range dst.kb {
+		if blk != 0x0 {
+			return T(blkAt<<6 + bits.TrailingZeros64(blk)), true
+		}
+	}
+	return 0, false
 }
 
 func (dst bitmap[T]) Max() (T, bool) {
-	v, ok := dst.kb.Max()
-	return T(v), ok
-}
-
-func (dst bitmap[T]) MaxZero() (T, bool) {
-	v, ok := dst.kb.MaxZero()
-	return T(v), ok
+	var blk uint64
+	for blkAt := len(dst.kb) - 1; blkAt >= 0; blkAt-- {
+		if blk = dst.kb[blkAt]; blk != 0x0 {
+			return T(blkAt<<6 + (63 - bits.LeadingZeros64(blk))), true
+		}
+	}
+	return 0, false
 }
 
 // Range is an iterator over the bitmap. Based on [kbitmap.Bitmap.Range].
@@ -224,12 +253,13 @@ func (dst bitmap[T]) Range() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for blkAt := range dst.kb {
 			blk := dst.kb[blkAt]
+
+			// skip empty blocks
 			if blk == 0x0 {
-				continue // Skip the empty page
+				continue
 			}
 
-			// Iterate in a 4-bit chunks so we can reduce the number of function calls and skip
-			// the bits for which we should not call our range function.
+			// unrolled 4-bit chunks
 			offset := T(blkAt << 6)
 			for ; blk > 0; blk = blk >> 4 {
 				switch blk & 0b1111 {
@@ -353,42 +383,215 @@ func (dst bitmap[T]) Range() iter.Seq[T] {
 
 // RangeBetween is like [bitmapExt.Range], but only returns start <= v < end.
 func (dst bitmap[T]) RangeBetween(start, end T) iter.Seq[T] {
-	// TODO: optimize
 	return func(yield func(T) bool) {
-		for v := range dst.Range() {
-			if v < start {
+		if start >= end {
+			return
+		}
+		blkStart, blkEnd := int(start>>6), int((end-1)>>6)
+		for blkAt := blkStart; blkAt <= blkEnd && blkAt < len(dst.kb); blkAt++ {
+			blk := dst.kb[blkAt]
+
+			// skip empty blocks
+			if blk == 0x0 {
 				continue
 			}
-			if v >= end {
-				break
+
+			// mask out-of-range bits
+			if blkAt == blkStart {
+				blk &^= (uint64(1) << (start & 63)) - 1
+
+				// skip empty blocks
+				if blk == 0x0 {
+					continue
+				}
 			}
-			if !yield(v) {
-				return
+
+			// mask out-of-range bits
+			if blkAt == blkEnd {
+				if endBit := uint(end & 63); endBit != 0 {
+					blk &= (uint64(1) << endBit) - 1
+				}
+			}
+
+			// skip empty blocks
+			if blk == 0x0 {
+				continue
+			}
+
+			// unrolled 4-bit chunks
+			offset := T(blkAt << 6)
+			for ; blk > 0; blk = blk >> 4 {
+				switch blk & 0b1111 {
+				case 0b0001:
+					if !yield(offset + 0) {
+						return
+					}
+				case 0b0010:
+					if !yield(offset + 1) {
+						return
+					}
+				case 0b0011:
+					if !yield(offset + 0) {
+						return
+					}
+					if !yield(offset + 1) {
+						return
+					}
+				case 0b0100:
+					if !yield(offset + 2) {
+						return
+					}
+				case 0b0101:
+					if !yield(offset + 0) {
+						return
+					}
+					if !yield(offset + 2) {
+						return
+					}
+				case 0b0110:
+					if !yield(offset + 1) {
+						return
+					}
+					if !yield(offset + 2) {
+						return
+					}
+				case 0b0111:
+					if !yield(offset + 0) {
+						return
+					}
+					if !yield(offset + 1) {
+						return
+					}
+					if !yield(offset + 2) {
+						return
+					}
+				case 0b1000:
+					if !yield(offset + 3) {
+						return
+					}
+				case 0b1001:
+					if !yield(offset + 0) {
+						return
+					}
+					if !yield(offset + 3) {
+						return
+					}
+				case 0b1010:
+					if !yield(offset + 1) {
+						return
+					}
+					if !yield(offset + 3) {
+						return
+					}
+				case 0b1011:
+					if !yield(offset + 0) {
+						return
+					}
+					if !yield(offset + 1) {
+						return
+					}
+					if !yield(offset + 3) {
+						return
+					}
+				case 0b1100:
+					if !yield(offset + 2) {
+						return
+					}
+					if !yield(offset + 3) {
+						return
+					}
+				case 0b1101:
+					if !yield(offset + 0) {
+						return
+					}
+					if !yield(offset + 2) {
+						return
+					}
+					if !yield(offset + 3) {
+						return
+					}
+				case 0b1110:
+					if !yield(offset + 1) {
+						return
+					}
+					if !yield(offset + 2) {
+						return
+					}
+					if !yield(offset + 3) {
+						return
+					}
+				case 0b1111:
+					if !yield(offset + 0) {
+						return
+					}
+					if !yield(offset + 1) {
+						return
+					}
+					if !yield(offset + 2) {
+						return
+					}
+					if !yield(offset + 3) {
+						return
+					}
+				}
+				offset += 4
 			}
 		}
 	}
 }
 
-// Prev gets the index of the one <= i. If not found, it returns 0 and false.
+// Prev gets the index of the one <= i. If not found, it returns (0, false).
 func (dst bitmap[T]) Prev(i T) (T, bool) {
-	// TODO: optimize
-	for lower, ok := dst.Min(); ok && i >= lower; i-- {
-		if dst.Contains(i) {
-			return i, true
+	blkStart := int(i >> 6)
+	if blkStart >= len(dst.kb) {
+		blkStart = len(dst.kb) - 1
+	}
+	for blkAt := blkStart; blkAt >= 0; blkAt-- {
+		blk := dst.kb[blkAt]
+
+		// skip empty blocks
+		if blk == 0x0 {
+			continue
 		}
+
+		// mask out-of-range bits
+		if blkAt == blkStart {
+			blk &= ^uint64(0) >> (63 - uint(i&63))
+
+			// skip empty blocks
+			if blk == 0x0 {
+				continue
+			}
+		}
+
+		// get the last bit
+		return T(blkAt<<6) + T(bits.Len64(blk)-1), true
 	}
 	return 0, false
 }
 
-// Next gets the index of the one >= i. If not found, it returns the index of
-// the last zero and false.
+// Next gets the index of the one >= i. If not found, it returns (0, false).
 func (dst bitmap[T]) Next(i T) (T, bool) {
-	// TODO: optimize
-	for upper, ok := dst.Max(); ok && i <= upper; i++ {
-		if dst.Contains(i) {
-			return i, true
+	for blkAt := int(i >> 6); blkAt < len(dst.kb); blkAt++ {
+		blk := dst.kb[blkAt]
+
+		// skip empty blocks
+		if blk == 0x0 {
+			continue
 		}
+
+		// mask out-of-range bits
+		if blkAt == int(i>>6) {
+			blk &^= (uint64(1) << (i & 63)) - 1
+
+			// skip empty blocks
+			if blk == 0x0 {
+				continue
+			}
+		}
+
+		// get the first bit
+		return T(blkAt<<6) + T(bits.TrailingZeros64(blk)), true
 	}
-	upper, _ := dst.MaxZero()
-	return upper, false
+	return 0, false
 }
