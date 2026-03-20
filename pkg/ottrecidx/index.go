@@ -47,14 +47,15 @@ type Indexer struct {
 	//  - 172 Index{hash:I3XTO3RT obj:3702 scan:74.89µs import:0s precompute:3ms dataUpdated:2025-10-12}
 	//  - 173 Index{hash:DQHVZUJ7 obj:3714 scan:62.88µs import:0s precompute:2ms dataUpdated:2025-10-11}
 	init bool
-	a    *arena           // this had 13612204 bytes (raw protobufs were 41646361 bytes, in-memory unmarshaled protobufs take more space)
+	ia   *arena           // this had 27936272 bytes (bitmaps and precomputed values; mostly evenly split across schedules)
+	a    *arena           // this had 13612204 bytes (data; amortized across schedules due to deduplication: raw protobufs were 41646361 bytes, in-memory unmarshaled protobufs take more space)
 	sa   stringInterner   // this had 386179 bytes over 2 chunks (ratio 0.020)
 	ac   activityInterner // this had 522 items over 522 chunks (ratio 0.004)
 	tc   timeInterner     // this has 2794 items over 655 chunks (ratio 0.005)
 }
 
 type Index struct {
-	a *arena // keep a pointer to it so it doesn't get finalized while we are using objects from it
+	ia, a *arena // keep a pointer to it so it doesn't get finalized while we are using objects from it
 
 	hash string
 
@@ -106,7 +107,8 @@ type Index struct {
 func (dxr *Indexer) Load(pb []byte) (*Index, error) {
 	if !dxr.init {
 		dxr.idx = make(map[string]*Index)
-		dxr.a = newArena()
+		dxr.ia = newArena() // for index metadata and caches
+		dxr.a = newArena()  // for data
 		dxr.sa.arena = dxr.a
 		dxr.sa.Cache(4096)
 		dxr.ac.a = dxr.a
@@ -174,32 +176,33 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 	}
 
 	idx := &Index{
+		ia:   dxr.ia,
 		a:    dxr.a,
 		hash: hash,
 
-		obj:            make([]any, 0, n),
-		bData:          makeBitmap[refObj](n),
-		bFacility:      makeBitmap[refObj](n),
-		bScheduleGroup: makeBitmap[refObj](n),
-		bSchedule:      makeBitmap[refObj](n),
-		bActivity:      makeBitmap[refObj](n),
-		bTime:          makeBitmap[refObj](n),
+		obj:            arenaMakeSlice[any](dxr.ia, 0, n),
+		bData:          arenaMakeBitmap[refObj](dxr.ia, n),
+		bFacility:      arenaMakeBitmap[refObj](dxr.ia, n),
+		bScheduleGroup: arenaMakeBitmap[refObj](dxr.ia, n),
+		bSchedule:      arenaMakeBitmap[refObj](dxr.ia, n),
+		bActivity:      arenaMakeBitmap[refObj](dxr.ia, n),
+		bTime:          arenaMakeBitmap[refObj](dxr.ia, n),
 
-		bDataNotChild:          makeBitmap[refObj](n),
-		bFacilityNotChild:      makeBitmap[refObj](n),
-		bScheduleGroupNotChild: makeBitmap[refObj](n),
-		bScheduleNotChild:      makeBitmap[refObj](n),
-		bActivityNotChild:      makeBitmap[refObj](n),
-		bTimeNotChild:          makeBitmap[refObj](n),
+		bDataNotChild:          arenaMakeBitmap[refObj](dxr.ia, n),
+		bFacilityNotChild:      arenaMakeBitmap[refObj](dxr.ia, n),
+		bScheduleGroupNotChild: arenaMakeBitmap[refObj](dxr.ia, n),
+		bScheduleNotChild:      arenaMakeBitmap[refObj](dxr.ia, n),
+		bActivityNotChild:      arenaMakeBitmap[refObj](dxr.ia, n),
+		bTimeNotChild:          arenaMakeBitmap[refObj](dxr.ia, n),
 
-		cached_ActivityRef_GuessReservationRequirement_required: makeBitmap[refObj](n),
-		cached_ActivityRef_GuessReservationRequirement_definite: makeBitmap[refObj](n),
+		cached_ActivityRef_GuessReservationRequirement_required: arenaMakeBitmap[refObj](dxr.ia, n),
+		cached_ActivityRef_GuessReservationRequirement_definite: arenaMakeBitmap[refObj](dxr.ia, n),
 
-		cached_ScheduleRef_ComputeEffectiveDateRange_from: make([]time.Time, nSch),
-		cached_ScheduleRef_ComputeEffectiveDateRange_to:   make([]time.Time, nSch),
-		cached_ScheduleRef_ComputeEffectiveDateRange_ok:   makeBitmap[refObj](n),
+		cached_ScheduleRef_ComputeEffectiveDateRange_from: arenaMakeSlice[time.Time](dxr.ia, nSch, nSch),
+		cached_ScheduleRef_ComputeEffectiveDateRange_to:   arenaMakeSlice[time.Time](dxr.ia, nSch, nSch),
+		cached_ScheduleRef_ComputeEffectiveDateRange_ok:   arenaMakeBitmap[refObj](dxr.ia, n),
 
-		cached_TimeRef_SingleDate_t: make([]time.Time, nTm),
+		cached_TimeRef_SingleDate_t: arenaMakeSlice[time.Time](dxr.ia, nTm, nTm),
 	}
 
 	idx.durScan, now = time.Since(now), time.Now()

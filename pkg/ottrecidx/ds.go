@@ -137,6 +137,10 @@ func makeBitmap[T ~uint32](n int) bitmap[T] {
 	return bitmap[T]{make(kbitmap.Bitmap, (n>>6)+1)}
 }
 
+func arenaMakeBitmap[T ~uint32](a *arena, n int) bitmap[T] {
+	return bitmap[T]{kbitmap.Bitmap(arenaMakeSlice[uint64](a, (n>>6)+1, (n>>6)+1))} // note: if the bitmap is grown, it will no longer be in the arena
+}
+
 func nilBitmap[T ~uint32]() bitmap[T] {
 	return bitmap[T]{nil}
 }

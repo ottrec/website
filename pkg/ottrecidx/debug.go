@@ -25,6 +25,8 @@ func EnableIndexerSanityCheck() {
 // DebugIndexer dumps information about allocations made by the indexer.
 func DebugIndexer(dxr *Indexer, includeIndexes bool) string {
 	var s strings.Builder
+	s.WriteString(dxr.ia.String())
+	s.WriteString("\n")
 	s.WriteString(dxr.a.String())
 	s.WriteString("\n")
 	s.WriteString(dxr.sa.String())
