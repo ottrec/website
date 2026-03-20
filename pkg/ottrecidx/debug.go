@@ -29,9 +29,9 @@ func DebugIndexer(dxr *Indexer, includeIndexes bool) string {
 	s.WriteString("\n")
 	s.WriteString(dxr.sa.String())
 	s.WriteString("\n")
-	s.WriteString(dxr.act.String())
+	s.WriteString(dxr.ac.String())
 	s.WriteString("\n")
-	s.WriteString(dxr.tm.String())
+	s.WriteString(dxr.tc.String())
 	if includeIndexes {
 		for _, hash := range slices.Sorted(maps.Keys(dxr.idx)) {
 			s.WriteString("\n")
@@ -162,8 +162,21 @@ func (a stringInterner) String() string {
 }
 
 // debug
-func (n *interner[T]) String() string {
-	return fmt.Sprintf("%T{len:%d ratio:%.3f}", n, len(n.a), float64(len(n.a))/float64(n.n))
+func (c *activityInterner) String() string {
+	var total int
+	for _, s := range c.c {
+		total += len(s)
+	}
+	return fmt.Sprintf("%T{len:%d ratio:%.3f n:%d}", c, total, float64(total)/float64(c.n), len(c.c))
+}
+
+// debug
+func (c *timeInterner) String() string {
+	var total int
+	for _, s := range c.c {
+		total += len(s)
+	}
+	return fmt.Sprintf("%T{len:%d ratio:%.3f n:%d}", c, total, float64(total)/float64(c.n), len(c.c))
 }
 
 // debug

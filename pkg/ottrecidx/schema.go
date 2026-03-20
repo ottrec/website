@@ -123,25 +123,86 @@ func newSchedule(a *arena, sa *stringInterner, grp *schema.Schedule) *xSchedule 
 	return x
 }
 
-func newActivity(a *arena, sa *stringInterner, act *schema.Schedule_Activity) *xActivity {
-	x := arenaNew[xActivity](a)
-	x.Label = sa.Intern(act.GetLabel())
-	x.Name = sa.Intern(act.GetXName())
+type activityInterner struct {
+	a  *arena
+	sa *stringInterner
+	c  map[string][]*xActivity
+	n  int64
+}
+
+func (c *activityInterner) newActivity(act *schema.Schedule_Activity) *xActivity {
+	c.n++
+	if c.c == nil {
+		c.c = make(map[string][]*xActivity, 512)
+	}
+	if s, ok := c.c[act.GetLabel()]; ok {
+		for _, x := range s {
+			if x.Label == act.GetLabel() &&
+				x.Name == act.GetXName() &&
+				x.Resv == act.GetXResv() &&
+				x.HasResv == act.HasXResv() {
+				return x
+			}
+		}
+	}
+
+	x := arenaNew[xActivity](c.a)
+	x.Label = c.sa.Intern(act.GetLabel())
+	x.Name = c.sa.Intern(act.GetXName())
 	x.Resv = act.GetXResv()
 	x.HasResv = act.HasXResv()
+
+	s, ok := c.c[x.Label]
+	if !ok {
+		s = make([]*xActivity, 0, 4)
+	}
+	s = append(s, x)
+	c.c[x.Label] = s
+
 	return x
 }
 
-func newTime(a *arena, sa *stringInterner, scheduleDay int, tm *schema.TimeRange) *xTime {
-	x := arenaNew[xTime](a)
-	x.ScheduleDay = scheduleDay
-	x.Label = sa.Intern(tm.GetLabel())
-	if w, r, ok := tm.AsXParsed(); ok {
-		x.Weekday = w
-		x.Range = r
-	} else {
-		x.Weekday = -1
+type timeInterner struct {
+	a  *arena
+	sa *stringInterner
+	c  map[string][]*xTime
+	n  int64
+}
+
+func (c *timeInterner) newTime(scheduleDay int, tm *schema.TimeRange) *xTime {
+	wkday, rng, ok := tm.AsXParsed()
+	if !ok {
+		wkday, rng = -1, schema.ClockRange{}
 	}
+
+	c.n++
+	if c.c == nil {
+		c.c = make(map[string][]*xTime, 4096)
+	}
+	if s, ok := c.c[tm.GetLabel()]; ok {
+		for _, x := range s {
+			if x.ScheduleDay == scheduleDay &&
+				x.Label == tm.GetLabel() &&
+				x.Weekday == wkday &&
+				x.Range == rng {
+				return x
+			}
+		}
+	}
+
+	x := arenaNew[xTime](c.a)
+	x.ScheduleDay = scheduleDay
+	x.Label = c.sa.Intern(tm.GetLabel())
+	x.Weekday = wkday
+	x.Range = rng
+
+	s, ok := c.c[x.Label]
+	if !ok {
+		s = make([]*xTime, 0, 4)
+	}
+	s = append(s, x)
+	c.c[x.Label] = s
+
 	return x
 }
 

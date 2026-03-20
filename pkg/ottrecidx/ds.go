@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"iter"
 	"math/bits"
-	"slices"
 	"unsafe"
 
 	kbitmap "github.com/kelindar/bitmap"
@@ -118,22 +117,6 @@ func (a *stringInterner) scan(s string) (int, int, bool) {
 		}
 	}
 	return 0, 0, false
-}
-
-// interner interns pointers to comparable values. Note that it currently has
-// worst-case quadratic time complexity (TODO: deal with this).
-type interner[T comparable] struct {
-	a []*T
-	n int64
-}
-
-func (n *interner[T]) Intern(x *T) *T {
-	n.n++
-	if i := slices.IndexFunc(n.a, func(e *T) bool { return *x == *e }); i != -1 {
-		return n.a[i]
-	}
-	n.a = append(n.a, x)
-	return x
 }
 
 // bitmap wraps a [kbitmap.Bitmap] to be generic and provides additional

@@ -34,22 +34,23 @@ func init() {
 type Indexer struct {
 	idx map[string]*Index
 
-	// most of the interning logic is quadratic complexity, but it isn't a big
-	// deal for now as real data is highly dedupable and relatively low
-	// cardinality
+	// real data is highly dedupable and relatively low cardinality
 	//
-	// over 192 real schedules (2025-04-14 to 2025-10-03), some example timings:
-	//	- 0 Index{hash:54XKXUIV obj:3665 scan:40.106µs import:14ms precompute:1ms dataUpdated:2025-10-03}
-	//	- 1 Index{hash:MELXJCMI obj:3641 scan:51.448µs import:3ms precompute:2ms dataUpdated:2025-10-02}
-	//	- 2 Index{hash:AZEJHBXA obj:3641 scan:41.108µs import:3ms precompute:1ms dataUpdated:2025-10-02}
-	//	- 100 Index{hash:5NL3AZHM obj:2840 scan:44.274µs import:3ms precompute:1ms dataUpdated:2025-07-08}
-	//	- 150 Index{hash:ND4ZTKUS obj:3687 scan:59.834µs import:22ms precompute:1ms dataUpdated:2025-05-20}
-	//	- 191 Index{hash:HONIS5GL obj:4148 scan:62.8µs import:11ms precompute:1ms dataUpdated:2025-04-14}
+	// over 177 real schedules (2025-10-07 to 2026-03-20), some example timings:
+	//  - 0 Index{hash:ZQ4PBS3Y obj:5612 scan:88.249µs import:15ms precompute:3ms dataUpdated:2026-03-20}
+	//  - 1 Index{hash:GF2X52JV obj:5548 scan:104.579µs import:2ms precompute:3ms dataUpdated:2026-03-19}
+	//  - 2 Index{hash:FK3YD6EN obj:5528 scan:77.363µs import:0s precompute:3ms dataUpdated:2026-03-18}
+	//  - 3 Index{hash:HFABNLRS obj:5464 scan:75.7µs import:0s precompute:2ms dataUpdated:2026-03-17}
+	//  - 4 Index{hash:Z5UZWDF3 obj:6484 scan:103.336µs import:1ms precompute:5ms dataUpdated:2026-03-16}
+	//  - 170 Index{hash:XDLUZE7R obj:3682 scan:68.696µs import:27ms precompute:1ms dataUpdated:2025-10-14}
+	//  - 171 Index{hash:OZ7DYQOX obj:3682 scan:73.375µs import:0s precompute:1ms dataUpdated:2025-10-13}
+	//  - 172 Index{hash:I3XTO3RT obj:3702 scan:74.89µs import:0s precompute:3ms dataUpdated:2025-10-12}
+	//  - 173 Index{hash:DQHVZUJ7 obj:3714 scan:62.88µs import:0s precompute:2ms dataUpdated:2025-10-11}
 	init bool
-	a    *arena              // this had 34946608 bytes (raw protobufs were 37376209 bytes, in-memory was more) over 2 chunks (ratio 0.016)
-	sa   stringInterner      // this had 406524 bytes over 2 chunks (ratio 0.020)
-	act  interner[xActivity] // this had 533 items (ratio 0.005)
-	tm   interner[xTime]     // this has 3431 items (ratio 0.007)
+	a    *arena           // this had 13612204 bytes (raw protobufs were 41646361 bytes, in-memory unmarshaled protobufs take more space)
+	sa   stringInterner   // this had 386179 bytes over 2 chunks (ratio 0.020)
+	ac   activityInterner // this had 522 items over 522 chunks (ratio 0.004)
+	tc   timeInterner     // this has 2794 items over 655 chunks (ratio 0.005)
 }
 
 type Index struct {
@@ -108,6 +109,10 @@ func (dxr *Indexer) Load(pb []byte) (*Index, error) {
 		dxr.a = newArena()
 		dxr.sa.arena = dxr.a
 		dxr.sa.Cache(4096)
+		dxr.ac.a = dxr.a
+		dxr.ac.sa = &dxr.sa
+		dxr.tc.a = dxr.a
+		dxr.tc.sa = &dxr.sa
 		dxr.init = true
 	}
 	sum := sha1.Sum(pb)
@@ -207,10 +212,10 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 			for _, sch := range grp.GetSchedules() {
 				addObj(idx, newSchedule(dxr.a, &dxr.sa, sch))
 				for _, act := range sch.GetActivities() {
-					addObj(idx, dxr.act.Intern(newActivity(dxr.a, &dxr.sa, act)))
+					addObj(idx, dxr.ac.newActivity(act))
 					for i, day := range act.GetDays() {
 						for _, tm := range day.GetTimes() {
-							addObj(idx, dxr.tm.Intern(newTime(dxr.a, &dxr.sa, i, tm)))
+							addObj(idx, dxr.tc.newTime(i, tm))
 						}
 					}
 				}
