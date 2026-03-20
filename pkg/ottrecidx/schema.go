@@ -93,6 +93,7 @@ func newFacility(a *arena, sa *stringInterner, fac *schema.Facility) *xFacility 
 	}
 	x.NotificationsHTML = sa.InternFast(fac.GetNotificationsHtml())
 	x.SpecialHoursHTML = sa.InternFast(fac.GetSpecialHoursHtml())
+	x.Errors = mapSlice(a, fac.GetXErrors(), sa.InternFast)
 	return x
 }
 
