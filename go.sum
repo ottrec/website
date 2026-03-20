@@ -45,6 +45,8 @@ github.com/ncruces/julianday v1.0.0 h1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt
 github.com/ncruces/julianday v1.0.0/go.mod h1:Dusn2KvZrrovOMJuOt0TNXL6tB7U2E8kvza5fFc9G7g=
 github.com/pgaskin/ottrec v0.0.0-20251007032526-ab79bc674a9a h1:cWSqcXuyPKjvl4PEpfsQyukh/XANv6xUvAZKS+smWZw=
 github.com/pgaskin/ottrec v0.0.0-20251007032526-ab79bc674a9a/go.mod h1:8kOpSUCYjSqz5MJ4Kk0e5s4j5yQHhYLGZX40bfNbGcU=
+github.com/pgaskin/ottrec v0.0.0-20260320115659-d7c3036c8cbb h1:DBAzE52TGcuJgGmdg5gcY6m21hgYBzEK4yfsVgw4hvc=
+github.com/pgaskin/ottrec v0.0.0-20260320115659-d7c3036c8cbb/go.mod h1:ZucBaUDR42XY4kyCLuAL2WnFjXdnm8etNE+SePgtwgE=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 h1:KRzFb2m7YtdldCEkzs6KqmJw4nqEVZGK7IN2kJkjTuQ=

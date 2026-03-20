@@ -2,6 +2,8 @@ package ottrecidx
 
 import (
 	"time"
+
+	"github.com/pgaskin/ottrec/schema"
 )
 
 // this file contains additional helpers to perform computations on refs, possibly with optimizations
@@ -96,15 +98,21 @@ func (ref ActivityRef) GuessReservationRequirement() (required bool, definite bo
 
 // ComputeEffectiveDateRange attempts to compute a date range for the schedule,
 // starting at from until to (inclusive). If a side is open, it will be
-// [time.Time.IsZero].  If the range is ambiguous or missing, ok will be false.
-func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time, ok bool) {
+// [schema.Date.IsZero]. If the range is ambiguous or missing, ok will be false.
+func (ref ScheduleRef) ComputeEffectiveDateRange() (er schema.DateRange, ok bool) {
 	if idx := ref.index(); idx.cached_ScheduleRef_ComputeEffectiveDateRange {
 		i := ref.nthOfType()
-		from = ref.idx.cached_ScheduleRef_ComputeEffectiveDateRange_from[i]
-		to = ref.idx.cached_ScheduleRef_ComputeEffectiveDateRange_to[i]
-		ok = ref.idx.cached_ScheduleRef_ComputeEffectiveDateRange_ok.Contains(ref.object())
+		er = ref.idx.cached_ScheduleRef_ComputeEffectiveDateRange_er[i]
+		ok = (er != schema.DateRange{From: -1, To: -1})
 		return
 	}
+
+	// note: -1 is invalid, 0 is open
+	defer func() {
+		if ok != (er != schema.DateRange{From: -1, To: -1}) {
+			panic("wtf")
+		}
+	}()
 
 	// get the schedule date
 	var scheduleDate time.Time
@@ -118,7 +126,7 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 	// get the parsed date range
 	r, ok := ref.GetDateRange()
 	if !ok {
-		return from, to, false
+		return schema.DateRange{From: -1, To: -1}, false
 	}
 
 	var hadExplicitFromOrToYear bool
@@ -132,16 +140,16 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 		)
 		// if it's not valid, skip it
 		if !x.IsValid() {
-			return from, to, false
+			return schema.DateRange{From: -1, To: -1}, false
 		}
 		// if there's no month set, skip it
 		if !monthOK {
-			return from, to, false
+			return schema.DateRange{From: -1, To: -1}, false
 		}
 		// if there's no year set, use the schedule year
 		if !yearOK {
 			if scheduleDate.IsZero() {
-				return from, to, false // no current year
+				return schema.DateRange{From: -1, To: -1}, false // no current year
 			}
 			year, yearOK = scheduleDate.Year(), true
 		} else {
@@ -152,7 +160,10 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 			day, dayOK = 1, true
 		}
 		// compute the date
-		from = time.Date(year, month, day, 0, 0, 0, 0, TZ)
+		er.From = schema.MakeDate(year, month, day, weekday(year, month, day, TZ))
+	} else {
+		// open range
+		er.From = 0
 	}
 
 	// parse the to date
@@ -164,24 +175,24 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 		)
 		// if it's not valid, skip it
 		if !x.IsValid() {
-			return from, to, false
+			return schema.DateRange{From: -1, To: -1}, false
 		}
 		// if there's no month set, and there's no year or the from year is equal, use the from month
-		if !monthOK && !from.IsZero() && (!yearOK || from.Year() == year) {
-			month, monthOK = from.Month(), true
+		if !monthOK && !er.From.IsZero() && (!yearOK || expectOK(er.From.Year()) == year) {
+			month, monthOK = expectOK(er.From.Month()), true
 		}
 		// if there's still no month set, skip it
 		if !monthOK {
-			return from, to, false
+			return schema.DateRange{From: -1, To: -1}, false
 		}
 		// if there's no year set, figure it out
 		if !yearOK {
 			// from the from date (or the schedule date if no from)
-			if !from.IsZero() {
-				year, yearOK = from.Year(), true
+			if !er.From.IsZero() {
+				year, yearOK = expectOK(er.From.Year()), true
 			} else {
 				if scheduleDate.IsZero() {
-					return from, to, false
+					return schema.DateRange{From: -1, To: -1}, false
 				}
 				year, yearOK = scheduleDate.Year(), true
 			}
@@ -189,8 +200,8 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 			// no from), and the month is in the past, increase the year (we
 			// don't want to be too general about this and just check if from is
 			// after to as that could allow typos)
-			if !from.IsZero() && from.Year() == year {
-				if month < from.Month() {
+			if !er.From.IsZero() && expectOK(er.From.Year()) == year {
+				if month < expectOK(er.From.Month()) {
 					year++
 				}
 			} else if !scheduleDate.IsZero() && scheduleDate.Year() == year {
@@ -206,7 +217,10 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 			day, dayOK = daysInMonth(year, month), true
 		}
 		// compute the date
-		to = time.Date(year, month, day+1, 0, 0, 0, 0, TZ).Add(-time.Nanosecond)
+		er.To = schema.MakeDate(year, month, day, weekday(year, month, day, TZ))
+	} else {
+		// open range
+		er.To = 0
 	}
 
 	// to handle cases like (note: 2025-12-24 is a good dataset to test on):
@@ -227,7 +241,15 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 	//    schedule date instead
 	//
 	// then increment the assumed year by one
-	if !hadExplicitFromOrToYear && !from.IsZero() {
+	from, ok := er.From.GoTime(TZ)
+	if !ok {
+		panic("wtf")
+	}
+	to, ok := er.To.GoTime(TZ)
+	if !ok {
+		panic("wtf")
+	}
+	if !hadExplicitFromOrToYear && !er.From.IsZero() {
 		if fromInPast := from.Before(scheduleDate); fromInPast {
 			// note: since we had no explicit year, this will always be the schedule year + 1
 			fromInc := from.AddDate(1, 0, 0)
@@ -246,19 +268,21 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 			}
 		}
 	}
+	er.From = schema.MakeDateFromGo(from)
+	er.To = schema.MakeDateFromGo(to)
 
 	// if the range is empty, skip it
 	if from.IsZero() && to.IsZero() {
-		return from, to, false
+		return schema.DateRange{From: -1, To: -1}, false
 	}
 
 	// if the range is backwards, skip it
 	if from.After(to) {
-		return from, to, false
+		return schema.DateRange{From: -1, To: -1}, false
 	}
 
 	// otherwise, return it
-	return from, to, true
+	return er, true
 }
 
 // SingleDate returns true and a date if the activity date represents a single
@@ -271,7 +295,10 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (from time.Time, to time.Time
 // day date header for all times in a day, you probably want to use
 // [ScheduleRef.GetDayDate], which includes whichver of day/month/year/weekday
 // were explicitly specified in the scraped column header.
-func (ref TimeRef) SingleDate() (time.Time, bool) {
+//
+// The returned date will be valid with all components set (year, month, day,
+// weekday) if ok is true.
+func (ref TimeRef) SingleDate() (schema.Date, bool) {
 	if idx := ref.index(); idx.cached_TimeRef_SingleDate {
 		i := ref.nthOfType()
 		t := ref.idx.cached_TimeRef_SingleDate_t[i]
@@ -282,32 +309,33 @@ func (ref TimeRef) SingleDate() (time.Time, bool) {
 
 	d, ok := sch.GetDayDate(ref.GetScheduleDayIndex())
 	if !ok {
-		return time.Time{}, false
+		return -1, false
 	}
 
 	month, hasMonth := d.Month()
 	if !hasMonth {
-		return time.Time{}, false
+		return -1, false
 	}
 
 	day, hasDay := d.Day()
 	if !hasDay {
-		return time.Time{}, false
+		return -1, false
 	}
 
 	year, hasYear := d.Year()
 	if !hasYear {
-		if from, to, ok := sch.ComputeEffectiveDateRange(); ok {
-			if from.IsZero() || to.IsZero() || from.Year() == to.Year() {
+		if er, ok := sch.ComputeEffectiveDateRange(); ok {
+			if er.From.IsZero() || er.To.IsZero() || expectOK(er.From.Year()) == expectOK(er.To.Year()) {
 				// assume whichever year we have
-				if from.IsZero() {
-					year, hasYear = to.Year(), true
+				if er.From.IsZero() {
+					year, hasYear = expectOK(er.To.Year()), true
 				} else {
-					year, hasYear = from.Year(), true
+					year, hasYear = expectOK(er.From.Year()), true
 				}
 			} else {
-				fromYear, fromMonth, fromDay := from.Date()
-				toYear, toMonth, toDay := from.Date()
+				// expectOK is fine since we already checked for IsZero and ComputeEffectiveDateRange returns full dates
+				fromYear, fromMonth, fromDay := expectOK(er.From.Year()), expectOK(er.From.Month()), expectOK(er.From.Day())
+				toYear, toMonth, toDay := expectOK(er.To.Year()), expectOK(er.To.Month()), expectOK(er.To.Day())
 				if fromYear+1 == toYear {
 					// assume the from year if we're not before that date, otherwise the to year, as long as it's one more than the from year
 					if (month < fromMonth || (month == fromMonth && day < fromDay)) && (month < toMonth || (month == toMonth && day < toDay)) {
@@ -320,11 +348,21 @@ func (ref TimeRef) SingleDate() (time.Time, bool) {
 		}
 	}
 	if !hasYear {
-		return time.Time{}, false
+		return -1, false
 	}
 
-	return time.Date(year, month, day, 0, 0, 0, 0, TZ), true
+	return schema.MakeDate(year, month, day, weekday(year, month, day, TZ)), true
+}
 
+func expectOK[T any](x T, ok bool) T {
+	if !ok {
+		panic("wtf")
+	}
+	return x
+}
+
+func weekday(year int, month time.Month, day int, loc *time.Location) time.Weekday {
+	return time.Date(year, month, day, 0, 0, 0, 0, loc).Weekday()
 }
 
 func daysInMonth(year int, month time.Month) int {

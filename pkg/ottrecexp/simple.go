@@ -117,16 +117,28 @@ func New(data ottrecidx.DataRef) (*Data, error) {
 		for tm := range fac.Times() {
 			var ra Activity
 			ra.FacilityURL = rf.URL
-			if from, to, ok := tm.Schedule().ComputeEffectiveDateRange(); ok {
-				if !from.IsZero() {
-					ra.StartDate = from.Format(dateFormat)
+			if er, ok := tm.Schedule().ComputeEffectiveDateRange(); ok {
+				if !er.From.IsZero() {
+					t, ok := er.From.GoTime(ottrecidx.TZ)
+					if !ok {
+						panic("wtf")
+					}
+					ra.StartDate = t.Format(dateFormat)
 				}
-				if !to.IsZero() {
-					ra.EndDate = to.Format(dateFormat)
+				if !er.To.IsZero() {
+					t, ok := er.To.GoTime(ottrecidx.TZ)
+					if !ok {
+						panic("wtf")
+					}
+					ra.EndDate = t.Format(dateFormat)
 				}
 			}
 			if d, ok := tm.SingleDate(); ok {
-				ra.Weekday = d.Format(dateFormat)
+				t, ok := d.GoTime(ottrecidx.TZ)
+				if !ok {
+					panic("wtf")
+				}
+				ra.Weekday = t.Format(dateFormat)
 			} else if w, ok := tm.GetWeekday(); ok {
 				ra.Weekday = strings.ToLower(w.String())
 			}

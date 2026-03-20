@@ -1,6 +1,7 @@
 package ottrecql
 
 import (
+	"cmp"
 	"slices"
 	"time"
 
@@ -26,7 +27,8 @@ func Compile(e Node, c *Context) (*Expr, error) {
 }
 
 type compileCtx struct {
-	now     time.Time
+	today   schema.Date
+	now     schema.ClockTime
 	fuzzy   map[string]func(string) bool
 	mkfuzzy func(string) func(string) bool
 }
@@ -41,7 +43,8 @@ func newCompileCtx(c *Context) *compileCtx {
 	}
 	now = now.In(ottrecidx.TZ)
 	cc := &compileCtx{
-		now:     now,
+		today:   schema.MakeDateFromGo(now),
+		now:     schema.MakeClockTime(now.Hour(), now.Minute()),
 		fuzzy:   make(map[string]func(string) bool),
 		mkfuzzy: newFuzzyWordMatcher(),
 	}
@@ -77,11 +80,11 @@ func (c *compileCtx) compile(e Node) (cNode, error) {
 		}
 		return &cOr{a: left, b: right}, nil
 	case *SchDateNode:
-		var t time.Time
+		var t schema.Date
 		if e.Date.IsToday {
-			t = c.now
+			t = c.today
 		} else {
-			t = time.Date(e.Date.Year, e.Date.Month, e.Date.Day, 0, 0, 0, 0, ottrecidx.TZ)
+			t = schema.MakeDate(e.Date.Year, e.Date.Month, e.Date.Day, -1)
 		}
 		return &cSchDate{t: t}, nil
 	case *TimeNode:
@@ -91,8 +94,10 @@ func (c *compileCtx) compile(e Node) (cNode, error) {
 			case DateLit:
 				if d.IsToday {
 					ds[i].HasDate = true
-					ds[i].Year, ds[i].Month, ds[i].Day = c.now.Date()
-					ds[i].Weekday = c.now.Weekday()
+					ds[i].Year, _ = c.today.Year()
+					ds[i].Month, _ = c.today.Month()
+					ds[i].Day, _ = c.today.Day()
+					ds[i].Weekday, _ = c.today.Weekday()
 				} else {
 					ds[i].Weekday = time.Date(d.Year, d.Month, d.Day, 0, 0, 0, 0, ottrecidx.TZ).Weekday()
 				}
@@ -108,19 +113,18 @@ func (c *compileCtx) compile(e Node) (cNode, error) {
 			switch t := t.(type) {
 			case TimeLit:
 				if t.IsNow {
-					hh, mm, _ := c.now.Clock()
-					ct = append(ct, schema.MakeClockTime(hh, mm))
+					ct = append(ct, c.now)
 				} else {
 					ct = append(ct, schema.MakeClockTime(t.Hour, t.Minute))
 				}
 			case TimeRangeLit:
 				hh1, mm1 := t.Start.Hour, t.Start.Minute
 				if t.Start.IsNow {
-					hh1, mm1, _ = c.now.Clock()
+					_, hh1, mm1 = c.now.Split()
 				}
 				hh2, mm2 := t.End.Hour, t.End.Minute
 				if t.End.IsNow {
-					hh2, mm2, _ = c.now.Clock()
+					_, hh2, mm2 = c.now.Split()
 				}
 				cr = append(cr, schema.MakeClockRange(hh1, mm1, hh2, mm2))
 			default:
@@ -312,7 +316,7 @@ func (n *cOr) evalFacility(fac ottrecidx.FacilityRef) result {
 }
 
 type cSchDate struct {
-	t time.Time
+	t schema.Date
 }
 
 func (n *cSchDate) eval(tm ottrecidx.TimeRef) result {
@@ -322,8 +326,13 @@ func (n *cSchDate) eval(tm ottrecidx.TimeRef) result {
 		// activity time exactly for the requested date, include it only if it's
 		// that time
 		if t, ok := tm.SingleDate(); ok {
-			y1, m1, d1 := n.t.Date()
-			y2, m2, d2 := t.Date()
+			// it's all going to be full dates, so no need to check ok
+			y1, _ := n.t.Year()
+			m1, _ := n.t.Month()
+			d1, _ := n.t.Day()
+			y2, _ := t.Year()
+			m2, _ := t.Month()
+			d2, _ := t.Day()
 			if y1 == y2 && m1 == m2 && d1 == d2 {
 				r = rTrue
 			}
@@ -343,8 +352,13 @@ func (n *cSchDate) evalSchedule(sch ottrecidx.ScheduleRef) result {
 		// exactly for the requested date, include it
 		for tm := range sch.Times() {
 			if t, ok := tm.SingleDate(); ok {
-				y1, m1, d1 := n.t.Date()
-				y2, m2, d2 := t.Date()
+				// it's all going to be full dates, so no need to check ok
+				y1, _ := n.t.Year()
+				m1, _ := n.t.Month()
+				d1, _ := n.t.Day()
+				y2, _ := t.Year()
+				m2, _ := t.Month()
+				d2, _ := t.Day()
 				if y1 == y2 && m1 == m2 && d1 == d2 {
 					r = rTrue
 				}
@@ -355,17 +369,33 @@ func (n *cSchDate) evalSchedule(sch ottrecidx.ScheduleRef) result {
 }
 
 func (n *cSchDate) evalScheduleOnly(sch ottrecidx.ScheduleRef) result {
-	from, to, ok := sch.ComputeEffectiveDateRange()
+	er, ok := sch.ComputeEffectiveDateRange()
 	if !ok {
 		return rUnknown // don't let an unknown schedule date be the thing which causes something to be removed
 	}
-	if !from.IsZero() && n.t.Before(from) {
+	if !er.From.IsZero() && compareFullDate(n.t, er.From) < 0 {
 		return rFalse
 	}
-	if !to.IsZero() && n.t.After(to) {
+	if !er.To.IsZero() && compareFullDate(n.t, er.To) > 0 {
 		return rFalse
 	}
 	return rTrue
+}
+
+func compareFullDate(a, b schema.Date) int {
+	ay, _ := a.Year()
+	by, _ := b.Year()
+	if ay != by {
+		return cmp.Compare(ay, by)
+	}
+	am, _ := a.Month()
+	bm, _ := b.Month()
+	if am != bm {
+		return cmp.Compare(am, bm)
+	}
+	ad, _ := a.Day()
+	bd, _ := b.Day()
+	return cmp.Compare(ad, bd)
 }
 
 func (n *cSchDate) evalFacility(fac ottrecidx.FacilityRef) result { return rUnknown }
@@ -400,12 +430,16 @@ func (n *cTime) dateMatch(tm ottrecidx.TimeRef) result {
 		if isSingleDate {
 			if d.HasDate {
 				// single day, and we have a full date, so check if it's the same
-				if yyyy, mm, dd := sd.Date(); yyyy == d.Year && mm == d.Month && dd == d.Day {
+				yy, _ := sd.Year()
+				mm, _ := sd.Month()
+				dd, _ := sd.Day()
+				if yy == d.Year && mm == d.Month && dd == d.Day {
 					return rTrue
 				}
 			} else {
 				// single day, but we only have a weekday, so check if the date weekday matches
-				if d.Weekday == sd.Weekday() {
+				wd, _ := sd.Weekday()
+				if d.Weekday == wd {
 					return rTrue
 				}
 			}

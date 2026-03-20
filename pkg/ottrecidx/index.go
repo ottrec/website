@@ -47,7 +47,7 @@ type Indexer struct {
 	//  - 172 Index{hash:I3XTO3RT obj:3702 scan:74.89µs import:0s precompute:3ms dataUpdated:2025-10-12}
 	//  - 173 Index{hash:DQHVZUJ7 obj:3714 scan:62.88µs import:0s precompute:2ms dataUpdated:2025-10-11}
 	init bool
-	ia   *arena           // this had 21901264 bytes (bitmaps and precomputed values; mostly evenly split across schedules)
+	ia   *arena           // this had 9772068 bytes (bitmaps and precomputed values; mostly evenly split across schedules)
 	a    *arena           // this had 13612204 bytes (data; amortized across schedules due to deduplication: raw protobufs were 41646361 bytes, in-memory unmarshaled protobufs take more space)
 	sa   stringInterner   // this had 386179 bytes over 2 chunks (ratio 0.020)
 	ac   activityInterner // this had 522 items over 522 chunks (ratio 0.004)
@@ -82,14 +82,12 @@ type Index struct {
 	cached_ActivityRef_GuessReservationRequirement_definite bitmap[refObj]
 
 	// precomputed: ScheduleRef.ComputeEffectiveDateRange
-	cached_ScheduleRef_ComputeEffectiveDateRange      bool
-	cached_ScheduleRef_ComputeEffectiveDateRange_from []time.Time
-	cached_ScheduleRef_ComputeEffectiveDateRange_to   []time.Time
-	cached_ScheduleRef_ComputeEffectiveDateRange_ok   bitmap[refObj]
+	cached_ScheduleRef_ComputeEffectiveDateRange    bool
+	cached_ScheduleRef_ComputeEffectiveDateRange_er []schema.DateRange
 
 	// precomputed: TimeRef.SingleDate
 	cached_TimeRef_SingleDate   bool
-	cached_TimeRef_SingleDate_t []time.Time
+	cached_TimeRef_SingleDate_t []schema.Date
 
 	// precomputed: Index.Updated
 	updated time.Time
@@ -198,11 +196,9 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 		cached_ActivityRef_GuessReservationRequirement_required: arenaMakeBitmap[refObj](dxr.ia, n),
 		cached_ActivityRef_GuessReservationRequirement_definite: arenaMakeBitmap[refObj](dxr.ia, n),
 
-		cached_ScheduleRef_ComputeEffectiveDateRange_from: arenaMakeSlice[time.Time](dxr.ia, nSch, nSch),
-		cached_ScheduleRef_ComputeEffectiveDateRange_to:   arenaMakeSlice[time.Time](dxr.ia, nSch, nSch),
-		cached_ScheduleRef_ComputeEffectiveDateRange_ok:   arenaMakeBitmap[refObj](dxr.ia, n),
+		cached_ScheduleRef_ComputeEffectiveDateRange_er: arenaMakeSlice[schema.DateRange](dxr.ia, nSch, nSch),
 
-		cached_TimeRef_SingleDate_t: arenaMakeSlice[time.Time](dxr.ia, nTm, nTm),
+		cached_TimeRef_SingleDate_t: arenaMakeSlice[schema.Date](dxr.ia, nTm, nTm),
 	}
 
 	idx.durScan, now = time.Since(now), time.Now()
@@ -255,12 +251,8 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 
 	for act := range idx.Data().Schedules() {
 		i := act.nthOfType()
-		from, to, ok := act.ComputeEffectiveDateRange()
-		idx.cached_ScheduleRef_ComputeEffectiveDateRange_from[i] = from
-		idx.cached_ScheduleRef_ComputeEffectiveDateRange_to[i] = to
-		if ok {
-			idx.cached_ScheduleRef_ComputeEffectiveDateRange_ok.Set(act.object())
-		}
+		er, _ := act.ComputeEffectiveDateRange()
+		idx.cached_ScheduleRef_ComputeEffectiveDateRange_er[i] = er
 	}
 	idx.cached_ScheduleRef_ComputeEffectiveDateRange = true
 
@@ -270,7 +262,7 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 		if ok {
 			idx.cached_TimeRef_SingleDate_t[i] = t
 		} else {
-			idx.cached_TimeRef_SingleDate_t[i] = time.Time{}
+			idx.cached_TimeRef_SingleDate_t[i] = 0
 		}
 	}
 	idx.cached_TimeRef_SingleDate = true
@@ -478,11 +470,11 @@ func sanityCheck2(idx *Index) {
 		panic("wtf")
 	}
 	for ref := range idx.Data().Schedules() {
-		a1, b1, c1 := ref.ComputeEffectiveDateRange()
+		a1, b1 := ref.ComputeEffectiveDateRange()
 		idx.cached_ScheduleRef_ComputeEffectiveDateRange = false
-		a2, b2, c2 := ref.ComputeEffectiveDateRange()
+		a2, b2 := ref.ComputeEffectiveDateRange()
 		idx.cached_ScheduleRef_ComputeEffectiveDateRange = true
-		if a1 != a2 || b1 != b2 || c1 != c2 {
+		if a1 != a2 || b1 != b2 {
 			panic("wtf")
 		}
 	}

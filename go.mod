@@ -14,7 +14,7 @@ require (
 	github.com/klauspost/compress v1.18.0
 	github.com/lmittmann/tint v1.1.2
 	github.com/ncruces/go-sqlite3 v0.29.1
-	github.com/pgaskin/ottrec v0.0.0-20251007032526-ab79bc674a9a
+	github.com/pgaskin/ottrec v0.0.0-20260320115659-d7c3036c8cbb
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/pflag v1.0.10
 	golang.org/x/net v0.44.0
