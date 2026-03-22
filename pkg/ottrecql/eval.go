@@ -11,6 +11,8 @@ import (
 
 // TODO: optimize expression by swapping sides of and/or by cost
 
+// TODO: optimize expression by deduplicating nodes, then storing last ref and result in each one, then returning that if matches
+
 type Context struct {
 	// Now, if non-zero, overrides the date used for the expression.
 	Now time.Time
@@ -133,9 +135,27 @@ func (c *compileCtx) compile(e Node) (cNode, error) {
 		}
 		return &cTime{d: ds, ct: ct, cr: cr}, nil
 	case *FacilityNode:
-		return &cFacility{m: c.fuzzies(e.FuzzyName)}, nil
+		var n []cNode
+		for _, m := range c.fuzzies(e.FuzzyName) {
+			n = append(n, &cFacility{
+				m: m,
+			})
+		}
+		if len(n) == 1 {
+			return n[0], nil
+		}
+		return &cFlatOr{n: n}, nil
 	case *ActivityNode:
-		return &cActivity{m: c.fuzzies(e.FuzzyName)}, nil
+		var n []cNode
+		for _, m := range c.fuzzies(e.FuzzyName) {
+			n = append(n, &cActivity{
+				m: m,
+			})
+		}
+		if len(n) == 1 {
+			return n[0], nil
+		}
+		return &cFlatOr{n: n}, nil
 	case *LatLngNode:
 		return &cLatLng{lat: float64(e.Lat), lng: float64(e.Lng), dist: float64(e.Dist)}, nil
 	default:
@@ -323,6 +343,98 @@ func (n *cOr) eval1(fac ottrecidx.FacilityRef) result {
 	return evalOr(fac, n.a.eval1, n.b.eval1)
 }
 
+type cFlatOr struct {
+	n []cNode
+}
+
+func (n *cFlatOr) eval4(tm ottrecidx.TimeRef) result {
+	var unk bool
+	if len(n.n) == 0 {
+		return rTrue
+	}
+	for _, n := range n.n {
+		switch n.eval4(tm) {
+		case rTrue:
+			return rTrue
+		case rFalse:
+			if unk {
+				return rUnknown
+			}
+		case rUnknown:
+			unk = true
+		}
+	}
+	if unk {
+		return rUnknown
+	}
+	return rFalse
+}
+
+func (n *cFlatOr) eval3(act ottrecidx.ActivityRef) result {
+	var unk bool
+	if len(n.n) == 0 {
+		return rTrue
+	}
+	for _, n := range n.n {
+		switch n.eval3(act) {
+		case rTrue:
+			return rTrue
+		case rFalse:
+			if unk {
+				return rUnknown
+			}
+		case rUnknown:
+			unk = true
+		}
+	}
+	if unk {
+		return rUnknown
+	}
+	return rFalse
+}
+
+func (n *cFlatOr) eval2(sch ottrecidx.ScheduleRef) result {
+	var unk bool
+	if len(n.n) == 0 {
+		return rTrue
+	}
+	for _, n := range n.n {
+		switch n.eval2(sch) {
+		case rTrue:
+			return rTrue
+		case rFalse:
+			if unk {
+				return rUnknown
+			}
+		case rUnknown:
+			unk = true
+		}
+	}
+	if unk {
+		return rUnknown
+	}
+	return rFalse
+}
+
+func (n *cFlatOr) eval1(fac ottrecidx.FacilityRef) result {
+	var unk bool
+	if len(n.n) == 0 {
+		return rTrue
+	}
+	for _, n := range n.n {
+		switch n.eval1(fac) {
+		case rTrue:
+			return rTrue
+		case rUnknown:
+			unk = true
+		}
+	}
+	if unk {
+		return rUnknown
+	}
+	return rFalse
+}
+
 type cSchDate struct {
 	t schema.Date
 }
@@ -466,7 +578,7 @@ func (n *cTime) timeMatch(tm ottrecidx.TimeRef) result {
 }
 
 type cFacility struct {
-	m []func(string) bool
+	m func(string) bool
 }
 
 func (n *cFacility) eval4(tm ottrecidx.TimeRef) result      { return n.eval1(tm.Facility()) }
@@ -474,16 +586,14 @@ func (n *cFacility) eval3(act ottrecidx.ActivityRef) result { return rNotApplica
 func (n *cFacility) eval2(sch ottrecidx.ScheduleRef) result { return rNotApplicable }
 
 func (n *cFacility) eval1(fac ottrecidx.FacilityRef) result {
-	for _, m := range n.m {
-		if m(fac.GetName()) {
-			return rTrue
-		}
+	if n.m(fac.GetName()) {
+		return rTrue
 	}
 	return rFalse
 }
 
 type cActivity struct {
-	m []func(string) bool
+	m func(string) bool
 }
 
 func (n *cActivity) eval4(tm ottrecidx.TimeRef) result      { return n.eval3(tm.Activity()) }
@@ -491,10 +601,8 @@ func (n *cActivity) eval2(sch ottrecidx.ScheduleRef) result { return rUnknown }
 func (n *cActivity) eval1(fac ottrecidx.FacilityRef) result { return rUnknown }
 
 func (n *cActivity) eval3(act ottrecidx.ActivityRef) result {
-	for _, m := range n.m {
-		if m(act.GetName()) || m(act.GetLabel()) {
-			return rTrue
-		}
+	if n.m(act.GetName()) || n.m(act.GetLabel()) {
+		return rTrue
 	}
 	return rFalse
 }
