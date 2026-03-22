@@ -118,7 +118,7 @@ func (ref baseRef) withFilter() baseRef {
 }
 
 // deref returns the schema object the ref points to.
-func (ref baseRef) deref() unsafe.Pointer {
+func (ref baseRef) deref() objRef {
 	if !ref.Valid() {
 		panic("cannot deref nil reference")
 	}
