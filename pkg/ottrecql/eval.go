@@ -167,16 +167,16 @@ func (e *Expr) Filter(data ottrecidx.DataRef) ottrecidx.DataRef {
 
 	// filter, doing the top-level stuff first as an optimization
 	mut.FilterFacilities(func(ref ottrecidx.FacilityRef) bool {
-		return e.root.evalFacility(ref).matches()
+		return e.root.eval1(ref).matches()
 	})
 	mut.FilterSchedules(func(ref ottrecidx.ScheduleRef) bool {
-		return e.root.evalSchedule(ref).matches()
+		return e.root.eval2(ref).matches()
 	})
 	mut.FilterActivities(func(ref ottrecidx.ActivityRef) bool {
-		return e.root.evalActivity(ref).matches()
+		return e.root.eval3(ref).matches()
 	})
 	mut.FilterTimes(func(ref ottrecidx.TimeRef) bool {
-		return e.root.eval(ref).matches()
+		return e.root.eval4(ref).matches()
 	})
 
 	// remove empty items
@@ -189,12 +189,20 @@ func (e *Expr) Filter(data ottrecidx.DataRef) ottrecidx.DataRef {
 }
 
 // result represents a potentially unknown boolean value.
+//
+// The [rUnknown]/[rNotApplicable] values work because they prevents that clause
+// of the query from being the reason something is filtered out, and if
+// something else would filter it out, it is short-circuited. The [cNode.eval4]
+// method must not return [rNotApplicable] otherwise filters ANDing multiple
+// levels like `(activity("lane") and facility("bob")) and not (activity("lane")
+// and facility("bob"))` will not work correctly.
 type result byte
 
 const (
-	rUnknown result = 0
-	rFalse   result = 'f'
-	rTrue    result = 't'
+	rUnknown       result = 0
+	rNotApplicable result = rUnknown
+	rFalse         result = 'f'
+	rTrue          result = 't'
 )
 
 // matches returns true if result is unknown or true.
@@ -247,30 +255,30 @@ func evalOr[T any](x T, a func(T) result, b func(T) result) result {
 }
 
 type cNode interface {
-	eval(tm ottrecidx.TimeRef) result              // full evaluation
-	evalActivity(act ottrecidx.ActivityRef) result // short-circuit evaluation against an activity
-	evalSchedule(sch ottrecidx.ScheduleRef) result // short-circuit evaluation against a schedule
-	evalFacility(fac ottrecidx.FacilityRef) result // short-circuit evaluation against a facility
+	eval4(tm ottrecidx.TimeRef) result      // full evaluation
+	eval3(act ottrecidx.ActivityRef) result // short-circuit evaluation against an activity
+	eval2(sch ottrecidx.ScheduleRef) result // short-circuit evaluation against a schedule
+	eval1(fac ottrecidx.FacilityRef) result // short-circuit evaluation against a facility
 }
 
 type cNot struct {
 	a cNode
 }
 
-func (n *cNot) eval(tm ottrecidx.TimeRef) result {
-	return evalNot(tm, n.a.eval)
+func (n *cNot) eval4(tm ottrecidx.TimeRef) result {
+	return evalNot(tm, n.a.eval4)
 }
 
-func (n *cNot) evalActivity(act ottrecidx.ActivityRef) result {
-	return evalNot(act, n.a.evalActivity)
+func (n *cNot) eval3(act ottrecidx.ActivityRef) result {
+	return evalNot(act, n.a.eval3)
 }
 
-func (n *cNot) evalSchedule(sch ottrecidx.ScheduleRef) result {
-	return evalNot(sch, n.a.evalSchedule)
+func (n *cNot) eval2(sch ottrecidx.ScheduleRef) result {
+	return evalNot(sch, n.a.eval2)
 }
 
-func (n *cNot) evalFacility(fac ottrecidx.FacilityRef) result {
-	return evalNot(fac, n.a.evalFacility)
+func (n *cNot) eval1(fac ottrecidx.FacilityRef) result {
+	return evalNot(fac, n.a.eval1)
 }
 
 type cAnd struct {
@@ -278,20 +286,20 @@ type cAnd struct {
 	b cNode
 }
 
-func (n *cAnd) eval(tm ottrecidx.TimeRef) result {
-	return evalAnd(tm, n.a.eval, n.b.eval)
+func (n *cAnd) eval4(tm ottrecidx.TimeRef) result {
+	return evalAnd(tm, n.a.eval4, n.b.eval4)
 }
 
-func (n *cAnd) evalActivity(act ottrecidx.ActivityRef) result {
-	return evalAnd(act, n.a.evalActivity, n.b.evalActivity)
+func (n *cAnd) eval3(act ottrecidx.ActivityRef) result {
+	return evalAnd(act, n.a.eval3, n.b.eval3)
 }
 
-func (n *cAnd) evalSchedule(sch ottrecidx.ScheduleRef) result {
-	return evalAnd(sch, n.a.evalSchedule, n.b.evalSchedule)
+func (n *cAnd) eval2(sch ottrecidx.ScheduleRef) result {
+	return evalAnd(sch, n.a.eval2, n.b.eval2)
 }
 
-func (n *cAnd) evalFacility(fac ottrecidx.FacilityRef) result {
-	return evalAnd(fac, n.a.evalFacility, n.b.evalFacility)
+func (n *cAnd) eval1(fac ottrecidx.FacilityRef) result {
+	return evalAnd(fac, n.a.eval1, n.b.eval1)
 }
 
 type cOr struct {
@@ -299,53 +307,31 @@ type cOr struct {
 	b cNode
 }
 
-func (n *cOr) eval(tm ottrecidx.TimeRef) result {
-	return evalOr(tm, n.a.eval, n.b.eval)
+func (n *cOr) eval4(tm ottrecidx.TimeRef) result {
+	return evalOr(tm, n.a.eval4, n.b.eval4)
 }
 
-func (n *cOr) evalActivity(act ottrecidx.ActivityRef) result {
-	return evalOr(act, n.a.evalActivity, n.b.evalActivity)
+func (n *cOr) eval3(act ottrecidx.ActivityRef) result {
+	return evalOr(act, n.a.eval3, n.b.eval3)
 }
 
-func (n *cOr) evalSchedule(sch ottrecidx.ScheduleRef) result {
-	return evalOr(sch, n.a.evalSchedule, n.b.evalSchedule)
+func (n *cOr) eval2(sch ottrecidx.ScheduleRef) result {
+	return evalOr(sch, n.a.eval2, n.b.eval2)
 }
 
-func (n *cOr) evalFacility(fac ottrecidx.FacilityRef) result {
-	return evalOr(fac, n.a.evalFacility, n.b.evalFacility)
+func (n *cOr) eval1(fac ottrecidx.FacilityRef) result {
+	return evalOr(fac, n.a.eval1, n.b.eval1)
 }
 
 type cSchDate struct {
 	t schema.Date
 }
 
-func (n *cSchDate) eval(tm ottrecidx.TimeRef) result {
-	r := n.evalScheduleOnly(tm.Schedule())
-	if r == rFalse {
-		// if the schedule date doesn't match but we included it since we have a
-		// activity time exactly for the requested date, include it only if it's
-		// that time
-		if t, ok := tm.SingleDate(); ok {
-			// it's all going to be full dates, so no need to check ok
-			y1, _ := n.t.Year()
-			m1, _ := n.t.Month()
-			d1, _ := n.t.Day()
-			y2, _ := t.Year()
-			m2, _ := t.Month()
-			d2, _ := t.Day()
-			if y1 == y2 && m1 == m2 && d1 == d2 {
-				r = rTrue
-			}
-		}
-	}
-	return r
-}
+func (n *cSchDate) eval4(tm ottrecidx.TimeRef) result      { return n.eval2(tm.Schedule()) }
+func (n *cSchDate) eval3(act ottrecidx.ActivityRef) result { return rNotApplicable }
+func (n *cSchDate) eval1(fac ottrecidx.FacilityRef) result { return rUnknown }
 
-func (n *cSchDate) evalActivity(act ottrecidx.ActivityRef) result {
-	return n.evalSchedule(act.Schedule())
-}
-
-func (n *cSchDate) evalSchedule(sch ottrecidx.ScheduleRef) result {
+func (n *cSchDate) eval2(sch ottrecidx.ScheduleRef) result {
 	r := n.evalScheduleOnly(sch)
 	if r == rFalse {
 		// if the schedule date doesn't match but we have a activity time
@@ -398,8 +384,6 @@ func compareFullDate(a, b schema.Date) int {
 	return cmp.Compare(ad, bd)
 }
 
-func (n *cSchDate) evalFacility(fac ottrecidx.FacilityRef) result { return rUnknown }
-
 type cTime struct {
 	d  []cTimeDate
 	ct []schema.ClockTime
@@ -415,7 +399,11 @@ type cTimeDate struct {
 	Day     int
 }
 
-func (n *cTime) eval(tm ottrecidx.TimeRef) result {
+func (n *cTime) eval3(act ottrecidx.ActivityRef) result { return rUnknown }
+func (n *cTime) eval2(sch ottrecidx.ScheduleRef) result { return rUnknown }
+func (n *cTime) eval1(fac ottrecidx.FacilityRef) result { return rUnknown }
+
+func (n *cTime) eval4(tm ottrecidx.TimeRef) result {
 	return evalAnd(tm, n.dateMatch, n.timeMatch)
 }
 
@@ -477,27 +465,15 @@ func (n *cTime) timeMatch(tm ottrecidx.TimeRef) result {
 	return rFalse
 }
 
-func (n *cTime) evalActivity(act ottrecidx.ActivityRef) result { return rUnknown }
-func (n *cTime) evalSchedule(sch ottrecidx.ScheduleRef) result { return rUnknown }
-func (n *cTime) evalFacility(fac ottrecidx.FacilityRef) result { return rUnknown }
-
 type cFacility struct {
 	m []func(string) bool
 }
 
-func (n *cFacility) eval(tm ottrecidx.TimeRef) result {
-	return n.evalFacility(tm.Facility())
-}
+func (n *cFacility) eval4(tm ottrecidx.TimeRef) result      { return n.eval1(tm.Facility()) }
+func (n *cFacility) eval3(act ottrecidx.ActivityRef) result { return rNotApplicable }
+func (n *cFacility) eval2(sch ottrecidx.ScheduleRef) result { return rNotApplicable }
 
-func (n *cFacility) evalActivity(act ottrecidx.ActivityRef) result {
-	return n.evalFacility(act.Facility())
-}
-
-func (n *cFacility) evalSchedule(sch ottrecidx.ScheduleRef) result {
-	return n.evalFacility(sch.Facility())
-}
-
-func (n *cFacility) evalFacility(fac ottrecidx.FacilityRef) result {
+func (n *cFacility) eval1(fac ottrecidx.FacilityRef) result {
 	for _, m := range n.m {
 		if m(fac.GetName()) {
 			return rTrue
@@ -510,11 +486,11 @@ type cActivity struct {
 	m []func(string) bool
 }
 
-func (n *cActivity) eval(tm ottrecidx.TimeRef) result {
-	return n.evalActivity(tm.Activity())
-}
+func (n *cActivity) eval4(tm ottrecidx.TimeRef) result      { return n.eval3(tm.Activity()) }
+func (n *cActivity) eval2(sch ottrecidx.ScheduleRef) result { return rUnknown }
+func (n *cActivity) eval1(fac ottrecidx.FacilityRef) result { return rUnknown }
 
-func (n *cActivity) evalActivity(act ottrecidx.ActivityRef) result {
+func (n *cActivity) eval3(act ottrecidx.ActivityRef) result {
 	for _, m := range n.m {
 		if m(act.GetName()) || m(act.GetLabel()) {
 			return rTrue
@@ -523,28 +499,17 @@ func (n *cActivity) evalActivity(act ottrecidx.ActivityRef) result {
 	return rFalse
 }
 
-func (n *cActivity) evalSchedule(sch ottrecidx.ScheduleRef) result { return rUnknown }
-func (n *cActivity) evalFacility(fac ottrecidx.FacilityRef) result { return rUnknown }
-
 type cLatLng struct {
 	lat  float64
 	lng  float64
 	dist float64
 }
 
-func (n *cLatLng) eval(tm ottrecidx.TimeRef) result {
-	return n.evalFacility(tm.Facility())
-}
+func (n *cLatLng) eval4(tm ottrecidx.TimeRef) result      { return n.eval1(tm.Facility()) }
+func (n *cLatLng) eval3(act ottrecidx.ActivityRef) result { return rNotApplicable }
+func (n *cLatLng) eval2(sch ottrecidx.ScheduleRef) result { return rNotApplicable }
 
-func (n *cLatLng) evalActivity(act ottrecidx.ActivityRef) result {
-	return n.evalFacility(act.Facility())
-}
-
-func (n *cLatLng) evalSchedule(sch ottrecidx.ScheduleRef) result {
-	return n.evalFacility(sch.Facility())
-}
-
-func (n *cLatLng) evalFacility(fac ottrecidx.FacilityRef) result {
+func (n *cLatLng) eval1(fac ottrecidx.FacilityRef) result {
 	lng, lat, ok := fac.GetLngLat()
 	if !ok {
 		return rTrue
