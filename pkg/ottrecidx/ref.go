@@ -69,6 +69,19 @@ func (ref baseRef) reflect() baseRef {
 	return ref
 }
 
+// RefID is an opaque comparable value which efficiently uniquely identifies the
+// ref at runtime without keeping a reference to it.
+type RefID struct {
+	id uint64
+}
+
+func (ref baseRef) RefID() RefID {
+	if ref.idx == nil {
+		return RefID{}
+	}
+	return RefID{ref.idx.hashCode ^ uint64(ref.obj)}
+}
+
 // Valid returns true if the ref is not a nil reference. If the ref is not
 // valid, this (and String/GoString) are the only functions which can be safely
 // called without panicking.

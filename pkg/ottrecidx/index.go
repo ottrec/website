@@ -5,6 +5,7 @@ package ottrecidx
 import (
 	"crypto/sha1"
 	"encoding/base32"
+	"hash/maphash"
 	"iter"
 	"math"
 	"slices"
@@ -57,7 +58,8 @@ type Indexer struct {
 type Index struct {
 	ia, a *arena // keep a pointer to it so it doesn't get finalized while we are using objects from it
 
-	hash string
+	hash     string
+	hashCode uint64
 
 	// base object array and bitmaps
 	obj            []objRef       // flattened data->facility[]->schedule_group[]->schedule[]->activity[]->time[]
@@ -99,6 +101,8 @@ type Index struct {
 	durPrecompute  time.Duration
 }
 
+var hashCodeSeed = maphash.MakeSeed()
+
 // Load loads data from a binary protobuf. Note that this has quadratic
 // complexity, as the indexer focuses on optimizing memory usage and read-only
 // queries.
@@ -124,7 +128,7 @@ func (dxr *Indexer) Load(pb []byte) (*Index, error) {
 			return nil, err
 		}
 		fixLngLatRegression(&msg)
-		idx = dxr.index(hash, &msg)
+		idx = dxr.index(hash, maphash.Bytes(hashCodeSeed, pb), &msg)
 		dxr.idx[hash] = idx
 	}
 	return idx, nil
@@ -144,7 +148,7 @@ func fixLngLatRegression(msg *schema.Data) {
 	}
 }
 
-func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
+func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Index {
 	now := time.Now()
 
 	var n, nFac, nGrp, nSch, nAct, nTm int
@@ -174,9 +178,11 @@ func (dxr *Indexer) index(hash string, data *schema.Data) *Index {
 	}
 
 	idx := &Index{
-		ia:   dxr.ia,
-		a:    dxr.a,
-		hash: hash,
+		ia: dxr.ia,
+		a:  dxr.a,
+
+		hash:     hash,
+		hashCode: hashCode,
 
 		obj:            arenaMakeSlice[objRef](dxr.ia, 0, n),
 		bData:          arenaMakeBitmap[refObj](dxr.ia, n),
