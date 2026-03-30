@@ -26,6 +26,206 @@
     src: url(fonts/source_sans_3.woff2);
 }
 
+/* flexoki colors */
+:root {
+    --fxki-black:       #100F0F;
+    --fxki-paper:       #FFFCF0;
+    --fxki-base-50:     #F2F0E5;
+    --fxki-base-100:    #E6E4D9;
+    --fxki-base-150:    #DAD8CE;
+    --fxki-base-200:    #CECDC3;
+    --fxki-base-300:    #B7B5AC;
+    --fxki-base-400:    #9F9D96;
+    --fxki-base-500:    #878580;
+    --fxki-base-600:    #6F6E69;
+    --fxki-base-700:    #575653;
+    --fxki-base-800:    #403E3C;
+    --fxki-base-850:    #343331;
+    --fxki-base-900:    #282726;
+    --fxki-base-950:    #1C1B1A;
+    --fxki-red-50:      #FFE1D5;
+    --fxki-red-100:     #FFCABB;
+    --fxki-red-150:     #FDB2A2;
+    --fxki-red-200:     #F89A8A;
+    --fxki-red-300:     #E8705F;
+    --fxki-red-400:     #D14D41;
+    --fxki-red-500:     #C03E35;
+    --fxki-red-600:     #AF3029;
+    --fxki-red-700:     #942822;
+    --fxki-red-800:     #6C201C;
+    --fxki-red-850:     #551B18;
+    --fxki-red-900:     #3E1715;
+    --fxki-red-950:     #261312;
+    --fxki-orange-50:   #FFE7CE;
+    --fxki-orange-100:  #FED3AF;
+    --fxki-orange-150:  #FCC192;
+    --fxki-orange-200:  #F9AE77;
+    --fxki-orange-300:  #EC8B49;
+    --fxki-orange-400:  #DA702C;
+    --fxki-orange-500:  #CB6120;
+    --fxki-orange-600:  #BC5215;
+    --fxki-orange-700:  #9D4310;
+    --fxki-orange-800:  #71320D;
+    --fxki-orange-850:  #59290D;
+    --fxki-orange-900:  #40200D;
+    --fxki-orange-950:  #27180E;
+    --fxki-yellow-50:   #FAEEC6;
+    --fxki-yellow-100:  #F6E2A0;
+    --fxki-yellow-150:  #F1D67E;
+    --fxki-yellow-200:  #ECCB60;
+    --fxki-yellow-300:  #DFB431;
+    --fxki-yellow-400:  #D0A215;
+    --fxki-yellow-500:  #BE9207;
+    --fxki-yellow-600:  #AD8301;
+    --fxki-yellow-700:  #8E6B01;
+    --fxki-yellow-800:  #664D01;
+    --fxki-yellow-850:  #503D02;
+    --fxki-yellow-900:  #3A2D04;
+    --fxki-yellow-950:  #241E08;
+    --fxki-green-50:    #EDEECF;
+    --fxki-green-100:   #DDE2B2;
+    --fxki-green-150:   #CDD597;
+    --fxki-green-200:   #BEC97E;
+    --fxki-green-300:   #A0AF54;
+    --fxki-green-400:   #879A39;
+    --fxki-green-500:   #768D21;
+    --fxki-green-600:   #66800B;
+    --fxki-green-700:   #536907;
+    --fxki-green-800:   #3D4C07;
+    --fxki-green-850:   #313D07;
+    --fxki-green-900:   #252D09;
+    --fxki-green-950:   #1A1E0C;
+    --fxki-cyan-50:     #DDF1E4;
+    --fxki-cyan-100:    #BFE8D9;
+    --fxki-cyan-150:    #A2DECE;
+    --fxki-cyan-200:    #87D3C3;
+    --fxki-cyan-300:    #5ABDAC;
+    --fxki-cyan-400:    #3AA99F;
+    --fxki-cyan-500:    #2F968D;
+    --fxki-cyan-600:    #24837B;
+    --fxki-cyan-700:    #1C6C66;
+    --fxki-cyan-800:    #164F4A;
+    --fxki-cyan-850:    #143F3C;
+    --fxki-cyan-900:    #122F2C;
+    --fxki-cyan-950:    #101F1D;
+    --fxki-blue-50:     #E1ECEB;
+    --fxki-blue-100:    #C6DDE8;
+    --fxki-blue-150:    #ABCFE2;
+    --fxki-blue-200:    #92BFDB;
+    --fxki-blue-300:    #66A0C8;
+    --fxki-blue-400:    #4385BE;
+    --fxki-blue-500:    #3171B2;
+    --fxki-blue-600:    #205EA6;
+    --fxki-blue-700:    #1A4F8C;
+    --fxki-blue-800:    #163B66;
+    --fxki-blue-850:    #133051;
+    --fxki-blue-900:    #12253B;
+    --fxki-blue-950:    #101A24;
+    --fxki-purple-50:   #F0EAEC;
+    --fxki-purple-100:  #E2D9E9;
+    --fxki-purple-150:  #D3CAE6;
+    --fxki-purple-200:  #C4B9E0;
+    --fxki-purple-300:  #A699D0;
+    --fxki-purple-400:  #8B7EC8;
+    --fxki-purple-500:  #735EB5;
+    --fxki-purple-600:  #5E409D;
+    --fxki-purple-700:  #4F3685;
+    --fxki-purple-800:  #3C2A62;
+    --fxki-purple-850:  #31234E;
+    --fxki-purple-900:  #261C39;
+    --fxki-purple-950:  #1A1623;
+    --fxki-magenta-50:  #FEE4E5;
+    --fxki-magenta-100: #FCCFDA;
+    --fxki-magenta-150: #F9B9CF;
+    --fxki-magenta-200: #F4A4C2;
+    --fxki-magenta-300: #E47DA8;
+    --fxki-magenta-400: #CE5D97;
+    --fxki-magenta-500: #B74583;
+    --fxki-magenta-600: #A02F6F;
+    --fxki-magenta-700: #87285E;
+    --fxki-magenta-800: #641F46;
+    --fxki-magenta-850: #4F1B39;
+    --fxki-magenta-900: #39172B;
+    --fxki-magenta-950: #24131D;
+
+    --fxki-light-bg:    var(--fxki-paper);
+    --fxki-light-bg-2:  var(--fxki-base-50);
+    --fxki-light-bg-3:  var(--fxki-base-100);
+    --fxki-light-tx:    var(--fxki-black);
+    --fxki-light-tx-2:  var(--fxki-base-600);
+    --fxki-light-tx-3:  var(--fxki-base-300);
+    --fxki-light-ui:    var(--fxki-base-100);
+    --fxki-light-ui-2:  var(--fxki-base-150);
+    --fxki-light-ui-3:  var(--fxki-base-200);
+    --fxki-dark-bg:     var(--fxki-black);
+    --fxki-dark-bg-2:   var(--fxki-base-950);
+    --fxki-dark-bg-3:   var(--fxki-base-900);
+    --fxki-dark-tx:     var(--fxki-base-200);
+    --fxki-dark-tx-2:   var(--fxki-base-500);
+    --fxki-dark-tx-3:   var(--fxki-base-700);
+    --fxki-dark-ui:     var(--fxki-base-900);
+    --fxki-dark-ui-2:   var(--fxki-base-850);
+    --fxki-dark-ui-3:   var(--fxki-base-800);
+    --fxki-light-re:    var(--fxki-red-600);
+    --fxki-light-or:    var(--fxki-orange-600);
+    --fxki-light-ye:    var(--fxki-yellow-600);
+    --fxki-light-gr:    var(--fxki-green-600);
+    --fxki-light-cy:    var(--fxki-cyan-600);
+    --fxki-light-bl:    var(--fxki-blue-600);
+    --fxki-light-pu:    var(--fxki-purple-600);
+    --fxki-light-ma:    var(--fxki-magenta-600);
+    --fxki-dark-re:     var(--fxki-red-400);
+    --fxki-dark-or:     var(--fxki-orange-400);
+    --fxki-dark-ye:     var(--fxki-yellow-400);
+    --fxki-dark-gr:     var(--fxki-green-400);
+    --fxki-dark-cy:     var(--fxki-cyan-400);
+    --fxki-dark-bl:     var(--fxki-blue-400);
+    --fxki-dark-pu:     var(--fxki-purple-400);
+    --fxki-dark-ma:     var(--fxki-magenta-400);
+    --fxki-light-re-2:  var(--fxki-red-400);
+    --fxki-light-or-2:  var(--fxki-orange-400);
+    --fxki-light-ye-2:  var(--fxki-yellow-400);
+    --fxki-light-gr-2:  var(--fxki-green-400);
+    --fxki-light-cy-2:  var(--fxki-cyan-400);
+    --fxki-light-bl-2:  var(--fxki-blue-400);
+    --fxki-light-pu-2:  var(--fxki-purple-400);
+    --fxki-light-ma-2:  var(--fxki-magenta-400);
+    --fxki-dark-re-2:   var(--fxki-red-600);
+    --fxki-dark-or-2:   var(--fxki-orange-600);
+    --fxki-dark-ye-2:   var(--fxki-yellow-600);
+    --fxki-dark-gr-2:   var(--fxki-green-600);
+    --fxki-dark-cy-2:   var(--fxki-cyan-600);
+    --fxki-dark-bl-2:   var(--fxki-blue-600);
+    --fxki-dark-pu-2:   var(--fxki-purple-600);
+    --fxki-dark-ma-2:   var(--fxki-magenta-600);
+
+    --fxki-bg: light-dark(var(--fxki-light-bg), var(--fxki-dark-bg));
+    --fxki-bg-2: light-dark(var(--fxki-light-bg-2), var(--fxki-dark-bg-2));
+    --fxki-bg-3: light-dark(var(--fxki-light-bg-3), var(--fxki-dark-bg-3));
+    --fxki-tx: light-dark(var(--fxki-light-tx), var(--fxki-dark-tx));
+    --fxki-tx-2: light-dark(var(--fxki-light-tx-2), var(--fxki-dark-tx-2));
+    --fxki-tx-3: light-dark(var(--fxki-light-tx-3), var(--fxki-dark-tx-3));
+    --fxki-ui: light-dark(var(--fxki-light-ui), var(--fxki-dark-ui));
+    --fxki-ui-2: light-dark(var(--fxki-light-ui-2), var(--fxki-dark-ui-2));
+    --fxki-ui-3: light-dark(var(--fxki-light-ui-3), var(--fxki-dark-ui-3));
+    --fxki-re: light-dark(var(--fxki-light-re), var(--fxki-dark-re));
+    --fxki-or: light-dark(var(--fxki-light-or), var(--fxki-dark-or));
+    --fxki-ye: light-dark(var(--fxki-light-ye), var(--fxki-dark-ye));
+    --fxki-gr: light-dark(var(--fxki-light-gr), var(--fxki-dark-gr));
+    --fxki-cy: light-dark(var(--fxki-light-cy), var(--fxki-dark-cy));
+    --fxki-bl: light-dark(var(--fxki-light-bl), var(--fxki-dark-bl));
+    --fxki-pu: light-dark(var(--fxki-light-pu), var(--fxki-dark-pu));
+    --fxki-ma: light-dark(var(--fxki-light-ma), var(--fxki-dark-ma));
+    --fxki-re-2: light-dark(var(--fxki-light-re-2), var(--fxki-dark-re-2));
+    --fxki-or-2: light-dark(var(--fxki-light-or-2), var(--fxki-dark-or-2));
+    --fxki-ye-2: light-dark(var(--fxki-light-ye-2), var(--fxki-dark-ye-2));
+    --fxki-gr-2: light-dark(var(--fxki-light-gr-2), var(--fxki-dark-gr-2));
+    --fxki-cy-2: light-dark(var(--fxki-light-cy-2), var(--fxki-dark-cy-2));
+    --fxki-bl-2: light-dark(var(--fxki-light-bl-2), var(--fxki-dark-bl-2));
+    --fxki-pu-2: light-dark(var(--fxki-light-pu-2), var(--fxki-dark-pu-2));
+    --fxki-ma-2: light-dark(var(--fxki-light-ma-2), var(--fxki-dark-ma-2));
+}
+
 * {
     box-sizing: border-box;
 }
@@ -36,8 +236,8 @@ html {
     -webkit-text-size-adjust: 100%;
 
     color-scheme: light dark;
-    background: light-dark(#fff, #09090b);
-    color: light-dark(#333, #c1c1cc)
+    background: var(--fxki-bg);
+    color: var(--fxki-tx);
 }
 
 body {
@@ -93,7 +293,6 @@ nav.biglinks {
 
     > header {
         display: block;
-        color: light-dark(#444, #aaa);
 
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Source Serif 4';
@@ -136,13 +335,13 @@ nav.biglinks {
                 overflow: hidden;
                 line-height: 1.3;
 
-                background: light-dark(#f7f7f8, #151517);
+                background: var(--fxki-bg-2);
 
                 h1, h2, h3, h4, h5, h6 {
                     margin: 0;
                     font-size: .875em;
                     font-weight: 600;
-                    color: light-dark(#444, #aaa);
+                    color: var(--fxki-tx-2);
                 }
 
                 p {
@@ -165,7 +364,7 @@ nav.biglinks {
                     bottom: .25rem;
                     right: .25rem;
                     z-index: 1;
-                    color: light-dark(#dadada, #333);
+                    color: var(--fxki-ui-2);
                     font-size: 3.5rem;
 
                     font-family: 'Material Symbols Outlined';
@@ -201,15 +400,15 @@ nav.biglinks {
                     cursor: pointer;
 
                     &:hover {
-                        background-color: light-dark(#f4f4f5, #1d1d20);
+                        background-color: var(--fxki-bg-3);
                     }
 
                     &:focus-visible {
-                        outline: 2px solid light-dark(#0004, #fff4);
+                        outline: 2px solid var(--fxki-ui-2);
                     }
 
                     .fakelink {
-                        color: light-dark(#003eb3, #4d86ed);
+                        color: var(--fxki-bl);
                     }
 
                     .fakelink:hover {
@@ -241,8 +440,8 @@ footer.site-footer {
                 margin: 0;
 
                 &:not(:last-of-type)::after {
-                    content: " \2022 ";
-                    color: light-dark(#0004, #fff4);
+                    content: "\00a0\2022\00a0";
+                    color: var(--fxki-tx-3);
                 }
 
                 > a {
@@ -250,7 +449,7 @@ footer.site-footer {
                     text-decoration: none;
 
                     &:any-link {
-                        color: light-dark(#003eb3, #4d86ed);
+                        color: var(--fxki-bl);
 
                         &:hover {
                             text-decoration: underline;
@@ -286,7 +485,7 @@ div.homepage {
         time.updated {
             display: inline-block;
             vertical-align: top;
-            background: light-dark(#e6e6e7, #262627);
+            background: light-dark(var(--fxki-yellow-100), var(--fxki-yellow-900));
             margin: 1em .25em;
             padding: .15em .25em;
             border-radius: .5em;
