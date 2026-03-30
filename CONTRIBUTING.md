@@ -125,6 +125,13 @@ env -C website watchexec --clear --debounce 1s -i '*.templ' --restart 'go run ./
 env -C website watchexec --clear --debounce 1s -i '*.templ' --restart 'go run ./cmd/ottrec-website' # http://ottrec.localhost:8083/
 ```
 
+alternatively:
+
+```bash
+env -C website go run ./cmd/ottrec-data
+DEBUG_POSTCSS_NOOP=1 env -C website templ generate --watch --watch-pattern='[.](go|templ|css|js)$' --proxy="http://127.0.0.1:8183" --proxyport="8083" --proxybind="0.0.0.0" --cmd="go run ./cmd/ottrec-website --addr 127.0.0.1:8183"
+```
+
 #### Updating fonts and JS libs
 
 ```bash
