@@ -167,6 +167,9 @@ templ DataHome(params DataHomeParams) {
 				<p>
 					The API is stable, but the data schema is subject to change if required.
 				</p>
+				<p>
+					Cross-origin requests are allowed.
+				</p>
 				<h2>Raw (v1)</h2>
 				<dl class="api">
 					<dt>/v1/<span class="opt">?limit=<span class="param">N</span></span><span class="opt">&after=<span class="param">ID</span></span><span class="opt">&revisions=<span class="param">true|false</span></span></dt>
@@ -180,6 +183,9 @@ templ DataHome(params DataHomeParams) {
 				</dl>
 				<p>
 					If the protobuf schema changes in a way which breaks backwards/forwards-compatible decoding, a new /v2/ api will be introduced for data beyond that point.
+				</p>
+				<p>
+					Cross-origin requests are allowed.
 				</p>
 			</section>
 			if len(params.Versions) != 0 {

@@ -268,20 +268,20 @@ func DataHome(params DataHomeParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">textpb</a></td><td>Text protobuf. Intended for manual inspection.</td></tr></tbody></table></section><section id=\"api\"><h1>API</h1><h2>Version specs</h2><dl class=\"api\"><dt>latest</dt><dd>Newest available data.</dd><dt>latest-<span class=\"param\">N</span></dt><dd>N versions before the newest available data.</dd><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span></dt><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span>-<span class=\"param\">DD</span></dt><dd>Newest available data at the end of the specified date.</dd><dt><span class=\"param\">ID</span></dt><dd>Canonical reference to a specific revision of the data.</dd></dl><h2>Export</h2><dl class=\"api\"><dt>/export/schema.json</dt><dt>/export/schema.csv</dt><dd>The current schema for the simplified dataset.</dd><dt>/export/<span class=\"param\">:spec</span>.json</dt><dt>/export/<span class=\"param\">:spec</span>.csv.zip</dt><dd>Download a simplified dataset. Historical data may not be available beyond a cut-off date if the underlying data format changes too much.</dd></dl><p>The API is stable, but the data schema is subject to change if required.</p><h2>Raw (v1)</h2><dl class=\"api\"><dt>/v1/<span class=\"opt\">?limit=<span class=\"param\">N</span></span><span class=\"opt\">&after=<span class=\"param\">ID</span></span><span class=\"opt\">&revisions=<span class=\"param\">true|false</span></span></dt><dd>A JSON array of available data, in descending order by date/revision. If <code>revisions</code> is not set to true, only the most recent revision for each date will be listed. The default and maximum per-page limit is subject to change. Each one is uniquely identified by the ID. The revision is incremented for every additional update to the data for a specific date. You can call this endpoint repeatedly with the last ID on the previous page until an empty array is returned.<pre>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">textpb</a></td><td>Text protobuf. Intended for manual inspection.</td></tr></tbody></table></section><section id=\"api\"><h1>API</h1><h2>Version specs</h2><dl class=\"api\"><dt>latest</dt><dd>Newest available data.</dd><dt>latest-<span class=\"param\">N</span></dt><dd>N versions before the newest available data.</dd><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span></dt><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span>-<span class=\"param\">DD</span></dt><dd>Newest available data at the end of the specified date.</dd><dt><span class=\"param\">ID</span></dt><dd>Canonical reference to a specific revision of the data.</dd></dl><h2>Export</h2><dl class=\"api\"><dt>/export/schema.json</dt><dt>/export/schema.csv</dt><dd>The current schema for the simplified dataset.</dd><dt>/export/<span class=\"param\">:spec</span>.json</dt><dt>/export/<span class=\"param\">:spec</span>.csv.zip</dt><dd>Download a simplified dataset. Historical data may not be available beyond a cut-off date if the underlying data format changes too much.</dd></dl><p>The API is stable, but the data schema is subject to change if required.</p><p>Cross-origin requests are allowed.</p><h2>Raw (v1)</h2><dl class=\"api\"><dt>/v1/<span class=\"opt\">?limit=<span class=\"param\">N</span></span><span class=\"opt\">&after=<span class=\"param\">ID</span></span><span class=\"opt\">&revisions=<span class=\"param\">true|false</span></span></dt><dd>A JSON array of available data, in descending order by date/revision. If <code>revisions</code> is not set to true, only the most recent revision for each date will be listed. The default and maximum per-page limit is subject to change. Each one is uniquely identified by the ID. The revision is incremented for every additional update to the data for a specific date. You can call this endpoint repeatedly with the last ID on the previous page until an empty array is returned.<pre>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(`[{"id": string, "revision": integer,"updated": date-rfc3339}]`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 175, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 178, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</pre></dd><dt>/v1/<span class=\"param\">:spec</span></dt><dt>/v1/<span class=\"param\">:spec</span>/<span class=\"param\">:format</span></dt><dd>Download a raw dataset in the specified format. Currently, the valid formats are proto, pb, textpb, or json.</dd></dl><p>If the protobuf schema changes in a way which breaks backwards/forwards-compatible decoding, a new /v2/ api will be introduced for data beyond that point.</p></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</pre></dd><dt>/v1/<span class=\"param\">:spec</span></dt><dt>/v1/<span class=\"param\">:spec</span>/<span class=\"param\">:format</span></dt><dd>Download a raw dataset in the specified format. Currently, the valid formats are proto, pb, textpb, or json.</dd></dl><p>If the protobuf schema changes in a way which breaks backwards/forwards-compatible decoding, a new /v2/ api will be introduced for data beyond that point.</p><p>Cross-origin requests are allowed.</p></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -299,7 +299,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var18 string
 				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs("ID: " + ver.ID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 198, Col: 36}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 204, Col: 36}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
@@ -312,7 +312,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var19 string
 				templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(ver.Updated.Format("January 2, 2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 199, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 205, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 				if templ_7745c5c3_Err != nil {
@@ -326,7 +326,7 @@ func DataHome(params DataHomeParams) templ.Component {
 					var templ_7745c5c3_Var20 string
 					templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 201, Col: 16}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 16}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 					if templ_7745c5c3_Err != nil {
@@ -339,7 +339,7 @@ func DataHome(params DataHomeParams) templ.Component {
 					var templ_7745c5c3_Var21 string
 					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(ver.Revision)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 201, Col: 37}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 37}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 					if templ_7745c5c3_Err != nil {
@@ -362,7 +362,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var22 templ.SafeURL
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinURLErrs("/export/" + ver.ID + ".json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 206, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
@@ -375,7 +375,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(base1 + "_simplified.json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 206, Col: 89}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -388,7 +388,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var24 templ.SafeURL
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinURLErrs("/export/" + ver.ID + ".csv.zip")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 52}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 52}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
@@ -401,7 +401,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(base1 + "_simplified.csv.zip")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 95}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 95}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
@@ -419,7 +419,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var26 templ.SafeURL
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/proto")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 211, Col: 46}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 217, Col: 46}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -432,7 +432,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".proto")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 211, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 217, Col: 76}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
@@ -445,7 +445,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var28 templ.SafeURL
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/pb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -458,7 +458,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var29 string
 				templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".pb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 70}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 70}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 				if templ_7745c5c3_Err != nil {
@@ -471,7 +471,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var30 templ.SafeURL
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/textpb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
@@ -484,7 +484,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var31 string
 				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".textpb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 78}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
@@ -497,7 +497,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var32 templ.SafeURL
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 214, Col: 45}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 45}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -510,7 +510,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var33 string
 				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 214, Col: 74}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 74}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 				if templ_7745c5c3_Err != nil {
@@ -528,7 +528,7 @@ func DataHome(params DataHomeParams) templ.Component {
 			var templ_7745c5c3_Var34 string
 			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(len(params.Versions))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 221, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 227, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 			if templ_7745c5c3_Err != nil {
