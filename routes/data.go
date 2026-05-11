@@ -157,6 +157,8 @@ func (h *dataExportHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	if r.URL.RawQuery != "" {
 		w.Header().Set("Cache-Control", "no-store")
 		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
@@ -544,6 +546,8 @@ func (h *dataAPIv1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveError(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	if rest, ok := strings.CutPrefix(r.URL.Path, h.Base); ok {
 		if rest == "" {
