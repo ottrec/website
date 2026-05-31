@@ -8,7 +8,7 @@ func Cost(e Node) int {
 	case *AndNode:
 		return ownCost(e) + Cost(e.Left) + Cost(e.Right)
 	case *OrNode:
-		return ownCost(e) + Cost(e.Left) + Cost(e.Right)
+		return ownCost(e) + 2*Cost(e.Left) + Cost(e.Right)
 	case *SchDateNode:
 		return ownCost(e)
 	case *TimeNode:
@@ -33,7 +33,7 @@ func ownCost(e Node) int {
 	case *OrNode:
 		return 1
 	case *SchDateNode:
-		return 48
+		return 64
 	case *TimeNode:
 		var c int
 		for _, d := range e.Days {
@@ -56,7 +56,7 @@ func ownCost(e Node) int {
 				panic("invalid node")
 			}
 		}
-		return 1 + 32*c // since we need to run it over all times in a schedule
+		return 1 + 64*c // since we need to run it over all times in a schedule
 	case *FacilityNode:
 		var c int
 		for _, s := range e.FuzzyName {

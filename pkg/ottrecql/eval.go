@@ -2,6 +2,7 @@ package ottrecql
 
 import (
 	"cmp"
+	"reflect"
 	"slices"
 	"time"
 
@@ -159,7 +160,7 @@ func (c *compileCtx) compile(e Node) (cNode, error) {
 	case *LatLngNode:
 		return &cLatLng{lat: float64(e.Lat), lng: float64(e.Lng), dist: float64(e.Dist)}, nil
 	default:
-		panic("invalid node")
+		panic("invalid node " + reflect.TypeOf(e).String())
 	}
 }
 
