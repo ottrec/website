@@ -50,36 +50,30 @@ templ DataHome(params DataHomeParams) {
 				<p>
 					This format contains drop-in recreation facilities and activity times, with fully-parsed dates/times, cleaned titles, and inferred reservation requirements. It is available as JSON or CSV, along with a fully-documented stable schema.
 				</p>
-				<table class="simple-formats">
-					<thead>
-						<tr>
-							<th>Format</th>
-							<th>Download</th>
-							<th>Schema</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>JSON</td>
-							<td><a href="/export/latest.json" download="ottrec_simplified_latest.json">json</a></td>
-							<td><a href="/export/schema.json" download="ottrec_simplified.schema.json">schema.json</a></td>
-						</tr>
-						<tr>
-							<td>CSV</td>
-							<td><a href="/export/latest.csv.zip" download="ottrec_simplified_latest.csv.zip">csv.zip</a></td>
-							<td><a href="/export/schema.csv" download="ottrec_simplified.schema.csv">schema.csv</a></td>
-						</tr>
-					</tbody>
-				</table>
+				<ul class="downloads">
+					<li>
+						<span>JSON</span>
+						<a class="dl" href="/export/latest.json" download="ottrec_simplified_latest.json">json</a>
+						<a class="dl dl-meta" href="/export/schema.json" download="ottrec_simplified.schema.json">schema.json</a>
+					</li>
+					<li>
+						<span>CSV</span>
+						<a class="dl" href="/export/latest.csv.zip" download="ottrec_simplified_latest.csv.zip">csv.zip</a>
+						<a class="dl dl-meta" href="/export/schema.csv" download="ottrec_simplified.schema.csv">schema.csv</a>
+					</li>
+				</ul>
 				<table class="schema">
 					<tbody>
 						<tr class="controls">
 							<td colspan="2">
-								<select class="format">
-									<option value="" selected>Format</option>
-									<option value="json">JSON</option>
-									<option value="csv">CSV</option>
-								</select>
+								<label>
+									Format
+									<select class="format">
+										<option value="" selected>all formats</option>
+										<option value="json">JSON</option>
+										<option value="csv">CSV</option>
+									</select>
+								</label>
 							</td>
 						</tr>
 						{{ data := reflect.TypeFor[ottrecexp.Data]() }}
@@ -114,32 +108,24 @@ templ DataHome(params DataHomeParams) {
 				<p>
 					This format is designed to match the structure of the website as closely as possible with minimal processing and no assumptions. This make it more complex to use correctly, but preserves all information from the website.
 				</p>
-				<table class="raw-formats">
-					<thead>
-						<tr>
-							<th>Download</th>
-							<th>Description</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td><a href="/v1/latest/proto" download={ "ottrec_raw_latest.proto" }>proto</a></td>
-							<td>Protobuf schema.</td>
-						</tr>
-						<tr>
-							<td><a href="/v1/latest/pb" download={ "ottrec_raw_latest.pb" }>pb</a></td>
-							<td>Binary protobuf. Best for long-term usage. Forwards and backwards compatible.</td>
-						</tr>
-						<tr>
-							<td><a href="/v1/latest/json" download={ "ottrec_raw_latest.json" }>json</a></td>
-							<td>JSON protobuf. Intended for ad-hoc queries. Not stable.</td>
-						</tr>
-						<tr>
-							<td><a href="/v1/latest/textpb" download={ "ottrec_raw_latest.textpb" }>textpb</a></td>
-							<td>Text protobuf. Intended for manual inspection.</td>
-						</tr>
-					</tbody>
-				</table>
+				<ul class="raw-downloads">
+					<li>
+						<a class="dl" href="/v1/latest/proto" download={ "ottrec_raw_latest.proto" }>proto</a>
+						<span>Protobuf schema.</span>
+					</li>
+					<li>
+						<a class="dl" href="/v1/latest/pb" download={ "ottrec_raw_latest.pb" }>pb</a>
+						<span>Binary protobuf. Best for long-term usage. Forwards and backwards compatible.</span>
+					</li>
+					<li>
+						<a class="dl" href="/v1/latest/json" download={ "ottrec_raw_latest.json" }>json</a>
+						<span>JSON protobuf. Intended for ad-hoc queries. Not stable.</span>
+					</li>
+					<li>
+						<a class="dl" href="/v1/latest/textpb" download={ "ottrec_raw_latest.textpb" }>textpb</a>
+						<span>Text protobuf. Intended for manual inspection.</span>
+					</li>
+				</ul>
 			</section>
 			<section id="api">
 				<h1>API</h1>
@@ -193,9 +179,11 @@ templ DataHome(params DataHomeParams) {
 					<h1>Historical data</h1>
 					<table class="history">
 						<thead>
-							<th>Version</th>
-							<th>Simplified</th>
-							<th>Raw</th>
+							<tr>
+								<th>Version</th>
+								<th>Simplified</th>
+								<th>Raw</th>
+							</tr>
 						</thead>
 						<tbody>
 							for _, ver := range params.Versions {
@@ -204,20 +192,20 @@ templ DataHome(params DataHomeParams) {
 									<td title={ "ID: " + ver.ID }>
 										{ ver.Updated.Format("January 2, 2006") }
 										if ver.Revision != 1 {
-											{ " " }(rev { ver.Revision })
+											{ " " }<span class="rev">rev { ver.Revision }</span>
 										}
 									</td>
 									<td>
 										{{ base1 := "ottrec_simplified_" + base }}
-										<a href={ "/export/" + ver.ID + ".json" } download={ base1 + "_simplified.json" }>json</a>
-										<a href={ "/export/" + ver.ID + ".csv.zip" } download={ base1 + "_simplified.csv.zip" }>csv</a>
+										<a class="dl" href={ "/export/" + ver.ID + ".json" } download={ base1 + "_simplified.json" }>json</a>
+										<a class="dl" href={ "/export/" + ver.ID + ".csv.zip" } download={ base1 + "_simplified.csv.zip" }>csv</a>
 									</td>
 									<td>
 										{{ base2 := "ottrec_raw_" + base }}
-										<a href={ "/v1/" + ver.ID + "/proto" } download={ base2 + ".proto" }>proto</a>
-										<a href={ "/v1/" + ver.ID + "/pb" } download={ base2 + ".pb" }>pb</a>
-										<a href={ "/v1/" + ver.ID + "/textpb" } download={ base2 + ".textpb" }>textpb</a>
-										<a href={ "/v1/" + ver.ID + "/json" } download={ base2 + ".json" }>json</a>
+										<a class="dl" href={ "/v1/" + ver.ID + "/proto" } download={ base2 + ".proto" }>proto</a>
+										<a class="dl" href={ "/v1/" + ver.ID + "/pb" } download={ base2 + ".pb" }>pb</a>
+										<a class="dl" href={ "/v1/" + ver.ID + "/textpb" } download={ base2 + ".textpb" }>textpb</a>
+										<a class="dl" href={ "/v1/" + ver.ID + "/json" } download={ base2 + ".json" }>json</a>
 									</td>
 								</tr>
 							}
