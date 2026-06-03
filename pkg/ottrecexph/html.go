@@ -42,7 +42,7 @@ const css = `
 	html {
 		color-scheme: light dark;
 		background: light-dark(#eee, #000);
-		color: light-dark(#000, #c4c4c4);
+		color: light-dark(#000, #aaa);
 		font-size: 16px;
 	}
 	body {
@@ -76,7 +76,24 @@ const css = `
 		padding-top: .25em;
 		font-size: .9em;
 		font-weight: bold;
-		color: light-dark(#333, #bbb);
+		color: light-dark(#333, #999);
+	}
+
+	.facility-address-section, .schedule-group-reservation {
+		background: light-dark(#f2f2f2, #242424);
+		padding: .35em .5em;
+		border-radius: .3rem;
+	}
+	.facility-special-hours, .facility-notifications, .schedule-group-schedule-changes {
+		background: light-dark(#fff6ec, #232008);
+		padding: .35em .5em;
+		border-radius: .3rem;
+		.raw-html { background: transparent; }
+	}
+	.facility-errors {
+		background: light-dark(#fff2f2, #270a0a);
+		padding: .35em .5em;
+		border-radius: .3rem;
 	}
 
 	a {
@@ -104,9 +121,8 @@ const css = `
 	.raw-html {
 		font-size: .85em;
 		background: light-dark(#f8f8f8, #191919);
-		border-left: 2px solid light-dark(#d8d8d8, #333);
-		border-radius: 0 .25rem .25rem 0;
 		padding: .35em .6em;
+		border-radius: .25rem;
 		margin-top: .3em;
 		ul, ol { margin: .15em 0; padding-left: .9em; }
 		li { margin: 0; &::marker { content: "•\00a0"; } }
@@ -114,19 +130,20 @@ const css = `
 		h3, h4 { font-size: .95em; margin: .4em 0 .1em; color: light-dark(#555, #999); }
 	}
 
+	.facility-schedules > h2 { display: none; }
+
 	section.schedule-group {
 		margin-top: .4em;
 		& + & {
 			margin-top: 1.5em;
 		}
 		> h3 {
-			margin-bottom: .35rem;
-			margin-left: -.6rem;
-			margin-right: -.6rem;
-			font-size: .95em;
-			background: light-dark(#ebebeb, #222);
-			padding: .2em .6rem;
-			border-radius: .2rem;
+			margin-bottom: .4rem;
+			font-size: 1em;
+			font-weight: bold;
+			color: light-dark(#1a1a1a, #b0b0b0);
+			border-bottom: 1px solid light-dark(#ddd, #333);
+			padding-bottom: .25em;
 		}
 		> section > h4 {
 			font-size: .8em;
@@ -139,9 +156,10 @@ const css = `
 		}
 		> section > ul {
 			margin: .1em 0 0;
-			padding-left: .9em;
+			padding-left: 0;
 			font-size: .85em;
-			li { margin: 0; &::marker { content: "•\00a0"; } }
+			list-style: none;
+			li { margin: 0; }
 		}
 	}
 
@@ -159,18 +177,17 @@ const css = `
 		caption {
 			text-align: left;
 			font-weight: bold;
-			font-style: italic;
-			padding: .15em 0 .2em;
+			padding: .15em 0 .4em;
 			font-size: .95em;
 		}
 		thead th {
-			background: light-dark(#eee, #2a2a2a);
+			background: light-dark(#f0f0f0, #202020);
 			padding: .2em .35em;
 			font-size: .9em;
 		}
 		th, td {
 			vertical-align: top;
-			border: 1px solid light-dark(#ccc, #3a3a3a);
+			border: 1px solid light-dark(#e0e0e0, #262626);
 			padding: .2em .35em;
 		}
 		th {
@@ -384,6 +401,7 @@ func HTML(data ottrecidx.DataRef, opt *Options) ([]byte, error) {
 			x.End(false)
 
 			x.Start(nil, "section")
+			x.Attr(nil, "class", "facility-address-section")
 			x.Start(nil, "h2")
 			x.Text(false, "Address")
 			x.End(false)
@@ -456,6 +474,7 @@ func HTML(data ottrecidx.DataRef, opt *Options) ([]byte, error) {
 			}
 
 			x.Start(nil, "section")
+			x.Attr(nil, "class", "facility-schedules")
 			x.Start(nil, "h2")
 			x.Text(false, "Schedules")
 			x.End(false)
@@ -484,6 +503,7 @@ func HTML(data ottrecidx.DataRef, opt *Options) ([]byte, error) {
 
 				for range grp.GetReservationLinks() {
 					x.Start(nil, "section")
+					x.Attr(nil, "class", "schedule-group-reservation")
 					x.Start(nil, "h4")
 					x.Text(false, "Reservation")
 					x.End(false)
