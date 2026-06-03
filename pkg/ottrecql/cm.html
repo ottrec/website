@@ -228,19 +228,21 @@ schdate(today) and (time(Mon @ 9:00) or time(Tue @ 10:00))"></ottrecql-editor>
         "@codemirror/commands":       "https://esm.sh/@codemirror/commands@6",
         "@codemirror/theme-one-dark": "https://esm.sh/@codemirror/theme-one-dark@6",
         "@lezer/highlight":           "https://esm.sh/@lezer/highlight@1",
-        "@uiw/codemirror-themes-all": "https://esm.sh/@uiw/codemirror-themes-all@4.25.10?external=@codemirror/state,@codemirror/view,@codemirror/language,@lezer/highlight"
+        "@uiw/codemirror-themes-all": "https://esm.sh/@uiw/codemirror-themes-all@4.25.10?external=@codemirror/state,@codemirror/view,@codemirror/language,@lezer/highlight",
+        "@codemirror/autocomplete":   "https://esm.sh/@codemirror/autocomplete@6?external=@codemirror/state,@codemirror/view,@codemirror/language"
       }
     }
   </script>
 
   <script type="module">
-    import { EditorState, Compartment } from "@codemirror/state"
-    import { EditorView, keymap } from "@codemirror/view"
+    import { EditorState, Compartment, StateField, RangeSetBuilder } from "@codemirror/state"
+    import { EditorView, keymap, Decoration } from "@codemirror/view"
     import { StreamLanguage, LanguageSupport, bracketMatching } from "@codemirror/language"
     import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
     import { oneDark } from "@codemirror/theme-one-dark"
     import { tags } from "@lezer/highlight"
     import * as themes from "@uiw/codemirror-themes-all"
+    import { autocompletion } from "@codemirror/autocomplete"
 
     const weekdays = new Set([
       "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
@@ -334,6 +336,201 @@ schdate(today) and (time(Mon @ 9:00) or time(Tue @ 10:00))"></ottrecql-editor>
     })
 
     function ottrecql() { return new LanguageSupport(ottrecqlLang) }
+
+    function getEnclosingFunction(state, pos) {
+      const text = state.doc.sliceString(0, pos)
+      let i = 0
+      const stack = []
+      while (i < text.length) {
+        if (text[i] === '"') {
+          i++
+          while (i < text.length) {
+            if (text[i] === '\\') { i += 2; continue }
+            if (text[i] === '"') { i++; break }
+            i++
+          }
+          continue
+        }
+        if (text[i] === '(') {
+          let j = i - 1
+          while (j >= 0 && /\s/.test(text[j])) j--
+          let k = j
+          while (k >= 0 && /[a-zA-Z0-9]/.test(text[k])) k--
+          const name = text.slice(k + 1, j + 1).toLowerCase()
+          stack.push(functions.has(name) ? name : null)
+          i++; continue
+        }
+        if (text[i] === ')') { stack.pop(); i++; continue }
+        i++
+      }
+      return stack.length > 0 ? stack[stack.length - 1] : null
+    }
+
+    function makeDocNode({ signature, doc, examples }) {
+      const el = document.createElement('div')
+      el.style.cssText = 'padding:8px 12px;max-width:360px;font-size:13px;line-height:1.5'
+
+      const sig = document.createElement('code')
+      sig.style.cssText = 'display:block;font-size:12px;font-weight:600;margin-bottom:6px;white-space:pre-wrap;color:#4ec9b0'
+      sig.textContent = signature
+      el.appendChild(sig)
+
+      const d = document.createElement('div')
+      d.style.marginBottom = '8px'
+      d.textContent = doc
+      el.appendChild(d)
+
+      if (examples?.length) {
+        const lbl = document.createElement('div')
+        lbl.style.cssText = 'font-size:10px;text-transform:uppercase;letter-spacing:.07em;opacity:0.5;margin-bottom:3px'
+        lbl.textContent = 'Examples'
+        el.appendChild(lbl)
+        for (const ex of examples) {
+          const c = document.createElement('code')
+          c.style.cssText = 'display:block;font-size:12px;color:#ce9178'
+          c.textContent = ex
+          el.appendChild(c)
+        }
+      }
+      return el
+    }
+
+    const weekdayDoc = () => makeDocNode({
+      signature: 'Mo | Mon | Monday  (also Tu, We, Th, Fr, Sa, Su)',
+      doc: 'Weekday specifier for use in time(). Accepts two-letter, three-letter, or full-name forms (case-insensitive).',
+      examples: ['time(mo tu we th fr)', 'time(sa su @ 18:00-21:00)'],
+    })
+
+    function atExpressionStart(state, pos) {
+      const text = state.doc.sliceString(0, pos)
+      let i = text.length - 1
+      while (i >= 0 && /\s/.test(text[i])) i--
+      if (i < 0) return true // beginning
+      const ch = text[i]
+      if (ch === '(' || ch === '!') return true // beginning of subexpression
+      if ((ch === '&' || ch === '|') && i > 0 && text[i - 1] === ch) return true // after operator
+      if (/[a-zA-Z]/.test(ch)) {
+        let j = i
+        while (j >= 0 && /[a-zA-Z]/.test(text[j])) j--
+        const kw = text.slice(j + 1, i + 1).toLowerCase()
+        return kw === 'not' || kw === 'and' || kw === 'or' // after operator
+      }
+      return false
+    }
+
+    const CONTEXT_COMPLETIONS = {
+      expr_start: [
+        { label: 'schdate', type: 'function', apply: 'schdate(',
+          info: () => makeDocNode({ signature: 'schdate(date)', doc: 'Matches schedule groups applicable on the given date. Groups without a date range are not filtered.', examples: ['schdate(today)', 'schdate(2025-12-24)'] }) },
+        { label: 'time', type: 'function', apply: 'time(',
+          info: () => makeDocNode({ signature: 'time([weekday|date …] @ [time|range …])', doc: 'Matches activity weekdays, dates, and/or times. The @ separator can be omitted when specifying only weekdays or only times. Activities with unparseable times are not filtered.', examples: ['time(today @ now)', 'time(mo tu we th fr)', 'time(sa su @ 18:00-01:00)', 'time(mo @ 6:00a-10:00a 6:00p-9:00p)'] }) },
+        { label: 'facility', type: 'function', apply: 'facility(',
+          info: () => makeDocNode({ signature: 'facility("name" [, "name" …])', doc: 'Fuzzy-matches facility names. Each word of the query must prefix a word in the name, in order.', examples: ['facility("splash")', 'facility("st laurent")', 'facility("tom brown", "jim durrell")'] }) },
+        { label: 'activity', type: 'function', apply: 'activity(',
+          info: () => makeDocNode({ signature: 'activity("name" [, "name" …])', doc: 'Like facility(), but matches activity names. Generally uses the infinitive form (e.g. "skate" not "skating").', examples: ['activity("lane swim")', 'activity("figure skate")', 'activity("lane swim", "public swim")'] }) },
+        { label: 'latlng', type: 'function', apply: 'latlng(',
+          info: () => makeDocNode({ signature: 'latlng(lat, lng, km)', doc: 'Matches facilities within a radius (km) of the given coordinates.', examples: ['latlng(45.42620, -75.69205, 2)'] }) },
+        { label: 'not', type: 'keyword',
+          info: () => makeDocNode({ signature: 'not expr  |  !expr', doc: 'Logical NOT. Excludes results that match the expression.', examples: ['not activity("adult")', '!facility("plant")'] }) },
+        { label: '(', type: 'syntax', apply: '(',
+          info: () => makeDocNode({ signature: '(expr)', doc: 'Groups an expression to override operator precedence.', examples: ['(schdate(today) or schdate(2025-12-24)) and time(Mon @ 9:00)', 'not (facility("A") or facility("B"))'] }) },
+      ],
+      expr_continue: [
+        { label: 'and', type: 'keyword',
+          info: () => makeDocNode({ signature: 'expr and expr && expr', doc: 'Logical AND. Both expressions must match.', examples: ['schdate(today) and activity("lane swim")'] }) },
+        { label: 'or', type: 'keyword',
+          info: () => makeDocNode({ signature: 'expr or expr || expr', doc: 'Logical OR. Either expression must match.', examples: ['schdate(today) or schdate(2025-12-24)'] }) },
+      ],
+      schdate: [
+        { label: 'today', type: 'keyword',
+          info: () => makeDocNode({ signature: 'today', doc: 'The current date (America/Toronto timezone).', examples: ['schdate(today)'] }) },
+      ],
+      time: [
+        { label: 'today', type: 'keyword',
+          info: () => makeDocNode({ signature: 'today', doc: 'Matches activities on today\'s weekday at any time.', examples: ['time(today)', 'time(today @ now)'] }) },
+        { label: 'now', type: 'keyword',
+          info: () => makeDocNode({ signature: 'now', doc: 'Current clock time (America/Toronto timezone). No date is implied.', examples: ['time(now)', 'time(today @ now)'] }) },
+        ...['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su',
+            'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun',
+            'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+          .map(label => ({ label, type: 'keyword', info: () => makeDocNode({
+              signature: 'Mo | Mon | Monday',
+              doc: 'Weekday specifier for use in time(). Accepts two-letter, three-letter, or full-name forms (case-insensitive).',
+              examples: ['time(mo tu we th fr)', 'time(sa su @ 18:00-21:00)'],
+            })
+          })),
+      ],
+    }
+
+    function ottrecqlSource(context) {
+      const word = context.matchBefore(/[a-zA-Z][a-zA-Z0-9]*/)
+      const from = word ? word.from : context.pos
+      const ctx = getEnclosingFunction(context.state, from)
+      let key
+      if (ctx === null) {
+        key = atExpressionStart(context.state, from) ? 'expr_start' : 'expr_continue'
+      } else {
+        key = ctx
+      }
+      const options = CONTEXT_COMPLETIONS[key] ?? []
+      if (!options.length) return null
+      if (!word && !context.explicit && !context.matchBefore(/[\s!()/]/)) return null
+      return { from, options, validFor: /^[a-zA-Z0-9]*$/ }
+    }
+
+    function ottrecqlCompletion() {
+      return autocompletion({ override: [ottrecqlSource] })
+    }
+
+    const badBracketMark = Decoration.mark({ class: 'cm-bad-bracket' })
+
+    function computeBadBrackets(state) {
+      const doc = state.doc.toString()
+      const stack = []
+      const bad = []
+      let i = 0
+      while (i < doc.length) {
+        if (doc[i] === '"') {
+          i++
+          while (i < doc.length) {
+            if (doc[i] === '\\') { i += 2; continue }
+            if (doc[i] === '"') { i++; break }
+            i++
+          }
+          continue
+        }
+        if (doc[i] === '(') { stack.push(i); i++; continue }
+        if (doc[i] === ')') {
+          if (stack.length > 0) stack.pop()
+          else bad.push(i)
+          i++; continue
+        }
+        i++
+      }
+      bad.push(...stack)
+      bad.sort((a, b) => a - b)
+      const builder = new RangeSetBuilder()
+      for (const pos of bad) builder.add(pos, pos + 1, badBracketMark)
+      return builder.finish()
+    }
+
+    const badBracketField = StateField.define({
+      create: state => computeBadBrackets(state),
+      update: (decos, tr) => tr.docChanged ? computeBadBrackets(tr.state) : decos,
+      provide: f => EditorView.decorations.from(f),
+    })
+
+    function ottrecqlBadBrackets() {
+      return [
+        badBracketField,
+        EditorView.baseTheme({
+          '.cm-bad-bracket': {
+            backgroundColor: 'rgba(255, 80, 80, 0.2)',
+            borderBottom: '2px solid rgba(255, 80, 80, 0.8)',
+          },
+        }),
+      ]
+    }
 
     const THEMES = new Map([
       ['default',              []],
@@ -443,14 +640,17 @@ schdate(today) and (time(Mon @ 9:00) or time(Tue @ 10:00))"></ottrecql-editor>
             extensions: [
               history(),
               keymap.of([...defaultKeymap, ...historyKeymap]),
-              ottrecql(),
               bracketMatching(),
+              ottrecql(),
+              ottrecqlCompletion(),
+              ottrecqlBadBrackets(),
               this.#themeCompartment.of(resolveTheme(this.getAttribute('theme'))),
               this.#compartment.of(EditorView.editable.of(editable)),
               EditorView.theme({
                 '&.cm-focused': { outline: 'none' },
                 '.cm-content': { padding: '12px 0' },
                 '.cm-line': { padding: '0 14px' },
+                '.cm-completionInfo': { padding: 0 },
               }),
               EditorView.lineWrapping,
               EditorView.updateListener.of(update => {
