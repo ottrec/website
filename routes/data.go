@@ -26,9 +26,12 @@ import (
 	"github.com/pgaskin/ottrec-website/internal/httpx"
 	"github.com/pgaskin/ottrec-website/pkg/ottrecdata"
 	"github.com/pgaskin/ottrec-website/pkg/ottrecexp"
+	"github.com/pgaskin/ottrec-website/pkg/ottrecexph"
 	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/pkg/ottrecql"
 	"github.com/pgaskin/ottrec-website/static"
 	"github.com/pgaskin/ottrec-website/templates"
+	"github.com/pgaskin/xmlwriter"
 )
 
 type DataConfig struct {
@@ -47,6 +50,11 @@ func Data(cfg DataConfig) (http.Handler, error) {
 	mux.Handle("/{$}", &dataHomeHandler{
 		Cache:                 cfg.Cache,
 		MaxHistoricalVersions: 50,
+	})
+	mux.Handle("/preview", &dataPreviewHandler{
+		Cache:          cfg.Cache,
+		MaxQueryLength: 5000,
+		MaxQueryCost:   5000,
 	})
 	mux.Handle("/v1/", &dataAPIv1{
 		Base:  "/v1/",
@@ -107,6 +115,265 @@ func (h *dataHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *dataHomeHandler) serveError(w http.ResponseWriter, message string, code int) {
+	d := w.Header()
+	d.Set("Content-Length", strconv.Itoa(len(message)+1))
+	d.Set("Content-Type", "text/plain; charset=utf-8")
+	d.Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
+	io.WriteString(w, message+"\n")
+}
+
+type dataPreviewHandler struct {
+	Cache          *ottrecdata.Cache
+	MaxQueryLength int
+	MaxQueryCost   int
+}
+
+func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	// TODO: etag, caching
+	// TODO: historical schedules?
+
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		h.serveError(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var (
+		redirect bool
+		raw      bool
+		all      bool
+		q        string
+	)
+	for k, v := range r.URL.Query() {
+		switch k {
+		case "raw":
+			raw = true
+			if len(v) > 0 {
+				if b, err := strconv.ParseBool(v[0]); err == nil {
+					raw = b
+				}
+			}
+		case "all":
+			all = true
+			if len(v) > 0 {
+				if b, err := strconv.ParseBool(v[0]); err == nil {
+					all = b
+				}
+			}
+		case "q":
+			if len(v) > 0 {
+				q = v[0]
+			}
+		default:
+			redirect = true
+		}
+	}
+	if redirect {
+		target := r.URL.EscapedPath()
+		sep := "?"
+		if raw {
+			target += sep + "raw=1"
+			sep = "&"
+		}
+		if all {
+			target += sep + "all=1"
+			sep = "&"
+		}
+		if q != "" {
+			target += sep + "q=" + url.QueryEscape(q)
+		}
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, target, http.StatusTemporaryRedirect)
+		return
+	}
+
+	ctx := r.Context()
+
+	id, _, _, err := h.Cache.ResolveVersion(ctx, "latest")
+	if err != nil {
+		slog.Error("preview: failed to resolve latest version", "error", err)
+		h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if id == "" {
+		h.serveError(w, "no data available, try again later", http.StatusServiceUnavailable)
+		return
+	}
+
+	var timing serverTiming
+	var now time.Time
+
+	var blobErr error
+	var blobHash string
+	for hash, format := range h.Cache.DataFormats(ctx, id)(&blobErr) {
+		if format == "pb" {
+			blobHash = hash
+			break
+		}
+	}
+	if blobErr != nil {
+		slog.Error("preview: failed to resolve formats", "id", id, "error", blobErr)
+		h.serveError(w, "internal server error: "+blobErr.Error(), http.StatusInternalServerError)
+		return
+	}
+	if blobHash == "" {
+		slog.Error("preview: no pb blob found", "id", id)
+		h.serveError(w, "internal server error: no pb blob", http.StatusInternalServerError)
+		return
+	}
+
+	now = time.Now()
+	var pb []byte
+	exists, err := h.Cache.ReadBlob(ctx, blobHash, false, func(r io.Reader, size int64) error {
+		pb = make([]byte, size)
+		_, err := io.ReadFull(r, pb)
+		return err
+	})
+	if err != nil {
+		slog.Error("preview: failed to read blob", "hash", blobHash, "error", err)
+		h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		slog.Error("preview: missing blob", "hash", blobHash)
+		h.serveError(w, "internal server error: missing blob", http.StatusInternalServerError)
+		return
+	}
+	timing.Add("read", time.Since(now))
+
+	now = time.Now()
+	idx, err := new(ottrecidx.Indexer).Load(pb)
+	if err != nil {
+		slog.Error("preview: failed to load index", "id", id, "error", err)
+		h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	timing.Add("load", time.Since(now))
+
+	data := idx.Data()
+	if q != "" {
+		if h.MaxQueryLength > 0 && len(q) > h.MaxQueryLength {
+			h.serveError(w, fmt.Sprintf("query too long (%d > %d)", len(q), h.MaxQueryLength), http.StatusRequestEntityTooLarge)
+			return
+		}
+
+		now = time.Now()
+		ast, err := ottrecql.Parse(q)
+		timing.Add("query-parse", time.Since(now))
+		if err != nil {
+			h.serveError(w, "query: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		now = time.Now()
+		ast = ottrecql.Optimize(ast)
+		timing.Add("query-optimize", time.Since(now))
+
+		if h.MaxQueryCost > 0 {
+			if cost := ottrecql.Cost(ast); cost > h.MaxQueryCost {
+				h.serveError(w, fmt.Sprintf("query too complex (%d > %d)", cost, h.MaxQueryCost), http.StatusRequestEntityTooLarge)
+				return
+			}
+		}
+
+		now = time.Now()
+		expr, err := ottrecql.Compile(ast, nil)
+		timing.Add("query-compile", time.Since(now))
+		if err != nil {
+			h.serveError(w, "query: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		now = time.Now()
+		data = expr.Filter(data)
+		timing.Add("query-exec", time.Since(now))
+	}
+	if !all {
+		mut := data.Mutate()
+		mut.Elide()
+		data = mut.Data()
+	}
+
+	now = time.Now()
+	buf, err := ottrecexph.HTML(data, &ottrecexph.Options{
+		Raw:       raw,
+		Indent:    " ",
+		Canonical: "https://data.ottrec.ca/preview",
+		Source:    "https://data.ottrec.ca/v1/" + id + "/pb",
+		Script:    true,
+		IncludeHead: func(x *xmlwriter.XMLWriter) error {
+			x.Start(nil, "meta")
+			x.Attr(nil, "name", "description")
+			x.Attr(nil, "content", "Preview of all City of Ottawa drop-in recreation schedules on a single page.")
+			x.End(true)
+			x.Start(nil, "style")
+			x.Raw([]byte("/*<![CDATA[*/" +
+				".preview-nav{display:flex;justify-content:space-between;align-items:center;" +
+				"padding:.5rem 1rem;background:light-dark(#fff,#111418);" +
+				"border-bottom:1px solid light-dark(#dce2ee,#25303a);position:sticky;top:0;z-index:10}" +
+				".preview-filter{padding:.3rem 1rem;background:light-dark(#f2f5fa,#1a1e2a);" +
+				"border-bottom:1px solid light-dark(#dce2ee,#25303a);font-size:.8em;" +
+				"color:light-dark(#5c6880,#7888a4)}" +
+				".preview-filter code{font-family:monospace;color:light-dark(#18181c,#d8dce8)}" +
+				"/*]]>*/",
+			))
+			x.End(false)
+			return nil
+		},
+		IncludeTop: func(x *xmlwriter.XMLWriter) error {
+			x.Start(nil, "nav")
+			x.Attr(nil, "class", "preview-nav")
+			x.Start(nil, "a")
+			x.Attr(nil, "href", "https://data.ottrec.ca/")
+			x.Text(false, "\u2190 data.ottrec.ca")
+			x.End(false)
+			x.Start(nil, "span")
+			x.Start(nil, "a")
+			x.Attr(nil, "href", "/export/latest.json")
+			x.Attr(nil, "download", "ottrec_simplified_latest.json")
+			x.Text(false, "JSON")
+			x.End(false)
+			x.Text(false, " ")
+			x.Start(nil, "a")
+			x.Attr(nil, "href", "/export/latest.csv.zip")
+			x.Attr(nil, "download", "ottrec_simplified_latest.csv.zip")
+			x.Text(false, "CSV")
+			x.End(false)
+			x.End(false)
+			x.End(false)
+			if q != "" {
+				x.Start(nil, "div")
+				x.Attr(nil, "class", "preview-filter")
+				x.Text(false, "Filter: ")
+				x.Start(nil, "code")
+				x.Text(false, q)
+				x.End(false)
+				x.End(false)
+			}
+			return nil
+		},
+	})
+	timing.Add("render", time.Since(now))
+	if err != nil {
+		slog.Error("preview: failed to render html", "id", id, "error", err)
+		h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	d := w.Header()
+	d.Set("Content-Length", strconv.Itoa(len(buf)))
+	d.Set("Content-Type", "application/xhtml+xml; charset=utf-8")
+	d.Set("Server-Timing", timing.String())
+	w.WriteHeader(http.StatusOK)
+	if r.Method != http.MethodHead {
+		w.Write(buf)
+	}
+}
+
+func (h *dataPreviewHandler) serveError(w http.ResponseWriter, message string, code int) {
 	d := w.Header()
 	d.Set("Content-Length", strconv.Itoa(len(message)+1))
 	d.Set("Content-Type", "text/plain; charset=utf-8")

@@ -8,6 +8,8 @@ import (
 	"iter"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 )
 
 func commonMiddleware(next http.Handler) http.Handler {
@@ -53,6 +55,30 @@ func reqScheme(r *http.Request) string {
 		return "https"
 	}
 	return "http"
+}
+
+type serverTiming []serverTimingEntry
+
+type serverTimingEntry struct {
+	name string
+	dur  time.Duration
+}
+
+func (st *serverTiming) Add(name string, dur time.Duration) {
+	*st = append(*st, serverTimingEntry{name, dur})
+}
+
+func (st serverTiming) String() string {
+	var b []byte
+	for i, e := range st {
+		if i > 0 {
+			b = append(b, ", "...)
+		}
+		b = append(b, e.name...)
+		b = append(b, ";dur="...)
+		b = strconv.AppendFloat(b, float64(e.dur.Microseconds())/1000, 'f', 3, 64)
+	}
+	return string(b)
 }
 
 // exehash is a hash of the current binary for use in etags.

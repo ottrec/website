@@ -92,7 +92,7 @@ func DataHome(params DataHomeParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, ".</p></section><section id=\"simplified\"><h1>Simplified dataset</h1><p>This format contains drop-in recreation facilities and activity times, with fully-parsed dates/times, cleaned titles, and inferred reservation requirements. It is available as JSON or CSV, along with a fully-documented stable schema.</p><ul class=\"downloads\"><li><span>JSON</span> <a class=\"dl\" href=\"/export/latest.json\" download=\"ottrec_simplified_latest.json\">json</a> <a class=\"dl dl-meta\" href=\"/export/schema.json\" download=\"ottrec_simplified.schema.json\">schema.json</a></li><li><span>CSV</span> <a class=\"dl\" href=\"/export/latest.csv.zip\" download=\"ottrec_simplified_latest.csv.zip\">csv.zip</a> <a class=\"dl dl-meta\" href=\"/export/schema.csv\" download=\"ottrec_simplified.schema.csv\">schema.csv</a></li></ul><table class=\"schema\"><tbody><tr class=\"controls\"><td colspan=\"2\"><label>Format <select class=\"format\"><option value=\"\" selected>all formats</option> <option value=\"json\">JSON</option> <option value=\"csv\">CSV</option></select></label></td></tr>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, ".</p></section><section id=\"preview\"><h1>Preview</h1><p>You can view all schedules on a single webpage.</p><p>This format is also best for one-off LLM queries.</p><p><a class=\"dl\" href=\"/preview\">HTML</a></p></section><section id=\"simplified\"><h1>Simplified dataset</h1><p>This format contains drop-in recreation facilities and activity times, with fully-parsed dates/times, cleaned titles, and inferred reservation requirements. It is available as JSON or CSV, along with a fully-documented stable schema.</p><ul class=\"downloads\"><li><span>JSON</span> <a class=\"dl\" href=\"/export/latest.json\" download=\"ottrec_simplified_latest.json\">json</a> <a class=\"dl dl-meta\" href=\"/export/schema.json\" download=\"ottrec_simplified.schema.json\">schema.json</a></li><li><span>CSV</span> <a class=\"dl\" href=\"/export/latest.csv.zip\" download=\"ottrec_simplified_latest.csv.zip\">csv.zip</a> <a class=\"dl dl-meta\" href=\"/export/schema.csv\" download=\"ottrec_simplified.schema.csv\">schema.csv</a></li></ul><table class=\"schema\"><tbody><tr class=\"controls\"><td colspan=\"2\"><label>Format <select class=\"format\"><option value=\"\" selected>all formats</option> <option value=\"json\">JSON</option> <option value=\"csv\">CSV</option></select></label></td></tr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -106,7 +106,7 @@ func DataHome(params DataHomeParams) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(table.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 84, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 96, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -119,7 +119,7 @@ func DataHome(params DataHomeParams) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(table.Tag.Get("sjson"), ","))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 85, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 97, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -132,7 +132,7 @@ func DataHome(params DataHomeParams) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(table.Tag.Get("scsv"), ","))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 86, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 98, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -145,7 +145,7 @@ func DataHome(params DataHomeParams) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(table.Tag.Get("doc"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 88, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 100, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -165,7 +165,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(col.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 95, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 107, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -178,7 +178,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(col.Tag.Get("sjson"), ","))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 96, Col: 73}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 108, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -191,7 +191,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(col.Tag.Get("scsv"), ","))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 97, Col: 71}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 109, Col: 71}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -204,7 +204,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(col.Tag.Get("doc"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 99, Col: 33}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 111, Col: 33}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -223,7 +223,7 @@ func DataHome(params DataHomeParams) templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.proto")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 113, Col: 80}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 125, Col: 80}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -236,7 +236,7 @@ func DataHome(params DataHomeParams) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.pb")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 117, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 129, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -249,7 +249,7 @@ func DataHome(params DataHomeParams) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.json")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 121, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 133, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -262,7 +262,7 @@ func DataHome(params DataHomeParams) templ.Component {
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.textpb")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 125, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 137, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
@@ -275,7 +275,7 @@ func DataHome(params DataHomeParams) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(`[{"id": string, "revision": integer,"updated": date-rfc3339}]`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 164, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 176, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -299,7 +299,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var18 string
 				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs("ID: " + ver.ID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 192, Col: 36}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 204, Col: 36}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
@@ -312,7 +312,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var19 string
 				templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(ver.Updated.Format("January 2, 2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 193, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 205, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 				if templ_7745c5c3_Err != nil {
@@ -326,7 +326,7 @@ func DataHome(params DataHomeParams) templ.Component {
 					var templ_7745c5c3_Var20 string
 					templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 195, Col: 16}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 16}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 					if templ_7745c5c3_Err != nil {
@@ -339,7 +339,7 @@ func DataHome(params DataHomeParams) templ.Component {
 					var templ_7745c5c3_Var21 string
 					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(ver.Revision)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 195, Col: 54}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 54}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 					if templ_7745c5c3_Err != nil {
@@ -362,7 +362,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var22 templ.SafeURL
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinURLErrs("/export/" + ver.ID + ".json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 200, Col: 60}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
@@ -375,7 +375,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(base1 + "_simplified.json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 200, Col: 100}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 100}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -388,7 +388,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var24 templ.SafeURL
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinURLErrs("/export/" + ver.ID + ".csv.zip")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 201, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
@@ -401,7 +401,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(base1 + "_simplified.csv.zip")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 201, Col: 106}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 106}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
@@ -419,7 +419,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var26 templ.SafeURL
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/proto")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 205, Col: 57}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 217, Col: 57}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -432,7 +432,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".proto")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 205, Col: 87}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 217, Col: 87}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
@@ -445,7 +445,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var28 templ.SafeURL
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/pb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 206, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -458,7 +458,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var29 string
 				templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".pb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 206, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 81}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 				if templ_7745c5c3_Err != nil {
@@ -471,7 +471,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var30 templ.SafeURL
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/textpb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
@@ -484,7 +484,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var31 string
 				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".textpb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 89}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
@@ -497,7 +497,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var32 templ.SafeURL
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 208, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -510,7 +510,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				var templ_7745c5c3_Var33 string
 				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 208, Col: 85}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 85}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 				if templ_7745c5c3_Err != nil {
@@ -528,7 +528,7 @@ func DataHome(params DataHomeParams) templ.Component {
 			var templ_7745c5c3_Var34 string
 			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(len(params.Versions))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 215, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 227, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 			if templ_7745c5c3_Err != nil {
