@@ -62,9 +62,7 @@ const css = `
 		margin: 1rem;
 		padding: .875rem 1.125rem 1.25rem;
 		border-radius: .6rem;
-		background: light-dark(#fff, #161a22);
-		border: 1px solid light-dark(#dce2ee, #25303a);
-		box-shadow: 0 1px 4px light-dark(rgba(0,0,0,.06), rgba(0,0,0,.4));
+		background: light-dark(#fff, #111418);
 	}
 	article > hgroup {
 		padding-bottom: .55rem;
