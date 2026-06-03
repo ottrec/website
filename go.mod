@@ -15,11 +15,12 @@ require (
 	github.com/lmittmann/tint v1.1.2
 	github.com/ncruces/go-sqlite3 v0.29.1
 	github.com/pgaskin/ottrec v0.0.0-20260320115659-d7c3036c8cbb
+	github.com/pgaskin/xmlwriter v0.0.4
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/pflag v1.0.10
-	golang.org/x/net v0.44.0
-	golang.org/x/text v0.29.0
-	google.golang.org/protobuf v1.36.10
+	golang.org/x/net v0.52.0
+	golang.org/x/text v0.35.0
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -38,8 +39,8 @@ require (
 	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
-	golang.org/x/mod v0.27.0 // indirect
-	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/tools v0.36.0 // indirect
+	golang.org/x/mod v0.33.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/tools v0.42.0 // indirect
 )
