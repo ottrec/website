@@ -19,15 +19,15 @@ import (
 // reproducible since versions may resolve differently
 
 const (
-	PostCSSVersion          = "8.5.6"
-	PostCSSPresetEnvVersion = "10.4.0"
+	PostCSSVersion          = "8.5.15"
+	PostCSSPresetEnvVersion = "11.3.0"
 	PostCSSMinifyVersion    = "1.2.0"
 )
 
 const Source = `
-	export { default as postcss } from 'https://esm.sh/postcss@` + PostCSSVersion + `?dev&target=es2015'
-	export { default as postcssPresetEnv } from 'https://esm.sh/postcss-preset-env@` + PostCSSPresetEnvVersion + `?dev&target=es2015&deps=postcss@` + PostCSSVersion + `'
-	export { default as postcssMinify } from 'https://esm.sh/postcss-minify@` + PostCSSMinifyVersion + `?dev&target=es2015'
+	export { default as postcss } from 'https://esm.sh/postcss@` + PostCSSVersion + `?dev&target=es2022'
+	export { default as postcssPresetEnv } from 'https://esm.sh/postcss-preset-env@` + PostCSSPresetEnvVersion + `?dev&target=es2022&deps=postcss@` + PostCSSVersion + `'
+	export { default as postcssMinify } from 'https://esm.sh/postcss-minify@` + PostCSSMinifyVersion + `?dev&target=es2022'
 `
 
 func main() {
@@ -53,7 +53,7 @@ func main() {
 		Drop:          api.DropConsole,
 		LegalComments: api.LegalCommentsEndOfFile,
 		Sourcemap:     api.SourceMapInline,
-		Target:        api.ES2015,
+		Target:        api.ES2020,
 		Platform:      api.PlatformNeutral,
 		Format:        api.FormatIIFE,
 		GlobalName:    "bundle",
