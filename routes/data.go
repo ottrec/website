@@ -127,12 +127,15 @@ type dataPreviewHandler struct {
 	Cache          *ottrecdata.Cache
 	MaxQueryLength int
 	MaxQueryCost   int
+
+	mu   sync.Mutex
+	blob string
+	data ottrecidx.DataRef
 }
 
 func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, no-cache")
 
-	// TODO: etag, caching
 	// TODO: historical schedules?
 
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
@@ -192,6 +195,10 @@ func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
+	var timing serverTiming
+	var now time.Time
+
+	now = time.Now()
 	id, _, _, err := h.Cache.ResolveVersion(ctx, "latest")
 	if err != nil {
 		slog.Error("preview: failed to resolve latest version", "error", err)
@@ -202,9 +209,7 @@ func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveError(w, "no data available, try again later", http.StatusServiceUnavailable)
 		return
 	}
-
-	var timing serverTiming
-	var now time.Time
+	timing.Add("resolve", time.Since(now))
 
 	var blobErr error
 	var blobHash string
@@ -225,35 +230,62 @@ func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now = time.Now()
-	var pb []byte
-	exists, err := h.Cache.ReadBlob(ctx, blobHash, false, func(r io.Reader, size int64) error {
-		pb = make([]byte, size)
-		_, err := io.ReadFull(r, pb)
-		return err
-	})
-	if err != nil {
-		slog.Error("preview: failed to read blob", "hash", blobHash, "error", err)
-		h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
-		return
+	hw := sha1.New()
+	io.WriteString(hw, blobHash)
+	io.WriteString(hw, exehash)
+	if raw {
+		hw.Write([]byte{1})
 	}
-	if !exists {
-		slog.Error("preview: missing blob", "hash", blobHash)
-		h.serveError(w, "internal server error: missing blob", http.StatusInternalServerError)
-		return
+	if all {
+		hw.Write([]byte{2})
 	}
-	timing.Add("read", time.Since(now))
+	io.WriteString(hw, q)
+	etag := `"` + base32.StdEncoding.EncodeToString(hw.Sum(nil)) + `"`
 
-	now = time.Now()
-	idx, err := new(ottrecidx.Indexer).Load(pb)
-	if err != nil {
-		slog.Error("preview: failed to load index", "id", id, "error", err)
-		h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
+		w.Header().Set("ETag", etag)
+		w.WriteHeader(http.StatusNotModified)
 		return
 	}
-	timing.Add("load", time.Since(now))
 
-	data := idx.Data()
+	h.mu.Lock()
+	cachedHash, data := h.blob, h.data
+	h.mu.Unlock()
+
+	if cachedHash != blobHash {
+		now = time.Now()
+		var pb []byte
+		exists, err := h.Cache.ReadBlob(ctx, blobHash, false, func(r io.Reader, size int64) error {
+			pb = make([]byte, size)
+			_, err := io.ReadFull(r, pb)
+			return err
+		})
+		if err != nil {
+			slog.Error("preview: failed to read blob", "hash", blobHash, "error", err)
+			h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if !exists {
+			slog.Error("preview: missing blob", "hash", blobHash)
+			h.serveError(w, "internal server error: missing blob", http.StatusInternalServerError)
+			return
+		}
+		timing.Add("read", time.Since(now))
+
+		now = time.Now()
+		idx, err := new(ottrecidx.Indexer).Load(pb)
+		if err != nil {
+			slog.Error("preview: failed to load index", "id", id, "error", err)
+			h.serveError(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		timing.Add("load", time.Since(now))
+
+		data = idx.Data()
+		h.mu.Lock()
+		h.blob, h.data = blobHash, data
+		h.mu.Unlock()
+	}
 	if q != "" {
 		if h.MaxQueryLength > 0 && len(q) > h.MaxQueryLength {
 			h.serveError(w, fmt.Sprintf("query too long (%d > %d)", len(q), h.MaxQueryLength), http.StatusRequestEntityTooLarge)
@@ -366,6 +398,7 @@ func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	d := w.Header()
 	d.Set("Content-Length", strconv.Itoa(len(buf)))
 	d.Set("Content-Type", "application/xhtml+xml; charset=utf-8")
+	d.Set("ETag", etag)
 	d.Set("Server-Timing", timing.String())
 	w.WriteHeader(http.StatusOK)
 	if r.Method != http.MethodHead {
