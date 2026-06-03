@@ -27,6 +27,28 @@
       color: #a0a0a0;
     }
 
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .toolbar label {
+      font-size: 0.8rem;
+      color: #808080;
+    }
+
+    .toolbar select {
+      padding: 0.3rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #3a3a3a;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
     .examples {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
@@ -42,18 +64,71 @@
       color: #606060;
     }
 
-    .editor {
+    .form-demo {
+      margin-top: 2rem;
+      max-width: 600px;
+    }
+
+    .form-demo h2 {
+      margin: 0 0 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #606060;
+    }
+
+    .form-demo form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .form-demo .controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .form-demo button {
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      border: 1px solid #3a3a3a;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .form-demo button:hover {
+      background: #333;
+    }
+
+    .form-demo output {
+      display: block;
+      padding: 0.75rem 1rem;
       border-radius: 6px;
-      overflow: hidden;
+      background: #111;
       border: 1px solid #2a2a2a;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #888;
+      white-space: pre-wrap;
+      min-height: 2.5rem;
     }
 
-    .editor .cm-editor {
-      max-height: 240px;
+    .form-demo .states {
+      display: contents;
     }
 
-    .editor .cm-scroller {
-      overflow: auto;
+    .form-demo label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: #888;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -62,83 +137,110 @@
 
   <h1>Examples</h1>
 
+  <div class="toolbar">
+    <label for="theme-select">Theme</label>
+    <select id="theme-select"></select>
+  </div>
+
   <section class="examples">
     <section>
       <h2>Finding schedules valid as of a certain date</h2>
-      <div class="editor" data-query="schdate(today)
+      <ottrecql-editor value="schdate(today)
 schdate(2026-01-02)
-schdate(today) or schdate(2025-12-25)"></div>
+schdate(today) or schdate(2025-12-25)"></ottrecql-editor>
     </section>
 
     <section>
       <h2>Filtering activity times</h2>
-      <div class="editor" data-query="time(Mon @ 9:00)
+      <ottrecql-editor value="time(Mon @ 9:00)
 time(Mon Tue Wed Thu Fri @ 9:00am 5:00pm)
 time(Sat Sun @ 18:00-21:00)
-time(@ now)"></div>
+time(@ now)"></ottrecql-editor>
     </section>
 
     <section>
       <h2>Filtering activity times for specific dates</h2>
-      <div class="editor" data-query="time(2025-06-15 @ 9:00am-12:00pm)
+      <ottrecql-editor value="time(2025-06-15 @ 9:00am-12:00pm)
 time(today @ 8:00 9:00 10:00)
-time(2025-12-24 2025-12-25)"></div>
+time(2025-12-24 2025-12-25)"></ottrecql-editor>
     </section>
 
     <section>
       <h2>Filtering by facility or activity names (fuzzy word matches)</h2>
-      <div class="editor" data-query='facility("st laurent complex")
+      <ottrecql-editor value='facility("st laurent complex")
 facility("tom brown", "jim durrell", "sandy hill arena")
 activity("lane swim", "public swim")
-activity()'></div>
+activity()'></ottrecql-editor>
     </section>
 
     <section>
       <h2>Filtering by location (lat, lng, km distance)</h2>
-      <div class="editor" data-query="latlng(1.234, -5.678, 10)"></div>
+      <ottrecql-editor value="latlng(1.234, -5.678, 10)"></ottrecql-editor>
     </section>
 
     <section>
       <h2>Operators</h2>
-      <div class="editor" data-query="not time(09:00-17:00)
+      <ottrecql-editor value="not time(09:00-17:00)
 schdate(today) and time(today @ 8:00am)
 time(sa su @ 10:00-22:00) or time(mo tu we th fr @ 6:00am-8:00am)
-!facility(&quot;plant&quot;) && activity(&quot;lane swim&quot;)
-schdate(today) || schdate(2025-12-24)"></div>
+!facility(&quot;plant&quot;) &amp;&amp; activity(&quot;lane swim&quot;)
+schdate(today) || schdate(2025-12-24)"></ottrecql-editor>
     </section>
 
     <section>
       <h2>Grouping</h2>
-      <div class="editor" data-query="(schdate(today) or schdate(2025-12-24)) and time(Mon @ 09:00)
+      <ottrecql-editor value="(schdate(today) or schdate(2025-12-24)) and time(Mon @ 09:00)
 not (facility(&quot;A&quot;) or facility(&quot;B&quot;))
-schdate(today) and (time(Mon @ 9:00) or time(Tue @ 10:00))"></div>
+schdate(today) and (time(Mon @ 9:00) or time(Tue @ 10:00))"></ottrecql-editor>
     </section>
 
     <section>
       <h2>Complex queries</h2>
-      <div class="editor" data-query='schdate(today)
-  && time(Mon Tue Wed Thu Fri @ 4:00p-10:00pm)
-  && activity("skate")
-  && !activity("adult")'></div>
+      <ottrecql-editor value='schdate(today)
+  &amp;&amp; time(Mon Tue Wed Thu Fri @ 4:00p-10:00pm)
+  &amp;&amp; activity("skate")
+  &amp;&amp; !activity("adult")'></ottrecql-editor>
     </section>
+  </section>
+
+  <section class="form-demo">
+    <h2>Form demo</h2>
+    <form id="demo-form">
+      <ottrecql-editor name="query" value='schdate(today) &amp;&amp; activity("lane swim")' required></ottrecql-editor>
+      <div class="controls">
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+        <span class="states">
+          <label><input type="checkbox" id="toggle-disabled"> disabled</label>
+          <label><input type="checkbox" id="toggle-readonly"> readonly</label>
+        </span>
+      </div>
+      <output id="demo-output">—</output>
+    </form>
   </section>
 
   <script type="importmap">
     {
       "imports": {
-        "@codemirror/state":      "https://esm.sh/@codemirror/state@6",
-        "@codemirror/view":       "https://esm.sh/@codemirror/view@6",
-        "@codemirror/language":   "https://esm.sh/@codemirror/language@6",
-        "@codemirror/commands":   "https://esm.sh/@codemirror/commands@6",
+        "@codemirror/state":          "https://esm.sh/@codemirror/state@6",
+        "@codemirror/view":           "https://esm.sh/@codemirror/view@6",
+        "@codemirror/language":       "https://esm.sh/@codemirror/language@6",
+        "@codemirror/commands":       "https://esm.sh/@codemirror/commands@6",
         "@codemirror/theme-one-dark": "https://esm.sh/@codemirror/theme-one-dark@6",
-        "@lezer/highlight":       "https://esm.sh/@lezer/highlight@1"
+        "@lezer/highlight":           "https://esm.sh/@lezer/highlight@1",
+        "@uiw/codemirror-themes-all": "https://esm.sh/@uiw/codemirror-themes-all@4.25.10?external=@codemirror/state,@codemirror/view,@codemirror/language,@lezer/highlight"
       }
     }
   </script>
 
   <script type="module">
-    import { StreamLanguage, LanguageSupport } from "@codemirror/language"
+    import { EditorState, Compartment } from "@codemirror/state"
+    import { EditorView, keymap } from "@codemirror/view"
+    import { StreamLanguage, LanguageSupport, bracketMatching } from "@codemirror/language"
+    import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
+    import { oneDark } from "@codemirror/theme-one-dark"
     import { tags } from "@lezer/highlight"
+    import * as themes from "@uiw/codemirror-themes-all"
 
     const weekdays = new Set([
       "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
@@ -230,35 +332,286 @@ schdate(today) and (time(Mon @ 9:00) or time(Tue @ 10:00))"></div>
         qFunc: tags.function(tags.variableName),
       },
     })
+
     function ottrecql() { return new LanguageSupport(ottrecqlLang) }
 
-    import { EditorState } from "@codemirror/state"
-    import { EditorView, keymap } from "@codemirror/view"
-    import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
-    import { bracketMatching } from "@codemirror/language"
-    import { oneDark } from "@codemirror/theme-one-dark"
+    const THEMES = new Map([
+      ['default',              []],
+      ['one-dark',             oneDark],
+      ['abcdef',               themes.abcdef],
+      ['abyss',                themes.abyss],
+      ['android-studio',       themes.androidstudio],
+      ['andromeda',            themes.andromeda],
+      ['atom-one',             themes.atomone],
+      ['aura',                 themes.aura],
+      ['basic-dark',           themes.basicDark],
+      ['basic-light',          themes.basicLight],
+      ['bbedit',               themes.bbedit],
+      ['bespin',               themes.bespin],
+      ['console-dark',         themes.consoleDark],
+      ['console-light',        themes.consoleLight],
+      ['copilot',              themes.copilot],
+      ['darcula',              themes.darcula],
+      ['dracula',              themes.dracula],
+      ['duotone-dark',         themes.duotoneDark],
+      ['duotone-light',        themes.duotoneLight],
+      ['eclipse',              themes.eclipse],
+      ['github-dark',          themes.githubDark],
+      ['github-light',         themes.githubLight],
+      ['gruvbox-dark',         themes.gruvboxDark],
+      ['gruvbox-light',        themes.gruvboxLight],
+      ['kimbie',               themes.kimbie],
+      ['material',             themes.material],
+      ['material-dark',        themes.materialDark],
+      ['material-light',       themes.materialLight],
+      ['monokai',              themes.monokai],
+      ['monokai-dimmed',       themes.monokaiDimmed],
+      ['noctis-lilac',         themes.noctisLilac],
+      ['nord',                 themes.nord],
+      ['okaidia',              themes.okaidia],
+      ['quiet-light',          themes.quietlight],
+      ['red',                  themes.red],
+      ['solarized-dark',       themes.solarizedDark],
+      ['solarized-light',      themes.solarizedLight],
+      ['sublime',              themes.sublime],
+      ['tokyo-night',          themes.tokyoNight],
+      ['tokyo-night-day',      themes.tokyoNightDay],
+      ['tokyo-night-storm',    themes.tokyoNightStorm],
+      ['tomorrow-night-blue',  themes.tomorrowNightBlue],
+      ['vscode-dark',          themes.vscodeDark],
+      ['vscode-light',         themes.vscodeLight],
+      ['white-dark',           themes.whiteDark],
+      ['white-light',          themes.whiteLight],
+      ['xcode-dark',           themes.xcodeDark],
+      ['xcode-light',          themes.xcodeLight],
+    ])
 
-    for (const el of document.querySelectorAll("section.examples > section > .editor")) {
-      new EditorView({
-        state: EditorState.create({
-          doc: el.dataset.query,
-          extensions: [
-            history(),
-            keymap.of([...defaultKeymap, ...historyKeymap]),
-            ottrecql(),
-            bracketMatching(),
-            oneDark,
-            EditorView.theme({
-              "&.cm-focused": { outline: "none" },
-              ".cm-content": { padding: "12px 0" },
-              ".cm-line": { padding: "0 14px" },
-            }),
-            EditorView.lineWrapping,
-          ],
-        }),
-        parent: el,
-      })
+    function resolveTheme(name) {
+      const ext = THEMES.get(name ?? 'one-dark')
+      return ext !== undefined ? ext : oneDark
     }
+
+    class OttrecqlEditor extends HTMLElement {
+      static formAssociated = true
+      static observedAttributes = ['value', 'theme', 'readonly', 'required']
+      static themes = [...THEMES.keys()]
+
+      #internals
+      #view = null
+      #compartment = new Compartment()
+      #themeCompartment = new Compartment()
+      #dirty = false
+
+      constructor() {
+        super()
+        this.#internals = this.attachInternals()
+        this.attachShadow({ mode: 'open' })
+        const style = document.createElement('style')
+        style.textContent = `
+          :host {
+            display: block;
+            overflow: hidden;
+            cursor: text;
+          }
+          :host([disabled]) {
+            opacity: 0.5;
+            pointer-events: none;
+          }
+          .cm-editor {
+            max-height: 240px;
+          }
+          .cm-scroller {
+            overflow: auto !important;
+          }
+        `
+        this.shadowRoot.appendChild(style)
+      }
+
+      connectedCallback() {
+        if (this.#view) return
+
+        const container = document.createElement('div')
+        this.shadowRoot.appendChild(container)
+
+        const initialValue = this.getAttribute('value') ?? ''
+        const editable = !this.hasAttribute('disabled') && !this.hasAttribute('readonly')
+
+        this.#view = new EditorView({
+          root: this.shadowRoot,
+          state: EditorState.create({
+            doc: initialValue,
+            extensions: [
+              history(),
+              keymap.of([...defaultKeymap, ...historyKeymap]),
+              ottrecql(),
+              bracketMatching(),
+              this.#themeCompartment.of(resolveTheme(this.getAttribute('theme'))),
+              this.#compartment.of(EditorView.editable.of(editable)),
+              EditorView.theme({
+                '&.cm-focused': { outline: 'none' },
+                '.cm-content': { padding: '12px 0' },
+                '.cm-line': { padding: '0 14px' },
+              }),
+              EditorView.lineWrapping,
+              EditorView.updateListener.of(update => {
+                if (update.docChanged) {
+                  this.#dirty = true
+                  const value = update.state.doc.toString()
+                  this.#internals.setFormValue(value)
+                  this.#validate(value)
+                  this.dispatchEvent(new Event('input', { bubbles: true, composed: true }))
+                }
+                if (update.focusChanged && !update.view.hasFocus) {
+                  this.dispatchEvent(new Event('change', { bubbles: true, composed: true }))
+                }
+              }),
+            ],
+          }),
+          parent: container,
+        })
+
+        this.#internals.setFormValue(initialValue)
+        this.#validate(initialValue)
+      }
+
+      disconnectedCallback() {
+        this.#view?.destroy()
+        this.#view = null
+        this.shadowRoot.querySelector('div')?.remove()
+      }
+
+      formResetCallback() {
+        this.#dirty = false
+        const defaultVal = this.getAttribute('value') ?? ''
+        if (this.#view) {
+          this.#view.dispatch({
+            changes: { from: 0, to: this.#view.state.doc.length, insert: defaultVal },
+          })
+        }
+        this.#internals.setFormValue(defaultVal)
+        this.#validate(defaultVal)
+      }
+
+      formDisabledCallback(disabled) {
+        this.#reconfigure(disabled, this.hasAttribute('readonly'))
+      }
+
+      attributeChangedCallback(name, oldVal, newVal) {
+        if (name === 'theme' && this.#view) {
+          this.#view.dispatch({
+            effects: this.#themeCompartment.reconfigure(resolveTheme(newVal)),
+          })
+        }
+        if (name === 'readonly') {
+          this.#reconfigure(this.hasAttribute('disabled'), newVal !== null)
+        }
+        if (name === 'required') {
+          this.#validate(this.value)
+        }
+        if (name === 'value' && !this.#dirty) {
+          const val = newVal ?? ''
+          if (this.#view) {
+            this.#view.dispatch({
+              changes: { from: 0, to: this.#view.state.doc.length, insert: val },
+            })
+          }
+          this.#internals.setFormValue(val)
+          this.#validate(val)
+        }
+      }
+
+      #reconfigure(disabled, readonly) {
+        if (!this.#view) return
+        this.#view.dispatch({
+          effects: this.#compartment.reconfigure(EditorView.editable.of(!disabled && !readonly)),
+        })
+      }
+
+      #validate(value) {
+        if (this.hasAttribute('required') && !value.trim()) {
+          const anchor = this.#view?.contentDOM // setValidity requires an anchor
+          if (anchor) this.#internals.setValidity({ valueMissing: true }, 'Please fill out this field.', anchor)
+        } else {
+          this.#internals.setValidity({})
+        }
+      }
+
+      get value() {
+        return this.#view?.state.doc.toString() ?? this.getAttribute('value') ?? ''
+      }
+
+      set value(v) {
+        v = String(v ?? '')
+        if (this.#view) {
+          this.#view.dispatch({
+            changes: { from: 0, to: this.#view.state.doc.length, insert: v },
+          })
+        }
+        this.#internals.setFormValue(v)
+        this.#validate(v)
+      }
+
+      get theme() { return this.getAttribute('theme') ?? 'one-dark' }
+      set theme(v) {
+        if (v === null || v === undefined) this.removeAttribute('theme')
+        else this.setAttribute('theme', v)
+      }
+
+      get defaultValue() { return this.getAttribute('value') ?? '' }
+      set defaultValue(v) { this.setAttribute('value', String(v)) }
+
+      get name() { return this.getAttribute('name') ?? '' }
+      set name(v) { this.setAttribute('name', v) }
+
+      get required() { return this.hasAttribute('required') }
+      set required(v) { this.toggleAttribute('required', Boolean(v)) }
+
+      get disabled() { return this.hasAttribute('disabled') }
+      set disabled(v) { this.toggleAttribute('disabled', Boolean(v)) }
+
+      get readOnly() { return this.hasAttribute('readonly') }
+      set readOnly(v) { this.toggleAttribute('readonly', Boolean(v)) }
+
+      get validity() { return this.#internals.validity }
+      get validationMessage() { return this.#internals.validationMessage }
+      get willValidate() { return this.#internals.willValidate }
+
+      checkValidity() { return this.#internals.checkValidity() }
+      reportValidity() { return this.#internals.reportValidity() }
+    }
+
+    customElements.define('ottrecql-editor', OttrecqlEditor)
+
+    const themeSelect = document.getElementById('theme-select')
+    for (const name of OttrecqlEditor.themes) {
+      const opt = document.createElement('option')
+      opt.value = name
+      opt.textContent = name
+      if (name === 'one-dark') opt.selected = true
+      themeSelect.appendChild(opt)
+    }
+    themeSelect.addEventListener('change', () => {
+      for (const el of document.querySelectorAll('ottrecql-editor')) {
+        el.theme = themeSelect.value
+      }
+    })
+
+    const form = document.getElementById('demo-form')
+    const output = document.getElementById('demo-output')
+
+    form.addEventListener('submit', e => {
+      e.preventDefault()
+      const data = new FormData(form)
+      output.textContent = [...data.entries()].map(([k, v]) => `${k} = ${v}`).join('\n')
+    })
+
+    document.getElementById('toggle-disabled').addEventListener('change', e => {
+      form.querySelector('ottrecql-editor').disabled = e.target.checked
+    })
+
+    document.getElementById('toggle-readonly').addEventListener('change', e => {
+      form.querySelector('ottrecql-editor').readOnly = e.target.checked
+    })
   </script>
 </body>
 
