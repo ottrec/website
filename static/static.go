@@ -40,6 +40,10 @@ var (
 	LeafletCSS = newFile("lib/leaflet.css")
 	LeafletJS  = newFile("lib/leaflet.js")
 
+	FaviconSVG        = newFile("favicon.svg")
+	FaviconICO        = newFile("favicon.ico")
+	AppleTouchIconPNG = newFile("apple-touch-icon.png")
+
 	DataCSS       = newFile("data.css")
 	WebsiteCSS    = newFile("website.css")
 	FacilityCSS   = newFile("facility.css")
@@ -69,6 +73,9 @@ var (
 		AsapWOFF2,
 		LeafletCSS,
 		LeafletJS,
+		FaviconSVG,
+		FaviconICO,
+		AppleTouchIconPNG,
 	)
 
 	Data = newGroup("data",
@@ -162,6 +169,12 @@ func newFile(name string) *file {
 			mimetype = "text/css; charset=utf-8"
 		case ".js":
 			mimetype = "application/javascript; charset=utf-8"
+		case ".svg":
+			mimetype = "image/svg+xml"
+		case ".ico":
+			mimetype = "image/x-icon"
+		case ".png":
+			mimetype = "image/png"
 		default:
 			return nil, fmt.Errorf("no mimetype for %q", ext)
 		}

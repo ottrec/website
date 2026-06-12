@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-// TODO: favicon
-
 type WebsiteParams struct {
 	Base string
 	Data ottrecidx.DataRef
@@ -27,6 +25,14 @@ templ websiteHeadExtra() {
 templ websiteThemeHead() {
 	@templ.Raw(`<script>try{const t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.style.colorScheme=t}catch(e){}</script>`)
 	<script src={ static.Path(static.ThemeJS) } defer></script>
+}
+
+// websiteIconsHead links the site icons. The ico fallback is also reachable
+// at /favicon.ico for clients that never read the page head.
+templ websiteIconsHead() {
+	<link rel="icon" href={ static.Path(static.FaviconICO) } sizes="32x32"/>
+	<link rel="icon" href={ static.Path(static.FaviconSVG) } type="image/svg+xml"/>
+	<link rel="apple-touch-icon" href={ static.Path(static.AppleTouchIconPNG) }/>
 }
 
 // websiteTopNav renders the shared navbar. active is the slug of the active
@@ -53,6 +59,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			@websiteThemeHead()
+			@websiteIconsHead()
 			if params.Base != "" {
 				<link rel="canonical" href={ params.Base }/>
 			}
@@ -116,6 +123,7 @@ templ WebsiteErrorPage(title, message string) {
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			@websiteThemeHead()
+			@websiteIconsHead()
 			<meta name="robots" content="noindex"/>
 			<title>{ title }</title>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>

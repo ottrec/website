@@ -36,7 +36,6 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	}
 	mux := http.NewServeMux()
 
-	// TODO: favicon
 	// TODO: fonts
 	// TODO: base url for rel=canonical
 
@@ -72,6 +71,7 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 		websiteHandlerBase: base,
 	})
 	mux.Handle("/static/", static.Handler(static.Website))
+	mux.Handle("GET /favicon.ico", static.Handler(static.Website))
 
 	return commonMiddleware(redirectTrailingSlash(mux)), nil
 }
