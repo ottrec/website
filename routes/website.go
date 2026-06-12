@@ -22,7 +22,8 @@ import (
 type WebsiteConfig struct {
 	Data func() (ottrecidx.DataRef, bool)
 	// HeadHTML is raw HTML injected at the bottom of <head> on every page.
-	HeadHTML string
+	HeadHTML  string
+	AboutHTML string
 }
 
 func Website(cfg WebsiteConfig) (http.Handler, error) {
@@ -30,6 +31,7 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 		return nil, fmt.Errorf("no data getter specified")
 	}
 	templates.SetHeadExtra(cfg.HeadHTML)
+	templates.SetAboutExtra(cfg.AboutHTML)
 
 	base := websiteHandlerBase{
 		Data: cfg.Data,

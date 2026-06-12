@@ -19,6 +19,14 @@ templ websiteHeadExtra() {
 	}
 }
 
+// websiteAboutExtra renders the raw HTML set by [SetAboutExtra], at the bottom
+// of every page's head.
+templ websiteAboutExtra() {
+	if aboutExtra != nil {
+		@aboutExtra
+	}
+}
+
 // websiteThemeHead applies the color scheme override saved by the navbar
 // toggle. The inline script must run before first paint to avoid flashing the
 // wrong theme.

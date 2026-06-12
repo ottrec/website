@@ -217,6 +217,20 @@ func SetHeadExtra(html string) {
 	exehash += base32.StdEncoding.EncodeToString(sum[:])
 }
 
+var aboutExtra templ.Component
+
+// SetAboutExtra sets raw HTML to inject at the bottom of <head> on every page.
+// It must be called at most once, before anything is rendered. The HTML is
+// mixed into the etags so cached pages revalidate when it changes.
+func SetAboutExtra(html string) {
+	if html == "" {
+		return
+	}
+	aboutExtra = templ.Raw(html)
+	sum := sha1.Sum([]byte(html))
+	exehash += base32.StdEncoding.EncodeToString(sum[:])
+}
+
 // exehash is a hash of the current binary for use in etags.
 var exehash = func() string {
 	exe, err := os.Executable()
