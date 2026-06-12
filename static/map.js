@@ -89,7 +89,7 @@ class FacilityData {
 			cats: [...filter.categories].reduce((m, c) => m | (1 << c), 0),
 			days,
 			mask,
-			timeFiltered: filter.slots.size > 0 || (filter.days.size > 0 && filter.days.size < this.days.length),
+			timeFiltered: filter.slots.size > 0 || filter.days.size > 0,
 		};
 	}
 
@@ -236,7 +236,7 @@ const tileURL = (dark) => 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_a
 const tiles = L.tileLayer(tileURL(darkQuery.matches), {
 	subdomains: 'abcd',
 	maxZoom: 20,
-	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.pgaskin.net">Patrick Gaskin</a>',
 }).addTo(map);
 darkQuery.addEventListener('change', (ev) => tiles.setUrl(tileURL(ev.matches)));
 
@@ -334,7 +334,8 @@ function focusFacility(i) {
 	const marker = markers.get(i);
 	if (!marker) return;
 	document.body.classList.remove('list-open');
-	map.setView([f.lat, f.lng], Math.max(map.getZoom(), 14));
+	if (!map.getBounds().contains([f.lat, f.lng]))
+		map.setView([f.lat, f.lng], Math.max(map.getZoom(), 14));
 	marker.openPopup();
 }
 
@@ -434,7 +435,7 @@ function update() {
 	applyCounts(actRows, data.activityCounts(filter));
 	syncActivityVisibility();
 	renderChips();
-	const count = visible.length + ' facilit' + (visible.length === 1 ? 'y' : 'ies');
+	const count = visible.length + '/' + data.facilities.length + ' facilit' + (data.facilities.length === 1 ? 'y' : 'ies');
 	facCountEl.textContent = count;
 	sheetToggleEl.textContent = count + (document.body.classList.contains('list-open') ? ' ▾' : ' ▴');
 }
@@ -509,7 +510,7 @@ function updateMarkers() {
 function renderChips() {
 	
 	const chips = [];
-	if (filter.days.size && filter.days.size < data.days.length)
+	if (filter.days.size)
 		chips.push({
 			label: [...filter.days].sort((a, b) => a - b).map((d) => data.days[d]).join(', '),
 			clear: () => filter.days.clear(),
