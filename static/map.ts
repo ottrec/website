@@ -3,6 +3,17 @@ export {}
 
 declare const L: any // leaflet (lib/leaflet.js)
 
+// the shared starred facility store (starred.js)
+declare const ottrecStarred: {
+	has(slug: string): boolean
+	all(): string[]
+	count(): number
+	toggle(slug: string): void
+	set(slugs: string[]): void
+	sync(): void
+	onchange(fn: () => void): void
+}
+
 // error banner shown at the bottom of the page if a js error occurs
 
 function showError(msg: string) {
@@ -27,11 +38,12 @@ window.addEventListener('unhandledrejection', (ev) => showError((ev.reason && ev
 /**
  * A filter selects facilities by day, time slot, category, activity, and name.
  *
- *   days       Set of enabled weekday indices (0 = Sunday); empty = all
- *   slots      Set of enabled time slot indices (into .slots); empty = all
- *   categories Set of enabled category indices (into .categories); empty = all
- *   activities Set of enabled activity indices (into .activities); empty = all
- *   name       substring to match against the facility name, case-insensitive
+ *   days        Set of enabled weekday indices (0 = Sunday); empty = all
+ *   slots       Set of enabled time slot indices (into .slots); empty = all
+ *   categories  Set of enabled category indices (into .categories); empty = all
+ *   activities  Set of enabled activity indices (into .activities); empty = all
+ *   name        substring to match against the facility name, case-insensitive
+ *   starredOnly only match starred facilities
  */
 interface Filter {
 	days: Set<number>
@@ -39,6 +51,7 @@ interface Filter {
 	categories: Set<number>
 	activities: Set<number>
 	name: string
+	starredOnly: boolean
 }
 
 // the JSON data island embedded in the page
@@ -76,6 +89,7 @@ interface Query {
 	days: Set<number>
 	mask: Uint8Array
 	timeFiltered: boolean
+	starred: Set<number> | null // starred facility indices, if filtering by starred
 }
 
 /**
@@ -146,6 +160,9 @@ class FacilityData {
 			days,
 			mask,
 			timeFiltered: filter.slots.size > 0 || filter.days.size > 0,
+			starred: filter.starredOnly
+				? new Set(this.facilities.filter((f) => ottrecStarred.has(f.slug)).map((f) => f.index))
+				: null,
 		}
 	}
 
@@ -169,6 +186,7 @@ class FacilityData {
 	}
 
 	#facilityMatches(i: number, q: Query): boolean {
+		if (q.starred && !q.starred.has(i)) return false
 		if (q.name && !this.#nameLower[i]!.includes(q.name)) return false
 		const start = this.#entryStart[i]!, end = this.#entryStart[i + 1]!
 		if (start === end) // no activity data at all; show unless filtering by activity, category, or time
@@ -214,6 +232,7 @@ class FacilityData {
 		const q = this.#prepare(filter)
 		const counts = new Uint32Array(this.activities.length)
 		for (let i = 0; i < this.facilities.length; i++) {
+			if (q.starred && !q.starred.has(i)) continue
 			if (q.name && !this.#nameLower[i]!.includes(q.name)) continue
 			for (let e = this.#entryStart[i]!; e < this.#entryStart[i + 1]!; e++) {
 				const a = this.#entryActivity[e]!
@@ -231,6 +250,7 @@ class FacilityData {
 		const q = this.#prepare(filter)
 		const counts = new Uint32Array(this.categories.length)
 		for (let i = 0; i < this.facilities.length; i++) {
+			if (q.starred && !q.starred.has(i)) continue
 			if (q.name && !this.#nameLower[i]!.includes(q.name)) continue
 			let bits = 0
 			for (let e = this.#entryStart[i]!; e < this.#entryStart[i + 1]!; e++)
@@ -249,6 +269,7 @@ class FacilityData {
 		const q = this.#prepare(filter)
 		const counts = new Uint32Array(this.slots.length)
 		for (let i = 0; i < this.facilities.length; i++) {
+			if (q.starred && !q.starred.has(i)) continue
 			if (q.name && !this.#nameLower[i]!.includes(q.name)) continue
 			let slotBits = 0
 			for (let e = this.#entryStart[i]!; e < this.#entryStart[i + 1]!; e++) {
@@ -270,6 +291,7 @@ const filter: Filter = {
 	categories: new Set(),
 	activities: new Set(),
 	name: '',
+	starredOnly: false,
 }
 let order = 'alpha'
 let visible: number[] = []
@@ -291,6 +313,15 @@ function placeChips() {
 mobileQuery.addEventListener('change', placeChips)
 placeChips()
 const activitiesFilteredEl = document.getElementById('filter-activities-filtered')!
+const starredSectionEl = document.getElementById('filter-starred')!
+const starredOnlyEl = document.getElementById('filter-starred-only') as HTMLInputElement
+
+// the starred-only filter is only shown once there's something to filter by
+function syncStarredFilter() {
+	const any = ottrecStarred.count() > 0
+	starredSectionEl.hidden = !any
+	if (!any) filter.starredOnly = false
+}
 
 // map
 
@@ -315,12 +346,13 @@ window.addEventListener('themechange', () => tiles.setUrl(tileURL(effectiveDark(
 
 const markers = new Map<number, any>() // facility index -> L.Marker
 const popupCache = new Map<string, Promise<string>>() // slug -> popup content
+const pinHTML = (slug: string) => '<div class="fac-pin' + (ottrecStarred.has(slug) ? ' starred' : '') + '"></div>'
 for (const f of data.facilities) {
 	if (!f.lat && !f.lng) continue
 	const marker = L.marker([f.lat, f.lng], {
 		icon: L.divIcon({
 			className: 'fac-pin-wrap',
-			html: '<div class="fac-pin"></div>',
+			html: pinHTML(f.slug),
 			iconSize: [30, 30],
 			iconAnchor: [15, 15],
 		}),
@@ -367,6 +399,7 @@ async function loadPopup(f: Facility, popup: any) {
 		popupCache.delete(f.slug)
 		popup.setContent('<div class="fac-popup-error">Failed to load facility info.</div>')
 	}
+	ottrecStarred.sync() // wire up the star button in the inserted content
 }
 
 // facility details panel over the map for mobile
@@ -385,7 +418,10 @@ async function openDetail(f: Facility) {
 		popupCache.delete(f.slug)
 		html = '<div class="fac-popup-error">Failed to load facility info.</div>'
 	}
-	if (token === detailToken) detailContentEl.innerHTML = html
+	if (token === detailToken) {
+		detailContentEl.innerHTML = html
+		ottrecStarred.sync() // wire up the star button in the inserted content
+	}
 }
 
 function setHighlight(i: number, on: boolean) {
@@ -472,6 +508,7 @@ function buildCheckList(el: HTMLElement, labels: string[], set: Set<number>, cha
 }
 
 function syncControls() {
+	starredOnlyEl.checked = filter.starredOnly
 	dayBtns.forEach((btn, d) => btn.classList.toggle('on', filter.days.has(d)))
 	slotRows.forEach((row, i) => row.querySelector('input')!.checked = filter.slots.has(i))
 	catRows.forEach((row, i) => row.querySelector('input')!.checked = filter.categories.has(i))
@@ -517,6 +554,10 @@ function cmpName(a: number, b: number) {
 	return data.facilities[a]!.name.localeCompare(data.facilities[b]!.name)
 }
 
+function cmpStarred(a: number, b: number) {
+	return Number(ottrecStarred.has(data.facilities[b]!.slug)) - Number(ottrecStarred.has(data.facilities[a]!.slug))
+}
+
 function sortVisible() {
 	if (order === 'distance') {
 		const c = map.getCenter()
@@ -529,7 +570,8 @@ function sortVisible() {
 		}
 		visible.sort((a, b) => dist(a) - dist(b) || cmpName(a, b))
 	} else {
-		visible.sort(cmpName)
+		// starred facilities first, then alphabetical
+		visible.sort((a, b) => cmpStarred(a, b) || cmpName(a, b))
 	}
 }
 
@@ -543,6 +585,11 @@ function renderList() {
 		li.tabIndex = 0
 		const h = document.createElement('h2')
 		h.textContent = f.name
+		const star = document.createElement('button')
+		star.type = 'button'
+		star.className = 'fac-star'
+		star.dataset['facStar'] = f.slug
+		h.append(star)
 		const addr = document.createElement('p')
 		addr.className = 'addr'
 		addr.textContent = f.address
@@ -569,6 +616,7 @@ function renderList() {
 		frag.append(li)
 	}
 	listEl.replaceChildren(frag)
+	ottrecStarred.sync() // wire up and set the state of the new star buttons
 }
 
 function updateMarkers() {
@@ -582,6 +630,8 @@ function updateMarkers() {
 
 function renderChips() {
 	const chips: {label: string, clear: () => void}[] = []
+	if (filter.starredOnly)
+		chips.push({label: 'Starred', clear: () => filter.starredOnly = false})
 	if (filter.days.size)
 		chips.push({
 			label: [...filter.days].sort((a, b) => a - b).map((d) => data.days[d]).join(', '),
@@ -617,6 +667,23 @@ function renderChips() {
 
 searchEl.addEventListener('input', () => {
 	filter.name = searchEl.value
+	update()
+})
+starredOnlyEl.addEventListener('change', () => {
+	filter.starredOnly = starredOnlyEl.checked
+	update()
+})
+// keep the markers, list order, starred-only filter, and any open popup in
+// sync when stars change (including from another tab)
+ottrecStarred.onchange(() => {
+	for (const [i, marker] of markers) {
+		const html = pinHTML(data.facilities[i]!.slug)
+		marker.options.icon.options.html = html // for markers (re-)added later
+		const el = marker.getElement()
+		if (el) el.innerHTML = html
+	}
+	syncStarredFilter()
+	syncControls()
 	update()
 })
 document.getElementById('fac-order')!.addEventListener('change', (ev) => {
@@ -661,5 +728,6 @@ sheetToggleEl.addEventListener('click', () => {
 })
 
 buildFilters()
+syncStarredFilter()
 syncControls()
 update()

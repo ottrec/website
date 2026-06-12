@@ -82,7 +82,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 			<main>
 				<header class="home-hero">
 					<h1>Find drop-in recreation in Ottawa</h1>
-					<p>Swims, skates, and sports at every City of Ottawa facility, collected daily and searchable in one place.</p>
+					<p>Find drop-in swimming, skating, and more across all City of Ottawa recreation facilities.</p>
 					<p class="home-updated">Schedules updated <time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>{ params.Data.Index().Updated().In(ottrecidx.TZ).Format("January 2, 2006") }</time>.</p>
 					<nav class="home-cats" aria-label="Categories">
 						<ul>

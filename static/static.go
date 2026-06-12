@@ -55,6 +55,7 @@ var (
 	AboutCSS      = newFile("about.css")
 	HomeCSS       = newFile("home.css")
 	ThemeJS       = newFile("theme.ts")
+	StarredJS     = newFile("starred.ts")
 
 	Website = newGroup("website",
 		WebsiteCSS,
@@ -67,6 +68,7 @@ var (
 		AboutCSS,
 		HomeCSS,
 		ThemeJS,
+		StarredJS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
 		SymbolsWOFF2,

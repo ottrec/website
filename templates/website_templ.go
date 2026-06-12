@@ -453,7 +453,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<main><header class=\"home-hero\"><h1>Find drop-in recreation in Ottawa</h1><p>Swims, skates, and sports at every City of Ottawa facility, collected daily and searchable in one place.</p><p class=\"home-updated\">Schedules updated <time datetime=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<main><header class=\"home-hero\"><h1>Find drop-in recreation in Ottawa</h1><p>Find drop-in swimming, skating, and more across all City of Ottawa recreation facilities.</p><p class=\"home-updated\">Schedules updated <time datetime=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

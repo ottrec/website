@@ -36,6 +36,11 @@ templ WebsiteMapPage(params WebsiteParams) {
 						<h1>Filters</h1>
 						<button type="button" id="btn-filters-done">Done</button>
 					</header>
+					<section id="filter-starred" hidden>
+						<div class="check-list">
+							<label class="check"><input type="checkbox" id="filter-starred-only"/><span class="name">Starred only</span></label>
+						</div>
+					</section>
 					<section>
 						<h2>Weekdays <span class="h2-actions"><button type="button" id="filter-days-all">all</button> <button type="button" id="filter-days-none">none</button></span></h2>
 						<div class="day-row" id="filter-days"></div>
@@ -80,6 +85,7 @@ templ WebsiteMapPage(params WebsiteParams) {
 			</div>
 			@templ.JSONScript("map-data", buildMapData(params.Data))
 			<script src={ static.Path(static.LeafletJS) }></script>
+			<script src={ static.Path(static.StarredJS) }></script>
 			<script src={ static.Path(static.MapJS) }></script>
 		</body>
 	</html>
@@ -95,7 +101,7 @@ type WebsiteMapPopupParams struct {
 // the map page.
 templ WebsiteMapPopup(params WebsiteMapPopupParams) {
 	<div class="fac-popup">
-		@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{}) {
+		@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{Star: params.Slug}) {
 			<a href={ templ.URL("/schedules/facility/" + params.Slug) }>Full Schedule</a>
 		}
 	</div>

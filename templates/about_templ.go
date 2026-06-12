@@ -111,7 +111,7 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<section id=\"data\"><h2>Data Sources</h2><p>All schedule information is automatically collected from the individual facility pages on <a href=\"https://ottawa.ca/en/recreation-and-parks\">ottawa.ca</a> once a day. The date of the data in use is shown at the top of every page, and each facility links back to its source page.</p><p>Dates, times, and activity names are parsed and normalized automatically, and categories are matched by activity name, so entries can occasionally be missing, miscategorized, or out of date. When something on a source page fails to parse, an error is displayed on the facility's schedules.</p></section><section id=\"terms\"><h2>Terms</h2><p>This site is provided as-is, without warranty of any kind. Schedule information may be incomplete, inaccurate, or outdated, and should be confirmed with the facility or the City of Ottawa before relying on it.</p></section><section id=\"attribution\"><h2>Attribution</h2><p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<section id=\"data\"><h2>Data Sources</h2><p>All schedule information is automatically collected from the individual facility pages on <a href=\"https://ottawa.ca/en/recreation-and-parks\">ottawa.ca</a> once a day. The date of the data in use is shown at the top of every page, and each facility links back to its source page.</p><p>Dates, times, and activity names are parsed and normalized automatically, and categories are matched by activity name, so entries can occasionally be missing, miscategorized, or out of date. When something on a source page fails to parse, an error is displayed on the facility's schedules.</p></section><section id=\"starred\"><h2>Starred Facilities</h2><p>Facilities starred on the map and schedules pages are stored locally in this browser. They can be saved as a comma-separated list of facility slugs and restored later or in another browser.</p><p class=\"starred-actions\" id=\"starred-actions\" hidden><button type=\"button\" id=\"starred-save\">Save</button> <button type=\"button\" id=\"starred-restore\">Restore</button> <button type=\"button\" id=\"starred-clear\">Clear</button></p></section><section id=\"terms\"><h2>Terms</h2><p>This site is provided as-is, without warranty of any kind. Schedule information may be incomplete, inaccurate, or outdated, and should be confirmed with the facility or the City of Ottawa before relying on it.</p></section><section id=\"attribution\"><h2>Attribution</h2><p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -119,7 +119,7 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(line)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 57, Col: 13}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 68, Col: 13}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -130,7 +130,20 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "Website © <a href=\"https://github.com/pgaskin\">Patrick Gaskin</a>.</p></section><section id=\"data-ottrec-ca\"><h2>data.ottrec.ca</h2><p>The dataset behind this site is published at <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> and updated daily. It is available in several forms:</p><ul><li><b>Preview</b> — every schedule on a single HTML page. This is also the best format to paste into one-off LLM queries.</li><li><b>Simplified dataset</b> — drop-in facilities and activity times with fully parsed dates and times, cleaned titles, and inferred reservation requirements, as JSON or CSV with a fully documented stable schema.</li><li><b>Raw dataset</b> — matches the structure of the source website as closely as possible, with minimal processing and no assumptions, as Protobuf, JSON, or text Protobuf.</li></ul><p>A small API also serves historical versions of each dataset by date or version hash — see the <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> homepage for the endpoint reference and schema documentation.</p></section></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "Website © <a href=\"https://github.com/pgaskin\">Patrick Gaskin</a>.</p></section><section id=\"data-ottrec-ca\"><h2>data.ottrec.ca</h2><p>The dataset behind this site is published at <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> and updated daily. It is available in several forms:</p><ul><li><b>Preview</b> — every schedule on a single HTML page. This is also the best format to paste into one-off LLM queries.</li><li><b>Simplified dataset</b> — drop-in facilities and activity times with fully parsed dates and times, cleaned titles, and inferred reservation requirements, as JSON or CSV with a fully documented stable schema.</li><li><b>Raw dataset</b> — matches the structure of the source website as closely as possible, with minimal processing and no assumptions, as Protobuf, JSON, or text Protobuf.</li></ul><p>A small API also serves historical versions of each dataset by date or version hash — see the <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> homepage for the endpoint reference and schema documentation.</p></section></main><script src=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var6 string
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(static.Path(static.StarredJS))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 95, Col: 46}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

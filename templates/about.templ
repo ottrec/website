@@ -44,6 +44,17 @@ templ WebsiteAboutPage(params WebsiteParams) {
 						Dates, times, and activity names are parsed and normalized automatically, and categories are matched by activity name, so entries can occasionally be missing, miscategorized, or out of date. When something on a source page fails to parse, an error is displayed on the facility's schedules.
 					</p>
 				</section>
+				<section id="starred">
+					<h2>Starred Facilities</h2>
+					<p>
+						Facilities starred on the map and schedules pages are stored locally in this browser. They can be saved as a comma-separated list of facility slugs and restored later or in another browser.
+					</p>
+					<p class="starred-actions" id="starred-actions" hidden>
+						<button type="button" id="starred-save">Save</button>
+						<button type="button" id="starred-restore">Restore</button>
+						<button type="button" id="starred-clear">Clear</button>
+					</p>
+				</section>
 				<section id="terms">
 					<h2>Terms</h2>
 					<p>
@@ -81,6 +92,7 @@ templ WebsiteAboutPage(params WebsiteParams) {
 					</p>
 				</section>
 			</main>
+			<script src={ static.Path(static.StarredJS) }></script>
 		</body>
 	</html>
 }

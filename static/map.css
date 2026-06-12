@@ -308,6 +308,9 @@ ul#fac-list {
 	font-weight: 600;
 	line-height: 1.3;
 }
+#fac-list h2 .fac-star {
+	margin-left: .3em;
+}
 #fac-list .addr {
 	margin: .1rem 0 0;
 	font-size: .75rem;
@@ -350,6 +353,9 @@ ul#fac-list {
 	 * postcss (internal/postcss) in an infinite loop */
 	transition-property: transform, opacity;
 	transition-duration: .1s;
+}
+.fac-pin.starred {
+	background: var(--fxki-gr);
 }
 .fac-pin-wrap.hl .fac-pin {
 	transform: scale(1.4);

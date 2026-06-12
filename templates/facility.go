@@ -30,6 +30,9 @@ type WebsiteFacilityArticleOptions struct {
 	// instead of tables, eliding the group titles and schedule captions, and
 	// makes the special hours/notifications/changes sections collapsible.
 	List bool
+	// Star, if non-empty, is the facility slug for a star toggle button next
+	// to the facility name (hidden until starred.js reveals it).
+	Star string
 }
 
 // facilityDirectionsURL returns a Google Maps directions link for the

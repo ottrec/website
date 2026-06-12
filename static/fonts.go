@@ -31,8 +31,9 @@ func main() {
 	})
 
 	// Material Symbols Outlined
+	// (FILL is a range so icons can be filled with font-variation-settings)
 	font("fonts/symbols.woff2", url.Values{
-		"family": {"Material Symbols Outlined:opsz,wght,FILL,GRAD@24,300,0,0"},
+		"family": {"Material Symbols Outlined:opsz,wght,FILL,GRAD@24,300,0..1,0"},
 		"text": {string([]rune{
 			'\ue8b6', // search
 			'\ueb48', // pool
@@ -67,6 +68,7 @@ func main() {
 			'\uf2a8', // badminton
 			'\uf2a6', // pickleball
 			'\uf20e', // database
+			'\uf09a', // star
 			'\ue518', // light_mode
 			'\ue51c', // dark_mode
 			'\ue1ab', // brightness_auto

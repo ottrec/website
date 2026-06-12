@@ -1,6 +1,41 @@
 'use strict'
 export {}
 
+// the shared starred facility store (starred.js)
+declare const ottrecStarred: {
+	has(slug: string): boolean
+	all(): string[]
+	count(): number
+	toggle(slug: string): void
+	set(slugs: string[]): void
+	sync(): void
+	onchange(fn: () => void): void
+}
+
+// move starred facilities to the front of the page and the sidebar toc,
+// keeping the alphabetical order within each group; on load only, so the page
+// doesn't jump around when a star is toggled mid-read (must run before
+// tocTracking so it sees the final document order)
+function sortStarred() {
+	const content = document.querySelector('.schedules-content')
+	if (!content) return
+	const sections = [...content.querySelectorAll<HTMLElement>('section.schedules-facility')]
+	if (!sections.some((s) => ottrecStarred.has(s.id))) return
+	const end = sections[sections.length - 1]!.nextSibling
+	for (const s of [...sections.filter((s) => ottrecStarred.has(s.id)), ...sections.filter((s) => !ottrecStarred.has(s.id))])
+		content.insertBefore(s, end)
+
+	const toc = document.querySelector('.schedules-toc > nav > ul')
+	if (!toc) return
+	const items = [...toc.querySelectorAll<HTMLElement>(':scope > li')]
+	const starred = (li: HTMLElement) => {
+		const href = li.querySelector('a')?.getAttribute('href')
+		return Boolean(href && ottrecStarred.has(decodeURIComponent(href.slice(1))))
+	}
+	for (const li of [...items.filter(starred), ...items.filter((li) => !starred(li))])
+		toc.append(li)
+}
+
 // progressively enhance the advanced search with live query validation; the
 // form still works without this (errors are shown when it is submitted)
 function liveValidation() {
@@ -105,4 +140,5 @@ function tocTracking() {
 }
 
 liveValidation()
+sortStarred()
 tocTracking()
