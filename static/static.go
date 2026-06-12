@@ -41,9 +41,13 @@ var (
 
 	DataCSS    = newFile("data.css")
 	WebsiteCSS = newFile("website.css")
+	MapCSS     = newFile("map.css")
+	MapJS      = newFile("map.js")
 
 	Website = newGroup("website",
 		WebsiteCSS,
+		MapCSS,
+		MapJS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
 		SymbolsWOFF2,
