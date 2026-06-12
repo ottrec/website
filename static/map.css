@@ -346,7 +346,10 @@ ul#fac-list {
 	border: 2px solid var(--fxki-bg);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, .4);
 	opacity: .75;
-	transition: transform .1s, opacity .1s;
+	/* longhand: a comma-separated transition shorthand hangs the embedded
+	 * postcss (internal/postcss) in an infinite loop */
+	transition-property: transform, opacity;
+	transition-duration: .1s;
 }
 .fac-pin-wrap.hl .fac-pin {
 	transform: scale(1.4);
