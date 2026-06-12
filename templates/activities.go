@@ -60,15 +60,7 @@ func buildActivityCards(data ottrecidx.DataRef) []activityCategoryCard {
 			if name == "" {
 				continue
 			}
-			var cats int
-			for c, cat := range mapCategories {
-				if cat.Match.MatchString(name) {
-					cats |= 1 << c
-				}
-			}
-			if cats == 0 {
-				cats = 1 << len(mapCategories)
-			}
+			cats := mapActivityCategoryMask(name)
 			var m [7]byte
 			for tm := range act.Times() {
 				wd, ok := tm.GetWeekday()

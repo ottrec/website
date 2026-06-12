@@ -47,13 +47,17 @@ article.facility .facility-updated {
 	color: var(--fxki-tx-2);
 }
 article.facility section > h2,
-article.facility .schedule-group > section > h4 {
+article.facility .schedule-group > section > h4,
+article.facility section > details > summary {
 	margin: 0 0 .15rem;
 	font-size: .65rem;
 	font-weight: 700;
 	letter-spacing: .06em;
 	text-transform: uppercase;
 	color: var(--fxki-tx-2);
+}
+article.facility section > details > summary {
+	cursor: pointer;
 }
 article.facility > section {
 	margin: .5rem 0;
@@ -221,20 +225,12 @@ article.facility table.schedule td .time {
 }
 /* compact schedule list (schedules pages ?mode=list) */
 
-article.facility section > details > summary {
-	cursor: pointer;
-	font-size: .65rem;
-	font-weight: 700;
-	letter-spacing: .06em;
-	text-transform: uppercase;
-	color: var(--fxki-tx-2);
-}
 article.facility .schedule-list {
 	margin: .6rem 0;
 	font-size: .75rem;
 }
-article.facility div.schedule-past,
-article.facility div.schedule-future {
+article.facility .schedule-list.schedule-past,
+article.facility .schedule-list.schedule-future {
 	opacity: .4;
 }
 article.facility .schedule-list-activity {
@@ -249,10 +245,10 @@ article.facility .schedule-list-name .schedule-date {
 	font-size: .9em;
 	color: var(--fxki-tx-2);
 }
-article.facility .schedule-past .schedule-list-name .schedule-date::after {
+article.facility .schedule-list.schedule-past .schedule-date::after {
 	content: ' (past)';
 }
-article.facility .schedule-future .schedule-list-name .schedule-date::after {
+article.facility .schedule-list.schedule-future .schedule-date::after {
 	content: ' (future)';
 }
 article.facility .schedule-list-times {

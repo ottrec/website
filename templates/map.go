@@ -89,6 +89,21 @@ func mapActivityName(act ottrecidx.ActivityRef) string {
 	return strings.ToLower(strings.Join(strings.Fields(act.GetLabel()), " "))
 }
 
+// mapActivityCategoryMask returns the bitmask of [mapCategories] indexes
+// matching the activity name, or the [mapCategoryOther] bit if none match.
+func mapActivityCategoryMask(name string) int {
+	var cats int
+	for c, cat := range mapCategories {
+		if cat.Match.MatchString(name) {
+			cats |= 1 << c
+		}
+	}
+	if cats == 0 {
+		cats = 1 << len(mapCategories)
+	}
+	return cats
+}
+
 // maskSetRange sets the slot bits overlapping the clock range start-end (in
 // minutes) on weekday wd, wrapping overnight ranges onto the next day.
 func maskSetRange(m *[7]byte, slots [][2]int, wd, start, end int) {
@@ -129,14 +144,7 @@ func buildMapData(data ottrecidx.DataRef) mapDataJSON {
 	catNames = append(catNames, mapCategoryOther)
 	actCats := make([]int, len(actNames))
 	for i, name := range actNames {
-		for c, cat := range mapCategories {
-			if cat.Match.MatchString(name) {
-				actCats[i] |= 1 << c
-			}
-		}
-		if actCats[i] == 0 {
-			actCats[i] = 1 << len(mapCategories)
-		}
+		actCats[i] = mapActivityCategoryMask(name)
 	}
 
 	// pack the per-facility availability masks

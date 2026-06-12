@@ -61,26 +61,14 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 		}
 		if h := strings.TrimSpace(fac.GetSpecialHoursHTML()); h != "" {
 			<section class="facility-special-hours">
-				if opts.List {
-					<details open>
-						<summary>Special Hours</summary>
-						@rawScrapedHTML(h)
-					</details>
-				} else {
-					<h2>Special Hours</h2>
+				@facilityBox("Special Hours", false, opts.List) {
 					@rawScrapedHTML(h)
 				}
 			</section>
 		}
 		if h := strings.TrimSpace(fac.GetNotificationsHTML()); h != "" {
 			<section class="facility-notifications">
-				if opts.List {
-					<details open>
-						<summary>Notifications</summary>
-						@rawScrapedHTML(h)
-					</details>
-				} else {
-					<h2>Notifications</h2>
+				@facilityBox("Notifications", false, opts.List) {
 					@rawScrapedHTML(h)
 				}
 			</section>
@@ -108,13 +96,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 					}
 					if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
 						<section class="schedule-group-changes">
-							if opts.List {
-								<details open>
-									<summary>Schedule Changes</summary>
-									@rawScrapedHTML(h)
-								</details>
-							} else {
-								<h4>Schedule Changes</h4>
+							@facilityBox("Schedule Changes", true, opts.List) {
 								@rawScrapedHTML(h)
 							}
 						</section>
@@ -142,6 +124,38 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 	</article>
 }
 
+// facilityBox renders the header of a boxed section around its children,
+// collapsible (open by default) on the schedules list view. sub uses the
+// schedule-group heading level (the styles are identical).
+templ facilityBox(title string, sub bool, collapse bool) {
+	if collapse {
+		<details open>
+			<summary>{ title }</summary>
+			{ children... }
+		</details>
+	} else {
+		if sub {
+			<h4>{ title }</h4>
+		} else {
+			<h2>{ title }</h2>
+		}
+		{ children... }
+	}
+}
+
+// activityResv renders the reservation requirement badge for an activity, if
+// any, with a leading space.
+templ activityResv(act ottrecidx.ActivityRef) {
+	if req, def := act.GuessReservationRequirement(); req {
+		{ " " }
+		if def {
+			<span class="resv resv-required" title="reservation required"></span>
+		} else {
+			<span class="resv resv-maybe" title="reservation may be required"></span>
+		}
+	}
+}
+
 // websiteFacilityScheduleList renders a schedule as a compact per-activity
 // list of day/time rows (the schedules pages' list view) instead of a table.
 // The schedule name/caption is elided; the date range is repeated on each
@@ -152,14 +166,7 @@ templ websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) {
 			<div class="schedule-list-activity">
 				<p class="schedule-list-name">
 					<span class="activity">{ activityLabel(act) }</span>
-					if req, def := act.GuessReservationRequirement(); req {
-						{ " " }
-						if def {
-							<span class="resv resv-required" title="reservation required"></span>
-						} else {
-							<span class="resv resv-maybe" title="reservation may be required"></span>
-						}
-					}
+					@activityResv(act)
 					if d := scheduleDateRangeLabel(sch); d != "" {
 						{ " " }
 						<span class="schedule-date">{ d }</span>
@@ -219,14 +226,7 @@ templ websiteFacilitySchedule(sch ottrecidx.ScheduleRef) {
 					<tr>
 						<th>
 							<span class="activity">{ activityLabel(act) }</span>
-							if req, def := act.GuessReservationRequirement(); req {
-								{ " " }
-								if def {
-									<span class="resv resv-required" title="reservation required"></span>
-								} else {
-									<span class="resv resv-maybe" title="reservation may be required"></span>
-								}
-							}
+							@activityResv(act)
 						</th>
 						for i := range sch.NumDays() {
 							<td>

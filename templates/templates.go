@@ -76,7 +76,7 @@ func Render(w http.ResponseWriter, r *http.Request, errp ErrorPageFunc, etagMixi
 	w.Header().Set("ETag", etag.String())
 
 	// if a caching policy isn't already set, allow it to be cached with revalidation
-	if w.Header().Get("Cache-Control") != "" {
+	if w.Header().Get("Cache-Control") == "" {
 		w.Header().Set("Cache-Control", "public")
 	}
 

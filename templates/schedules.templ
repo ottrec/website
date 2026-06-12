@@ -31,8 +31,20 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 					<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
 				}
 				<div class="schedules-view" role="group" aria-label="Schedule view">
-					<a href={ templ.URL(schedulesViewHref(params, false)) } class={ templ.KV("active", !params.List) }>Table</a>
-					<a href={ templ.URL(schedulesViewHref(params, true)) } class={ templ.KV("active", params.List) }>List</a>
+					<a
+						href={ templ.URL(schedulesViewHref(params, false)) }
+						class={ templ.KV("active", !params.List) }
+						if !params.List {
+							aria-current="true"
+						}
+					>Table</a>
+					<a
+						href={ templ.URL(schedulesViewHref(params, true)) }
+						class={ templ.KV("active", params.List) }
+						if params.List {
+							aria-current="true"
+						}
+					>List</a>
 				</div>
 			</nav>
 			<main>
