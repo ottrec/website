@@ -26,6 +26,10 @@ type WebsiteFacilityArticleOptions struct {
 	// HeaderLinks replaces the address section with small Directions and City
 	// of Ottawa links on the right side of the header.
 	HeaderLinks bool
+	// List renders the schedules as compact per-activity day/time lists
+	// instead of tables, eliding the group titles and schedule captions, and
+	// makes the special hours/notifications/changes sections collapsible.
+	List bool
 }
 
 // facilityDirectionsURL returns a Google Maps directions link for the
@@ -141,6 +145,37 @@ func scheduleClass(sch ottrecidx.ScheduleRef) string {
 		return "schedule schedule-past"
 	}
 	return "schedule"
+}
+
+// scheduleListDayLabel returns the compact label for the i'th day of a
+// schedule in the list view, abbreviating leading weekday names.
+func scheduleListDayLabel(sch ottrecidx.ScheduleRef, i int) string {
+	var s string
+	if d, ok := sch.GetDayDate(i); ok {
+		s = d.String()
+	} else {
+		s = sch.GetDay(i)
+	}
+	for wd := time.Sunday; wd <= time.Saturday; wd++ {
+		if name := wd.String(); strings.HasPrefix(s, name) {
+			return name[:3] + s[len(name):]
+		}
+	}
+	return s
+}
+
+func activityHasTimes(act ottrecidx.ActivityRef) bool {
+	for range act.Times() {
+		return true
+	}
+	return false
+}
+
+func activityHasDayTimes(act ottrecidx.ActivityRef, i int) bool {
+	for range act.DayTimes(i) {
+		return true
+	}
+	return false
 }
 
 func hasReservationLinks(grp ottrecidx.ScheduleGroupRef) bool {

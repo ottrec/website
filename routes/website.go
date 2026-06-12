@@ -182,7 +182,8 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
 	advanced := r.URL.Query().Get("advanced") != ""
-	if r.URL.RawQuery != "" && q == "" && !advanced {
+	list := r.URL.Query().Get("mode") == "list"
+	if r.URL.RawQuery != "" && q == "" && !advanced && !list {
 		w.Header().Set("Cache-Control", "no-store")
 		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
 		return
@@ -193,6 +194,7 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			Base:            h.base(r),
 			Data:            data,
 			Canonical:       "schedules",
+			Path:            "/schedules",
 			Active:          "all",
 			Title:           "Schedules",
 			Description:     "Drop-in schedules across all City of Ottawa recreation facilities.",
@@ -200,6 +202,7 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			Search:          true,
 			Advanced:        advanced,
 			Query:           q,
+			List:            list,
 		}
 		filtered := data
 		switch {
@@ -287,7 +290,8 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	w.Header().Add("Vary", "Accept-Encoding")
 	w.Header().Set("Cache-Control", "public, no-cache")
 
-	if r.URL.RawQuery != "" {
+	list := r.URL.Query().Get("mode") == "list"
+	if r.URL.RawQuery != "" && !list {
 		w.Header().Set("Cache-Control", "no-store")
 		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
 		return
@@ -298,8 +302,12 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		// the facility pages used to live at /schedules/{slug}
 		if data, ok := h.Data(); ok {
 			if _, ok := templates.MapFacilityBySlug(data, key); ok {
+				target := "/schedules/facility/" + url.PathEscape(key)
+				if list {
+					target += "?mode=list"
+				}
 				w.Header().Set("Cache-Control", "no-store")
-				http.Redirect(w, r, "/schedules/facility/"+url.PathEscape(key), http.StatusPermanentRedirect)
+				http.Redirect(w, r, target, http.StatusPermanentRedirect)
 				return
 			}
 		}
@@ -317,10 +325,12 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 			Base:            h.base(r),
 			Data:            data,
 			Canonical:       "schedules/" + cat.Slug,
+			Path:            "/schedules/" + cat.Slug,
 			Active:          cat.Slug,
 			Title:           cat.Name + " Schedules",
 			Description:     cat.Description,
 			MetaDescription: "City of Ottawa drop-in " + strings.ToLower(cat.Name) + " schedules across all recreation facilities.",
+			List:            list,
 			CategoryTerms:   cat.Activities,
 			TOC:             templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data)),
 		}), http.StatusOK, nil
@@ -336,7 +346,8 @@ func (h *websiteSchedulesFacilityHandler) ServeHTTP(w http.ResponseWriter, r *ht
 	w.Header().Add("Vary", "Accept-Encoding")
 	w.Header().Set("Cache-Control", "public, no-cache")
 
-	if r.URL.RawQuery != "" {
+	list := r.URL.Query().Get("mode") == "list"
+	if r.URL.RawQuery != "" && !list {
 		w.Header().Set("Cache-Control", "no-store")
 		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
 		return
@@ -352,9 +363,11 @@ func (h *websiteSchedulesFacilityHandler) ServeHTTP(w http.ResponseWriter, r *ht
 			Base:        h.base(r),
 			Data:        data,
 			Canonical:   "schedules",
+			Path:        "/schedules/facility/" + url.PathEscape(slug),
 			Title:       fac.GetName(),
 			Description: "Drop-in recreation schedules for " + fac.GetName() + " in Ottawa.",
 			Single:      true,
+			List:        list,
 			TOC:         templates.SchedulesFacilityTOC(slug, fac),
 		}), http.StatusOK, nil
 	})

@@ -85,10 +85,42 @@ func SchedulesParseQuery(q string) (ottrecql.Node, error) {
 
 // schedulesAdvancedHref returns the link switching the search into advanced
 // mode, translating the current simple search into the underlying query.
-func schedulesAdvancedHref(q string) string {
+func schedulesAdvancedHref(q string, list bool) string {
 	href := "/schedules?advanced=1"
+	if list {
+		href += "&mode=list"
+	}
 	if q != "" {
 		href += "&q=" + url.QueryEscape(ottrecql.Render(SchedulesSearchQuery(q)))
+	}
+	return href
+}
+
+// schedulesNavHref returns the link to another schedules page, preserving the
+// current view mode.
+func schedulesNavHref(path string, list bool) string {
+	if list {
+		return path + "?mode=list"
+	}
+	return path
+}
+
+// schedulesViewHref returns the link switching the current page between the
+// table and list views, preserving the current search.
+func schedulesViewHref(params WebsiteSchedulesParams, list bool) string {
+	v := url.Values{}
+	if params.Advanced {
+		v.Set("advanced", "1")
+	}
+	if params.Query != "" {
+		v.Set("q", params.Query)
+	}
+	if list {
+		v.Set("mode", "list")
+	}
+	href := params.Path
+	if e := v.Encode(); e != "" {
+		href += "?" + e
 	}
 	return href
 }
@@ -181,6 +213,7 @@ type WebsiteSchedulesParams struct {
 	Base            string
 	Data            ottrecidx.DataRef // only used for the data timestamp
 	Canonical       string            // canonical path relative to Base, e.g. "schedules"
+	Path            string            // current page path, for the view/search mode links
 	Active          string            // active category navbar entry ("all" or a category slug; "" for none)
 	Title           string
 	Description     string // page subtitle, and the meta description unless MetaDescription is set
@@ -190,6 +223,7 @@ type WebsiteSchedulesParams struct {
 	Query         string                 // current search box contents
 	QueryError    string                 // query parse/limit error to show instead of results
 	Single        bool                   // single-facility page: hide the page header and facility page links
+	List          bool                   // compact list view (?mode=list) instead of the schedule tables
 	CategoryTerms []string               // category pages: the activity names used for filtering, for the incompleteness note
 	TOC           []SchedulesTOCFacility // facilities to render, with their sidebar anchors
 }

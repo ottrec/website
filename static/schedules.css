@@ -23,6 +23,33 @@
 	font-weight: 600;
 }
 
+/* table/list view toggle */
+
+.schedules-catnav .schedules-view {
+	display: flex;
+	flex-shrink: 0;
+	align-self: center;
+	margin-left: auto;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	overflow: hidden;
+}
+.schedules-catnav .schedules-view a {
+	padding: .1rem .6rem;
+	font-size: .75rem;
+}
+.schedules-catnav .schedules-view a:hover {
+	text-decoration: none;
+}
+.schedules-catnav .schedules-view a + a {
+	border-left: 1px solid var(--fxki-ui-2);
+}
+.schedules-catnav .schedules-view a.active {
+	background: var(--fxki-ui);
+	color: var(--fxki-tx);
+	font-weight: 600;
+}
+
 /* page layout */
 
 .schedules-page main {

@@ -61,14 +61,28 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 		}
 		if h := strings.TrimSpace(fac.GetSpecialHoursHTML()); h != "" {
 			<section class="facility-special-hours">
-				<h2>Special Hours</h2>
-				@rawScrapedHTML(h)
+				if opts.List {
+					<details open>
+						<summary>Special Hours</summary>
+						@rawScrapedHTML(h)
+					</details>
+				} else {
+					<h2>Special Hours</h2>
+					@rawScrapedHTML(h)
+				}
 			</section>
 		}
 		if h := strings.TrimSpace(fac.GetNotificationsHTML()); h != "" {
 			<section class="facility-notifications">
-				<h2>Notifications</h2>
-				@rawScrapedHTML(h)
+				if opts.List {
+					<details open>
+						<summary>Notifications</summary>
+						@rawScrapedHTML(h)
+					</details>
+				} else {
+					<h2>Notifications</h2>
+					@rawScrapedHTML(h)
+				}
 			</section>
 		}
 		if hasFacilityErrors(fac) {
@@ -81,7 +95,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 				</ul>
 			</section>
 		}
-		<section class="facility-schedules">
+		<section class={ "facility-schedules", templ.KV("facility-schedules-list", opts.List) }>
 			for i, grp := range indexedSeq(fac.ScheduleGroups()) {
 				<section
 					class="schedule-group"
@@ -89,11 +103,20 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 						id={ facilityAnchorID(opts.Anchors, i) }
 					}
 				>
-					<h3>{ grp.GetTitle() }</h3>
+					if !opts.List {
+						<h3>{ grp.GetTitle() }</h3>
+					}
 					if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
 						<section class="schedule-group-changes">
-							<h4>Schedule Changes</h4>
-							@rawScrapedHTML(h)
+							if opts.List {
+								<details open>
+									<summary>Schedule Changes</summary>
+									@rawScrapedHTML(h)
+								</details>
+							} else {
+								<h4>Schedule Changes</h4>
+								@rawScrapedHTML(h)
+							}
 						</section>
 					}
 					if hasReservationLinks(grp) {
@@ -107,12 +130,60 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 						</section>
 					}
 					for sch := range grp.Schedules() {
-						@websiteFacilitySchedule(sch)
+						if opts.List {
+							@websiteFacilityScheduleList(sch)
+						} else {
+							@websiteFacilitySchedule(sch)
+						}
 					}
 				</section>
 			}
 		</section>
 	</article>
+}
+
+// websiteFacilityScheduleList renders a schedule as a compact per-activity
+// list of day/time rows (the schedules pages' list view) instead of a table.
+// The schedule name/caption is elided; the date range is repeated on each
+// activity instead.
+templ websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) {
+	<div class={ scheduleClass(sch), "schedule-list" }>
+		for act := range sch.Activities() {
+			<div class="schedule-list-activity">
+				<p class="schedule-list-name">
+					<span class="activity">{ activityLabel(act) }</span>
+					if req, def := act.GuessReservationRequirement(); req {
+						{ " " }
+						if def {
+							<span class="resv resv-required" title="reservation required"></span>
+						} else {
+							<span class="resv resv-maybe" title="reservation may be required"></span>
+						}
+					}
+					if d := scheduleDateRangeLabel(sch); d != "" {
+						{ " " }
+						<span class="schedule-date">{ d }</span>
+					}
+				</p>
+				if activityHasTimes(act) {
+					<ul class="schedule-list-times">
+						for i := range sch.NumDays() {
+							if activityHasDayTimes(act, i) {
+								<li>
+									<span class="day">{ scheduleListDayLabel(sch, i) }</span>
+									<span class="times">
+										for tm := range act.DayTimes(i) {
+											<span class="time">{ timeLabel(tm) }</span>
+										}
+									</span>
+								</li>
+							}
+						}
+					</ul>
+				}
+			</div>
+		}
+	</div>
 }
 
 templ websiteFacilitySchedule(sch ottrecidx.ScheduleRef) {

@@ -26,10 +26,14 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 		<body class="schedules-page">
 			@websiteTopNav("schedules", params.Data.Index().Updated())
 			<nav class="schedules-catnav">
-				<a href="/schedules" class={ templ.KV("active", params.Active == "all") }>All</a>
+				<a href={ templ.URL(schedulesNavHref("/schedules", params.List)) } class={ templ.KV("active", params.Active == "all") }>All</a>
 				for _, cat := range ScheduleCategories {
-					<a href={ templ.URL("/schedules/" + cat.Slug) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
+					<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
 				}
+				<div class="schedules-view" role="group" aria-label="Schedule view">
+					<a href={ templ.URL(schedulesViewHref(params, false)) } class={ templ.KV("active", !params.List) }>Table</a>
+					<a href={ templ.URL(schedulesViewHref(params, true)) } class={ templ.KV("active", params.List) }>List</a>
+				</div>
 			</nav>
 			<main>
 				<div class="schedules-layout">
@@ -77,18 +81,24 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 									if params.Advanced {
 										<form class="schedules-search schedules-search-advanced" action="/schedules" method="get">
 											<input type="hidden" name="advanced" value="1"/>
+											if params.List {
+												<input type="hidden" name="mode" value="list"/>
+											}
 											<textarea name="q" rows="3" placeholder={ `activity("swim") and time(sa su @ 9:00a-12:00p)` } aria-label="Search query">{ params.Query }</textarea>
 											<div class="row">
 												<button type="submit">Search</button>
-												<a class="schedules-search-mode" href="/schedules">Simple search</a>
+												<a class="schedules-search-mode" href={ templ.URL(schedulesNavHref("/schedules", params.List)) }>Simple search</a>
 											</div>
 										</form>
 										@schedulesQueryHelp()
 									} else {
 										<form class="schedules-search" action="/schedules" method="get">
+											if params.List {
+												<input type="hidden" name="mode" value="list"/>
+											}
 											<input type="search" name="q" value={ params.Query } placeholder="Search by activity or facility name" aria-label="Search by activity or facility name"/>
 											<button type="submit">Search</button>
-											<a class="schedules-search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query)) }>Advanced search</a>
+											<a class="schedules-search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query, params.List)) }>Advanced search</a>
 										</form>
 									}
 								}
@@ -102,9 +112,9 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 							for _, f := range params.TOC {
 								<section class="schedules-facility" id={ f.Slug }>
 									if params.Single {
-										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true})
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true, List: params.List})
 									} else {
-										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: "/schedules/facility/" + f.Slug, HeaderLinks: true})
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: schedulesNavHref("/schedules/facility/"+f.Slug, params.List), HeaderLinks: true, List: params.List})
 									}
 								</section>
 							}

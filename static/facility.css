@@ -219,6 +219,67 @@ article.facility table.schedule td .time {
 	display: block;
 	white-space: nowrap;
 }
+/* compact schedule list (schedules pages ?mode=list) */
+
+article.facility section > details > summary {
+	cursor: pointer;
+	font-size: .65rem;
+	font-weight: 700;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--fxki-tx-2);
+}
+article.facility .schedule-list {
+	margin: .6rem 0;
+	font-size: .75rem;
+}
+article.facility div.schedule-past,
+article.facility div.schedule-future {
+	opacity: .4;
+}
+article.facility .schedule-list-activity {
+	margin: .45rem 0;
+}
+article.facility .schedule-list-name {
+	margin: 0;
+	font-weight: 600;
+}
+article.facility .schedule-list-name .schedule-date {
+	font-weight: normal;
+	font-size: .9em;
+	color: var(--fxki-tx-2);
+}
+article.facility .schedule-past .schedule-list-name .schedule-date::after {
+	content: ' (past)';
+}
+article.facility .schedule-future .schedule-list-name .schedule-date::after {
+	content: ' (future)';
+}
+article.facility .schedule-list-times {
+	list-style: none;
+	margin: .1rem 0 0;
+	padding: 0 0 0 1rem;
+	font-size: .7rem;
+}
+article.facility .schedule-list-times li {
+	display: flex;
+	align-items: baseline;
+	gap: .75rem;
+}
+article.facility .schedule-list-times .day {
+	flex-shrink: 0;
+	min-width: 2.6em;
+	color: var(--fxki-tx-2);
+}
+article.facility .schedule-list-times .times {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 .75rem;
+}
+article.facility .schedule-list-times .time {
+	white-space: nowrap;
+}
+
 article.facility .resv {
 	display: inline-block;
 	border-radius: 3px;
