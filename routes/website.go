@@ -1,13 +1,17 @@
 package routes
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/pkg/ottrecql"
 	"github.com/pgaskin/ottrec-website/static"
 	"github.com/pgaskin/ottrec-website/templates"
 )
@@ -42,6 +46,13 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /activities", &websiteActivitiesHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /schedules", &websiteSchedulesHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /schedules/{key}", &websiteSchedulesKeyHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /api/ottrecql/validate", &websiteOttrecqlValidateHandler{})
 	mux.Handle("/static/", static.Handler(static.Website))
 
 	return commonMiddleware(mux), nil
@@ -119,6 +130,137 @@ func (h *websiteMapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Base: h.base(r),
 			Data: data,
 		}), http.StatusOK, nil
+	})
+}
+
+// websiteSchedulesHandler serves the root schedules page, with an optional
+// server-side search (?q=...; simple activity/facility name matching by
+// default, or a full ottrecql query with ?advanced=1).
+type websiteSchedulesHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	advanced := r.URL.Query().Get("advanced") != ""
+	if r.URL.RawQuery != "" && q == "" && !advanced {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		params := templates.WebsiteSchedulesParams{
+			Base:        h.base(r),
+			Data:        data,
+			Canonical:   "schedules",
+			Active:      "all",
+			Title:       "Schedules",
+			Description: "Drop-in schedules across all City of Ottawa recreation facilities.",
+			Search:      true,
+			Advanced:    advanced,
+			Query:       q,
+		}
+		filtered := data
+		switch {
+		case q == "":
+			filtered = templates.SchedulesElide(data)
+		case advanced:
+			node, err := templates.SchedulesParseQuery(q)
+			if err == nil {
+				filtered, err = templates.SchedulesFilter(data, node)
+			}
+			if err != nil {
+				params.QueryError = err.Error()
+			}
+		default:
+			if len(q) > templates.SchedulesMaxQueryLen {
+				params.QueryError = fmt.Sprintf("query too long (max %d bytes)", templates.SchedulesMaxQueryLen)
+				break
+			}
+			var err error
+			filtered, err = templates.SchedulesFilter(data, templates.SchedulesSearchQuery(q))
+			if err != nil {
+				return nil, 0, err
+			}
+		}
+		if params.QueryError == "" {
+			params.TOC = templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data))
+		}
+		return templates.WebsiteSchedulesPage(params), http.StatusOK, nil
+	})
+}
+
+// websiteOttrecqlValidateHandler validates an ottrecql query (with the same
+// limits as the schedules advanced search), for live validation as the user
+// types.
+type websiteOttrecqlValidateHandler struct{}
+
+func (h *websiteOttrecqlValidateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var resp struct {
+		Error  string `json:"error,omitempty"`
+		Offset *int   `json:"offset,omitempty"`
+	}
+	if q := strings.TrimSpace(r.URL.Query().Get("q")); q != "" {
+		if _, err := templates.SchedulesParseQuery(q); err != nil {
+			resp.Error = err.Error()
+			var perr *ottrecql.ParseError
+			if errors.As(err, &perr) {
+				resp.Offset = &perr.Offset
+			}
+		}
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	json.NewEncoder(w).Encode(resp)
+}
+
+// websiteSchedulesKeyHandler serves the category and single-facility schedule
+// pages under /schedules/.
+type websiteSchedulesKeyHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+
+	key := r.PathValue("key")
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		params := templates.WebsiteSchedulesParams{
+			Base: h.base(r),
+			Data: data,
+		}
+		if cat, ok := templates.ScheduleCategoryBySlug(key); ok {
+			filtered, err := templates.SchedulesFilter(data, cat.Query())
+			if err != nil {
+				return nil, 0, err
+			}
+			params.Canonical = "schedules/" + cat.Slug
+			params.Active = cat.Slug
+			params.Title = cat.Name + " Schedules"
+			params.Description = cat.Description
+			params.CategoryTerms = cat.Activities
+			params.TOC = templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data))
+		} else if fac, ok := templates.MapFacilityBySlug(data, key); ok {
+			params.Canonical = "schedules"
+			params.Title = fac.GetName()
+			params.Description = "Drop-in schedules for " + fac.GetName() + "."
+			params.Single = true
+			params.TOC = templates.SchedulesFacilityTOC(key, fac)
+		} else {
+			return templates.WebsiteErrorPage("Not Found", "no schedule category or facility matching "+strconv.Quote(key)), http.StatusNotFound, nil
+		}
+		return templates.WebsiteSchedulesPage(params), http.StatusOK, nil
 	})
 }
 

@@ -33,6 +33,7 @@ type activityCategoryCard struct {
 // scraping may have an all-zero mask.
 type activityCategoryFacility struct {
 	Name string
+	Slug string // for the facility schedule page link
 	Mask [7]byte
 }
 
@@ -50,7 +51,9 @@ func buildActivityCards(data ottrecidx.DataRef) []activityCategoryCard {
 	}
 	cards[len(mapCategories)].Name = mapCategoryOther
 
+	slugs := map[string]bool{}
 	for fac := range data.Facilities() {
+		slug := mapUniqueSlug(slugs, fac.GetName())
 		masks := make([]*[7]byte, len(cards))
 		for act := range fac.Activities() {
 			name := mapActivityName(act)
@@ -93,6 +96,7 @@ func buildActivityCards(data ottrecidx.DataRef) []activityCategoryCard {
 			if m != nil {
 				cards[c].Facilities = append(cards[c].Facilities, activityCategoryFacility{
 					Name: fac.GetName(),
+					Slug: slug,
 					Mask: *m,
 				})
 			}

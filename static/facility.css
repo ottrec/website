@@ -1,0 +1,210 @@
+/* facility article (shared between the map popups/details and the schedules pages) */
+
+article.facility hgroup {
+	margin: 0 0 .4rem;
+	padding-bottom: .4rem;
+	border-bottom: 1px solid var(--fxki-ui-2);
+}
+article.facility h1 {
+	margin: 0;
+	font-size: 1rem;
+	line-height: 1.3;
+}
+article.facility h1 a {
+	color: inherit;
+	text-decoration: none;
+}
+article.facility h1 a:hover {
+	color: var(--fxki-bl);
+	text-decoration: underline;
+}
+article.facility .facility-updated {
+	margin: .1rem 0 0;
+	font-size: .7rem;
+	color: var(--fxki-tx-2);
+}
+article.facility section > h2,
+article.facility .schedule-group > section > h4 {
+	margin: 0 0 .15rem;
+	font-size: .65rem;
+	font-weight: 700;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--fxki-tx-2);
+}
+article.facility > section {
+	margin: .5rem 0;
+}
+article.facility address {
+	font-style: normal;
+	font-size: .75rem;
+}
+article.facility address p {
+	margin: .1rem 0;
+}
+article.facility .facility-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .25rem 1rem;
+	margin: .4rem 0;
+	font-size: .8rem;
+}
+article.facility .facility-links a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+article.facility .facility-links a:hover {
+	text-decoration: underline;
+}
+article.facility .facility-links:empty {
+	display: none;
+}
+article.facility .facility-url {
+	font-size: .85em;
+}
+article.facility .facility-url a {
+	color: light-dark(var(--fxki-blue-400), var(--fxki-blue-600));
+	text-decoration: none;
+	word-break: break-all;
+}
+article.facility .facility-url a:hover {
+	text-decoration: underline;
+}
+article.facility .facility-special-hours,
+article.facility .facility-notifications,
+article.facility .schedule-group-changes {
+	background: light-dark(var(--fxki-yellow-50), var(--fxki-yellow-950));
+	border: 1px solid light-dark(var(--fxki-yellow-150), var(--fxki-yellow-900));
+	border-radius: .35rem;
+	padding: .35rem .5rem;
+}
+article.facility .schedule-group-reservation {
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	padding: .35rem .5rem;
+}
+article.facility .schedule-group-reservation ul {
+	margin: 0;
+	padding-left: 1.1em;
+	font-size: .75rem;
+}
+article.facility .schedule-group-reservation a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+article.facility .schedule-group-reservation a:hover {
+	text-decoration: underline;
+}
+article.facility .raw-html {
+	font-size: .72rem;
+}
+article.facility .raw-html p,
+article.facility .raw-html ul,
+article.facility .raw-html ol {
+	margin: .15rem 0;
+	padding-left: 1.1em;
+}
+article.facility .raw-html p {
+	padding-left: 0;
+}
+article.facility .facility-schedules > h2 {
+	display: none;
+}
+article.facility .schedule-group {
+	margin: .75rem 0;
+}
+article.facility .schedule-group > h3 {
+	margin: 0 0 .25rem;
+	font-size: .85rem;
+	border-bottom: 2px solid var(--fxki-ui-2);
+	padding-bottom: .2rem;
+}
+article.facility .schedule-group > section {
+	margin: .4rem 0;
+}
+article.facility .table-wrap {
+	overflow-x: auto;
+	margin: .6rem 0;
+}
+article.facility table.schedule {
+	table-layout: fixed;
+	border-collapse: collapse;
+	min-width: 100%;
+	font-size: .7rem;
+}
+article.facility table.schedule caption {
+	text-align: left;
+	font-weight: 600;
+	padding: .25rem 0 .4rem;
+}
+article.facility table.schedule caption .schedule-date {
+	font-weight: normal;
+	color: var(--fxki-tx-2);
+}
+article.facility table.schedule-past,
+article.facility table.schedule-future {
+	opacity: .4;
+}
+article.facility table.schedule-past caption::after {
+	content: ' (past)';
+	font-weight: normal;
+	color: var(--fxki-tx-2);
+}
+article.facility table.schedule-future caption::after {
+	content: ' (future)';
+	font-weight: normal;
+	color: var(--fxki-tx-2);
+}
+article.facility table.schedule th,
+article.facility table.schedule td {
+	vertical-align: top;
+	border: 1px solid var(--fxki-ui-2);
+	padding: .3rem .5rem;
+	line-height: 1.45;
+}
+article.facility table.schedule thead th {
+	background: var(--fxki-bg-2);
+	text-align: center;
+	min-width: 5.5em;
+}
+article.facility table.schedule tbody th {
+	text-align: left;
+	vertical-align: middle;
+	font-weight: 600;
+	min-width: 7em;
+	max-width: 10em;
+	word-break: break-word;
+	background: var(--fxki-bg-2);
+}
+article.facility table.schedule td {
+	text-align: center;
+}
+article.facility table.schedule td .time {
+	display: block;
+	white-space: nowrap;
+}
+article.facility .resv {
+	display: inline-block;
+	border-radius: 3px;
+	padding: 1px 3px;
+	line-height: 1;
+	font-size: .6rem;
+	font-weight: 700;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+article.facility .resv-required {
+	background: light-dark(var(--fxki-blue-100), var(--fxki-blue-900));
+	color: var(--fxki-bl);
+}
+article.facility .resv-required::after {
+	content: 'R';
+}
+article.facility .resv-maybe {
+	background: var(--fxki-ui);
+	color: var(--fxki-tx-2);
+}
+article.facility .resv-maybe::after {
+	content: 'R?';
+}

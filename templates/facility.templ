@@ -8,12 +8,19 @@ import (
 
 // WebsiteFacilityArticle renders the full information and schedules for a
 // facility, in a similar structure to pkg/ottrecexph. It is used by the map
-// popups, and will be used by the full facility pages. Any children are
-// rendered as extra links under the header, before the source page link.
-templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef) {
+// popups and the schedules pages. Any children are rendered as extra links
+// under the header. If anchors is non-empty, the schedule groups get ids from
+// [facilityAnchorID]. If link is non-empty, the facility name links to it.
+templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, anchors string, link string) {
 	<article class="facility">
 		<hgroup>
-			<h1 class="facility-name">{ fac.GetName() }</h1>
+			<h1 class="facility-name">
+				if link != "" {
+					<a href={ templ.URL(link) }>{ fac.GetName() }</a>
+				} else {
+					{ fac.GetName() }
+				}
+			</h1>
 			if t := fac.GetSourceDate(); !t.IsZero() {
 				<p class="facility-updated">Updated <time datetime={ t.In(ottrecidx.TZ).Format(time.RFC3339) }>{ t.In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time></p>
 			}
@@ -52,8 +59,13 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef) {
 			</section>
 		}
 		<section class="facility-schedules">
-			for grp := range fac.ScheduleGroups() {
-				<section class="schedule-group">
+			for i, grp := range indexedSeq(fac.ScheduleGroups()) {
+				<section
+					class="schedule-group"
+					if anchors != "" {
+						id={ facilityAnchorID(anchors, i) }
+					}
+				>
 					<h3>{ grp.GetTitle() }</h3>
 					if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
 						<section class="schedule-group-changes">

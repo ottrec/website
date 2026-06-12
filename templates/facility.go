@@ -2,6 +2,7 @@ package templates
 
 import (
 	"fmt"
+	"iter"
 	"strings"
 	"time"
 
@@ -11,6 +12,19 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
+
+// indexedSeq numbers a sequence, for stable anchor ids.
+func indexedSeq[T any, S ~func(func(T) bool)](seq S) iter.Seq2[int, T] {
+	return func(yield func(int, T) bool) {
+		var i int
+		for v := range seq {
+			if !yield(i, v) {
+				return
+			}
+			i++
+		}
+	}
+}
 
 func activityLabel(act ottrecidx.ActivityRef) string {
 	if s := act.GetName(); s != "" {

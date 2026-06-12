@@ -19,6 +19,7 @@ templ WebsiteMapPage(params WebsiteParams) {
 			<meta name="description" content="Interactive map of City of Ottawa recreation facilities, filterable by activity, weekday, and time."/>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.LeafletCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.MapCSS) }/>
 		</head>
 		<body class="map-page">
@@ -99,8 +100,8 @@ type WebsiteMapPopupParams struct {
 // the map page.
 templ WebsiteMapPopup(params WebsiteMapPopupParams) {
 	<div class="fac-popup">
-		@WebsiteFacilityArticle(params.Facility) {
-			<a href={ templ.URL("/facilities/" + params.Slug) }>Full Schedule</a>
+		@WebsiteFacilityArticle(params.Facility, "", "") {
+			<a href={ templ.URL("/schedules/" + params.Slug) }>Full Schedule</a>
 		}
 	</div>
 }

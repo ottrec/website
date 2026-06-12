@@ -41,15 +41,21 @@ var (
 
 	DataCSS       = newFile("data.css")
 	WebsiteCSS    = newFile("website.css")
+	FacilityCSS   = newFile("facility.css")
 	MapCSS        = newFile("map.css")
 	MapJS         = newFile("map.js")
 	ActivitiesCSS = newFile("activities.css")
+	SchedulesCSS  = newFile("schedules.css")
+	SchedulesJS   = newFile("schedules.js")
 
 	Website = newGroup("website",
 		WebsiteCSS,
+		FacilityCSS,
 		MapCSS,
 		MapJS,
 		ActivitiesCSS,
+		SchedulesCSS,
+		SchedulesJS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
 		SymbolsWOFF2,
