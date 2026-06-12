@@ -589,6 +589,10 @@ ul#fac-list {
 	body.detail-open .fac-detail {
 		display: flex;
 	}
+	/* keep the attribution above the collapsed facilities sheet */
+	.leaflet-container .leaflet-bottom {
+		bottom: 2.4rem;
+	}
 	/* slightly larger filter controls for touch */
 	.map-filters h2 {
 		font-size: .8rem;

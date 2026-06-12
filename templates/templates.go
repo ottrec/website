@@ -201,6 +201,22 @@ func compress(w io.Writer, encoding string, b []byte) error {
 	return nil
 }
 
+// headExtra is raw HTML injected at the bottom of <head> on every page (e.g.,
+// for analytics).
+var headExtra templ.Component
+
+// SetHeadExtra sets raw HTML to inject at the bottom of <head> on every page.
+// It must be called at most once, before anything is rendered. The HTML is
+// mixed into the etags so cached pages revalidate when it changes.
+func SetHeadExtra(html string) {
+	if html == "" {
+		return
+	}
+	headExtra = templ.Raw(html)
+	sum := sha1.Sum([]byte(html))
+	exehash += base32.StdEncoding.EncodeToString(sum[:])
+}
+
 // exehash is a hash of the current binary for use in etags.
 var exehash = func() string {
 	exe, err := os.Executable()

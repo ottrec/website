@@ -84,12 +84,12 @@
 	--per-m: var(--fxki-ye);
 	--per-a: var(--fxki-or);
 	--per-e: var(--fxki-pu);
-	--per-m-check: light-dark(var(--fxki-yellow-200), var(--fxki-yellow-800));
-	--per-a-check: light-dark(var(--fxki-orange-200), var(--fxki-orange-800));
-	--per-e-check: light-dark(var(--fxki-purple-200), var(--fxki-purple-800));
-	--per-m-faint: light-dark(var(--fxki-yellow-150), var(--fxki-yellow-850));
-	--per-a-faint: light-dark(var(--fxki-orange-150), var(--fxki-orange-850));
-	--per-e-faint: light-dark(var(--fxki-purple-150), var(--fxki-purple-850));
+	--per-m-check: light-dark(var(--fxki-yellow-200), var(--fxki-yellow-850));
+	--per-a-check: light-dark(var(--fxki-orange-200), var(--fxki-orange-850));
+	--per-e-check: light-dark(var(--fxki-purple-200), var(--fxki-purple-850));
+	--per-m-faint: light-dark(var(--fxki-yellow-150), var(--fxki-yellow-900));
+	--per-a-faint: light-dark(var(--fxki-orange-150), var(--fxki-orange-900));
+	--per-e-faint: light-dark(var(--fxki-purple-150), var(--fxki-purple-900));
 }
 .activities-header .per-m { color: var(--per-m); }
 .activities-header .per-a { color: var(--per-a); }

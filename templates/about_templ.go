@@ -83,56 +83,60 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"></head><body class=\"about-page\"><nav class=\"map-topnav\"><a class=\"brand\" href=\"/\">ottrec.ca</a> <a class=\"nav\" href=\"/map\">Map</a> <a class=\"nav\" href=\"/schedules\">Schedules</a> <a class=\"nav\" href=\"/activities\">Activities</a> <a class=\"nav active\" href=\"/about\">About</a> <time datetime=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = websiteHeadExtra().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</head><body class=\"about-page\"><nav class=\"map-topnav\"><a class=\"brand\" href=\"/\">ottrec.ca</a> <a class=\"nav\" href=\"/map\">Map</a> <a class=\"nav\" href=\"/schedules\">Schedules</a> <a class=\"nav\" href=\"/activities\">Activities</a> <a class=\"nav active\" href=\"/about\">About</a> <time datetime=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 30, Col: 88}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 31, Col: 88}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\">updated ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\">updated ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(params.Data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 30, Col: 168}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 31, Col: 168}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</time></nav><main><h1>About</h1><section id=\"about\"><p>ottrec.ca is an unofficial website that makes it easier to find City of Ottawa drop-in recreation activities — on a <a href=\"/map\">map</a>, by <a href=\"/activities\">activity</a>, or across every facility's <a href=\"/schedules\">schedule</a> at once.</p><p>This site is not affiliated with or endorsed by the City of Ottawa.</p><p>It is built and maintained by <a href=\"https://www.pgaskin.net\">Patrick Gaskin</a>. Please report problems or inaccurate data by <a href=\"https://github.com/pgaskin/ottrec/issues/new\">opening an issue</a>.</p></section><section id=\"data\"><h2>Data Sources</h2><p>All schedule information is automatically collected from the individual facility pages on <a href=\"https://ottawa.ca/en/recreation-and-parks\">ottawa.ca</a> once a day. The date of the data in use is shown at the top of every page, and each facility links back to its source page.</p><p>Dates, times, and activity names are parsed and normalized automatically, and categories are matched by activity name, so entries can occasionally be missing, miscategorized, or out of date. When something on a source page fails to parse, an error is displayed on the facility's schedules.</p></section><section id=\"terms\"><h2>Terms</h2><p>This site is provided as-is, without warranty of any kind. Schedule information may be incomplete, inaccurate, or outdated, and should be confirmed with the facility or the City of Ottawa before relying on it.</p></section><section id=\"attribution\"><h2>Attribution</h2><ul>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</time></nav><main><h1>About</h1><section id=\"about\"><p>ottrec.ca is an unofficial website that makes it easier to find City of Ottawa drop-in recreation activities — on a <a href=\"/map\">map</a>, by <a href=\"/activities\">activity</a>, or across every facility's <a href=\"/schedules\">schedule</a> at once.</p><p>This site is not affiliated with or endorsed by the City of Ottawa.</p><p>It is built and maintained by <a href=\"https://www.pgaskin.net\">Patrick Gaskin</a>. Please report problems or inaccurate data by <a href=\"https://github.com/pgaskin/ottrec/issues/new\">opening an issue</a>.</p></section><section id=\"data\"><h2>Data Sources</h2><p>All schedule information is automatically collected from the individual facility pages on <a href=\"https://ottawa.ca/en/recreation-and-parks\">ottawa.ca</a> once a day. The date of the data in use is shown at the top of every page, and each facility links back to its source page.</p><p>Dates, times, and activity names are parsed and normalized automatically, and categories are matched by activity name, so entries can occasionally be missing, miscategorized, or out of date. When something on a source page fails to parse, an error is displayed on the facility's schedules.</p></section><section id=\"terms\"><h2>Terms</h2><p>This site is provided as-is, without warranty of any kind. Schedule information may be incomplete, inaccurate, or outdated, and should be confirmed with the facility or the City of Ottawa before relying on it.</p></section><section id=\"attribution\"><h2>Attribution</h2><p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for line := range params.Data.GetAttribution() {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<li>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(line)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 64, Col: 17}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 65, Col: 13}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<br>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<li>Website © <a href=\"https://www.pgaskin.net\">Patrick Gaskin</a>.</li></ul></section><section id=\"data-ottrec-ca\"><h2>data.ottrec.ca</h2><p>The dataset behind this site is published at <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> and updated daily. It is available in several forms:</p><ul><li><b>Preview</b> — every schedule on a single HTML page. This is also the best format to paste into one-off LLM queries.</li><li><b>Simplified dataset</b> — drop-in facilities and activity times with fully-parsed dates and times, cleaned titles, and inferred reservation requirements, as JSON or CSV with a fully-documented stable schema.</li><li><b>Raw dataset</b> — matches the structure of the source website as closely as possible, with minimal processing and no assumptions, as Protobuf, JSON, or text Protobuf.</li></ul><p>A small API also serves historical versions of each dataset by date or version hash — see the <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> homepage for the endpoint reference and schema documentation.</p></section></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "Website © <a href=\"https://www.pgaskin.net\">Patrick Gaskin</a>.</p></section><section id=\"data-ottrec-ca\"><h2>data.ottrec.ca</h2><p>The dataset behind this site is published at <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> and updated daily. It is available in several forms:</p><ul><li><b>Preview</b> — every schedule on a single HTML page. This is also the best format to paste into one-off LLM queries.</li><li><b>Simplified dataset</b> — drop-in facilities and activity times with fully-parsed dates and times, cleaned titles, and inferred reservation requirements, as JSON or CSV with a fully-documented stable schema.</li><li><b>Raw dataset</b> — matches the structure of the source website as closely as possible, with minimal processing and no assumptions, as Protobuf, JSON, or text Protobuf.</li></ul><p>A small API also serves historical versions of each dataset by date or version hash — see the <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> homepage for the endpoint reference and schema documentation.</p></section></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

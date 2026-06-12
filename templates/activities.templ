@@ -19,6 +19,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 			<meta name="description" content="Which City of Ottawa recreation facilities offer each category of activities, by weekday and time of day."/>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.ActivitiesCSS) }/>
+			@websiteHeadExtra()
 		</head>
 		<body class="activities-page">
 			<nav class="map-topnav">

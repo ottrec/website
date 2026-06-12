@@ -36,12 +36,16 @@ import (
 
 type DataConfig struct {
 	Cache *ottrecdata.Cache
+	// HeadHTML is raw HTML injected at the bottom of <head> on the homepage
+	// (notably, not the ottrecexph-rendered preview).
+	HeadHTML string
 }
 
 func Data(cfg DataConfig) (http.Handler, error) {
 	if cfg.Cache == nil {
 		return nil, fmt.Errorf("no cache specified")
 	}
+	templates.SetHeadExtra(cfg.HeadHTML)
 
 	mux := http.NewServeMux()
 

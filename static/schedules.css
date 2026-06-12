@@ -57,7 +57,7 @@
 	padding: 0;
 }
 .schedules-toc ul ul {
-	padding-left: .85rem;
+	padding-left: 1.3rem;
 }
 .schedules-toc > nav > ul > li {
 	margin: .4rem 0;
@@ -70,6 +70,22 @@
 }
 .schedules-toc > nav > ul > li > a {
 	color: var(--fxki-tx-2);
+	position: relative;
+	padding-left: .9em;
+}
+/* arrow gutter for the currently visible facility (set by schedules.js) */
+.schedules-toc > nav > ul > li > a::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	color: var(--fxki-tx-3);
+}
+.schedules-toc > nav > ul > li > a.active::before {
+	content: '▸';
+}
+.schedules-toc a.active {
+	color: var(--fxki-tx);
+	font-weight: 600;
 }
 .schedules-toc a:hover {
 	color: var(--fxki-bl);
@@ -83,6 +99,9 @@
 .schedules-facility,
 .schedules-page .schedule-group {
 	scroll-margin-top: .75rem;
+}
+.schedules-page article.facility h1 {
+	font-size: 1.15rem;
 }
 .schedules-header h1 {
 	font-family: 'Source Serif 4', serif;

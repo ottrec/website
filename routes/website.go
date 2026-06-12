@@ -18,12 +18,15 @@ import (
 
 type WebsiteConfig struct {
 	Data func() (ottrecidx.DataRef, bool)
+	// HeadHTML is raw HTML injected at the bottom of <head> on every page.
+	HeadHTML string
 }
 
 func Website(cfg WebsiteConfig) (http.Handler, error) {
 	if cfg.Data == nil {
 		return nil, fmt.Errorf("no data getter specified")
 	}
+	templates.SetHeadExtra(cfg.HeadHTML)
 
 	base := websiteHandlerBase{
 		Data: cfg.Data,

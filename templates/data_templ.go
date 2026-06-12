@@ -79,246 +79,254 @@ func DataHome(params DataHomeParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><title>Ottawa recreation schedule data</title><meta name=\"description\" content=\"Download up-to-date JSON and CSV datasets of the City of Ottawa's drop-in recreation schedules.\"></head><body><header><h1>Ottawa recreation schedule data</h1></header><section id=\"about\"><p>This page provides an unofficial dataset of the City of Ottawa drop-in recreation schedules, updated daily.</p><p>If you encounter any problems or inaccurate data, please <a href=\"https://github.com/pgaskin/ottrec/issues/new\">open an issue</a>.</p><p>The data was last updated on ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><title>Ottawa recreation schedule data</title><meta name=\"description\" content=\"Download up-to-date JSON and CSV datasets of the City of Ottawa's drop-in recreation schedules.\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = websiteHeadExtra().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</head><body><header><h1>Ottawa recreation schedule data</h1></header><section id=\"about\"><p>This page provides an unofficial dataset of the City of Ottawa drop-in recreation schedules, updated daily.</p><p>If you encounter any problems or inaccurate data, please <a href=\"https://github.com/pgaskin/ottrec/issues/new\">open an issue</a>.</p><p>The data was last updated on ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(params.Latest.Updated.Format("2006-01-02"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 45, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 46, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, ".</p></section><section id=\"preview\"><h1>Preview</h1><p>You can view all schedules on a single webpage.</p><p>This format is also best for one-off LLM queries.</p><p><a class=\"dl\" href=\"/preview\">HTML</a></p></section><section id=\"simplified\"><h1>Simplified dataset</h1><p>This format contains drop-in recreation facilities and activity times, with fully-parsed dates/times, cleaned titles, and inferred reservation requirements. It is available as JSON or CSV, along with a fully-documented stable schema.</p><ul class=\"downloads\"><li><span>JSON</span> <a class=\"dl\" href=\"/export/latest.json\" download=\"ottrec_simplified_latest.json\">json</a> <a class=\"dl dl-meta\" href=\"/export/schema.json\" download=\"ottrec_simplified.schema.json\">schema.json</a></li><li><span>CSV</span> <a class=\"dl\" href=\"/export/latest.csv.zip\" download=\"ottrec_simplified_latest.csv.zip\">csv.zip</a> <a class=\"dl dl-meta\" href=\"/export/schema.csv\" download=\"ottrec_simplified.schema.csv\">schema.csv</a></li></ul><table class=\"schema\"><tbody><tr class=\"controls\"><td colspan=\"2\"><label>Format <select class=\"format\"><option value=\"\" selected>all formats</option> <option value=\"json\">JSON</option> <option value=\"csv\">CSV</option></select></label></td></tr>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, ".</p></section><section id=\"preview\"><h1>Preview</h1><p>You can view all schedules on a single webpage.</p><p>This format is also best for one-off LLM queries.</p><p><a class=\"dl\" href=\"/preview\">HTML</a></p></section><section id=\"simplified\"><h1>Simplified dataset</h1><p>This format contains drop-in recreation facilities and activity times, with fully-parsed dates/times, cleaned titles, and inferred reservation requirements. It is available as JSON or CSV, along with a fully-documented stable schema.</p><ul class=\"downloads\"><li><span>JSON</span> <a class=\"dl\" href=\"/export/latest.json\" download=\"ottrec_simplified_latest.json\">json</a> <a class=\"dl dl-meta\" href=\"/export/schema.json\" download=\"ottrec_simplified.schema.json\">schema.json</a></li><li><span>CSV</span> <a class=\"dl\" href=\"/export/latest.csv.zip\" download=\"ottrec_simplified_latest.csv.zip\">csv.zip</a> <a class=\"dl dl-meta\" href=\"/export/schema.csv\" download=\"ottrec_simplified.schema.csv\">schema.csv</a></li></ul><table class=\"schema\"><tbody><tr class=\"controls\"><td colspan=\"2\"><label>Format <select class=\"format\"><option value=\"\" selected>all formats</option> <option value=\"json\">JSON</option> <option value=\"csv\">CSV</option></select></label></td></tr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		data := reflect.TypeFor[ottrecexp.Data]()
 		for i := range data.NumField() {
 			table := data.Field(i)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<tr class=\"schema-table\"><th><span data-format=\"\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<tr class=\"schema-table\"><th><span data-format=\"\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(table.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 96, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 97, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span> <span data-format=\"json\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span> <span data-format=\"json\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(table.Tag.Get("sjson"), ","))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 97, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 98, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span> <span data-format=\"csv\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span> <span data-format=\"csv\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(table.Tag.Get("scsv"), ","))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 98, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 99, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></th><th>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</span></th><th>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(table.Tag.Get("doc"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 100, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 101, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</th></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</th></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			row := table.Type.Elem().Elem()
 			for j := range row.NumField() {
 				col := row.Field(j)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<tr class=\"schema-column\"><th><span data-format=\"\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<tr class=\"schema-column\"><th><span data-format=\"\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(col.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 107, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 108, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</span> <span data-format=\"json\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span> <span data-format=\"json\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(col.Tag.Get("sjson"), ","))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 108, Col: 73}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 109, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span> <span data-format=\"csv\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</span> <span data-format=\"csv\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(cutBefore(col.Tag.Get("scsv"), ","))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 109, Col: 71}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 110, Col: 71}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</span></th><td>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span></th><td>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(col.Tag.Get("doc"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 111, Col: 33}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 112, Col: 33}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</td></tr>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</tbody></table></section><section id=\"raw\"><h1>Raw dataset</h1><p>This format is designed to match the structure of the website as closely as possible with minimal processing and no assumptions. This make it more complex to use correctly, but preserves all information from the website.</p><ul class=\"raw-downloads\"><li><a class=\"dl\" href=\"/v1/latest/proto\" download=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</tbody></table></section><section id=\"raw\"><h1>Raw dataset</h1><p>This format is designed to match the structure of the website as closely as possible with minimal processing and no assumptions. This make it more complex to use correctly, but preserves all information from the website.</p><ul class=\"raw-downloads\"><li><a class=\"dl\" href=\"/v1/latest/proto\" download=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.proto")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 125, Col: 80}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 126, Col: 80}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\">proto</a> <span>Protobuf schema.</span></li><li><a class=\"dl\" href=\"/v1/latest/pb\" download=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\">proto</a> <span>Protobuf schema.</span></li><li><a class=\"dl\" href=\"/v1/latest/pb\" download=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.pb")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 129, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 130, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\">pb</a> <span>Binary protobuf. Best for long-term usage. Forwards and backwards compatible.</span></li><li><a class=\"dl\" href=\"/v1/latest/json\" download=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\">pb</a> <span>Binary protobuf. Best for long-term usage. Forwards and backwards compatible.</span></li><li><a class=\"dl\" href=\"/v1/latest/json\" download=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.json")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 133, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 134, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\">json</a> <span>JSON protobuf. Intended for ad-hoc queries. Not stable.</span></li><li><a class=\"dl\" href=\"/v1/latest/textpb\" download=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">json</a> <span>JSON protobuf. Intended for ad-hoc queries. Not stable.</span></li><li><a class=\"dl\" href=\"/v1/latest/textpb\" download=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs("ottrec_raw_latest.textpb")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 137, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 138, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\">textpb</a> <span>Text protobuf. Intended for manual inspection.</span></li></ul></section><section id=\"api\"><h1>API</h1><h2>Version specs</h2><dl class=\"api\"><dt>latest</dt><dd>Newest available data.</dd><dt>latest-<span class=\"param\">N</span></dt><dd>N versions before the newest available data.</dd><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span></dt><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span>-<span class=\"param\">DD</span></dt><dd>Newest available data at the end of the specified date.</dd><dt><span class=\"param\">ID</span></dt><dd>Canonical reference to a specific revision of the data.</dd></dl><h2>Export</h2><dl class=\"api\"><dt>/export/schema.json</dt><dt>/export/schema.csv</dt><dd>The current schema for the simplified dataset.</dd><dt>/export/<span class=\"param\">:spec</span>.json</dt><dt>/export/<span class=\"param\">:spec</span>.csv.zip</dt><dd>Download a simplified dataset. Historical data may not be available beyond a cut-off date if the underlying data format changes too much.</dd></dl><p>The API is stable, but the data schema is subject to change if required.</p><p>Cross-origin requests are allowed.</p><h2>Raw (v1)</h2><dl class=\"api\"><dt>/v1/<span class=\"opt\">?limit=<span class=\"param\">N</span></span><span class=\"opt\">&after=<span class=\"param\">ID</span></span><span class=\"opt\">&revisions=<span class=\"param\">true|false</span></span></dt><dd>A JSON array of available data, in descending order by date/revision. If <code>revisions</code> is not set to true, only the most recent revision for each date will be listed. The default and maximum per-page limit is subject to change. Each one is uniquely identified by the ID. The revision is incremented for every additional update to the data for a specific date. You can call this endpoint repeatedly with the last ID on the previous page until an empty array is returned.<pre>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\">textpb</a> <span>Text protobuf. Intended for manual inspection.</span></li></ul></section><section id=\"api\"><h1>API</h1><h2>Version specs</h2><dl class=\"api\"><dt>latest</dt><dd>Newest available data.</dd><dt>latest-<span class=\"param\">N</span></dt><dd>N versions before the newest available data.</dd><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span></dt><dt><span class=\"param\">YYYY</span>-<span class=\"param\">MM</span>-<span class=\"param\">DD</span></dt><dd>Newest available data at the end of the specified date.</dd><dt><span class=\"param\">ID</span></dt><dd>Canonical reference to a specific revision of the data.</dd></dl><h2>Export</h2><dl class=\"api\"><dt>/export/schema.json</dt><dt>/export/schema.csv</dt><dd>The current schema for the simplified dataset.</dd><dt>/export/<span class=\"param\">:spec</span>.json</dt><dt>/export/<span class=\"param\">:spec</span>.csv.zip</dt><dd>Download a simplified dataset. Historical data may not be available beyond a cut-off date if the underlying data format changes too much.</dd></dl><p>The API is stable, but the data schema is subject to change if required.</p><p>Cross-origin requests are allowed.</p><h2>Raw (v1)</h2><dl class=\"api\"><dt>/v1/<span class=\"opt\">?limit=<span class=\"param\">N</span></span><span class=\"opt\">&after=<span class=\"param\">ID</span></span><span class=\"opt\">&revisions=<span class=\"param\">true|false</span></span></dt><dd>A JSON array of available data, in descending order by date/revision. If <code>revisions</code> is not set to true, only the most recent revision for each date will be listed. The default and maximum per-page limit is subject to change. Each one is uniquely identified by the ID. The revision is incremented for every additional update to the data for a specific date. You can call this endpoint repeatedly with the last ID on the previous page until an empty array is returned.<pre>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(`[{"id": string, "revision": integer,"updated": date-rfc3339}]`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 176, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 177, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</pre></dd><dt>/v1/<span class=\"param\">:spec</span></dt><dt>/v1/<span class=\"param\">:spec</span>/<span class=\"param\">:format</span></dt><dd>Download a raw dataset in the specified format. Currently, the valid formats are proto, pb, textpb, or json.</dd></dl><p>If the protobuf schema changes in a way which breaks backwards/forwards-compatible decoding, a new /v2/ api will be introduced for data beyond that point.</p><p>Cross-origin requests are allowed.</p></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</pre></dd><dt>/v1/<span class=\"param\">:spec</span></dt><dt>/v1/<span class=\"param\">:spec</span>/<span class=\"param\">:format</span></dt><dd>Download a raw dataset in the specified format. Currently, the valid formats are proto, pb, textpb, or json.</dd></dl><p>If the protobuf schema changes in a way which breaks backwards/forwards-compatible decoding, a new /v2/ api will be introduced for data beyond that point.</p><p>Cross-origin requests are allowed.</p></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if len(params.Versions) != 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<section id=\"history\"><h1>Historical data</h1><table class=\"history\"><thead><tr><th>Version</th><th>Simplified</th><th>Raw</th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<section id=\"history\"><h1>Historical data</h1><table class=\"history\"><thead><tr><th>Version</th><th>Simplified</th><th>Raw</th></tr></thead> <tbody>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, ver := range params.Versions {
 				base := ver.Updated.Format("2006-01-02") + "_r" + strconv.Itoa(ver.Revision)
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<tr><td title=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<tr><td title=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var18 string
 				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs("ID: " + ver.ID)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 204, Col: 36}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 205, Col: 36}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var19 string
 				templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(ver.Updated.Format("January 2, 2006"))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 205, Col: 49}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 206, Col: 49}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, " ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, " ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -326,220 +334,220 @@ func DataHome(params DataHomeParams) templ.Component {
 					var templ_7745c5c3_Var20 string
 					templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 16}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 208, Col: 16}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<span class=\"rev\">rev ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<span class=\"rev\">rev ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var21 string
 					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(ver.Revision)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 207, Col: 54}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 208, Col: 54}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</span>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</td><td>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</td><td>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				base1 := "ottrec_simplified_" + base
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<a class=\"dl\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<a class=\"dl\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var22 templ.SafeURL
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinURLErrs("/export/" + ver.ID + ".json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 60}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\" download=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" download=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(base1 + "_simplified.json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 212, Col: 100}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 100}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\">json</a> <a class=\"dl\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\">json</a> <a class=\"dl\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var24 templ.SafeURL
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinURLErrs("/export/" + ver.ID + ".csv.zip")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 214, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" download=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" download=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var25 string
 				templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(base1 + "_simplified.csv.zip")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 213, Col: 106}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 214, Col: 106}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\">csv</a></td><td>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\">csv</a></td><td>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				base2 := "ottrec_raw_" + base
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<a class=\"dl\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<a class=\"dl\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var26 templ.SafeURL
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/proto")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 217, Col: 57}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 57}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\" download=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\" download=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".proto")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 217, Col: 87}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 87}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\">proto</a> <a class=\"dl\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\">proto</a> <a class=\"dl\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var28 templ.SafeURL
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/pb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\" download=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "\" download=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var29 string
 				templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".pb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 218, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 81}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "\">pb</a> <a class=\"dl\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\">pb</a> <a class=\"dl\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var30 templ.SafeURL
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/textpb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 58}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 58}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\" download=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "\" download=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var31 string
 				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".textpb")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 219, Col: 89}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "\">textpb</a> <a class=\"dl\" href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "\">textpb</a> <a class=\"dl\" href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var32 templ.SafeURL
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinURLErrs("/v1/" + ver.ID + "/json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 221, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "\" download=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\" download=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var33 string
 				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(base2 + ".json")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 220, Col: 85}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 221, Col: 85}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\">json</a></td></tr>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "\">json</a></td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</tbody></table><p>Showing the last ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</tbody></table><p>Showing the last ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var34 string
 			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(len(params.Versions))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 227, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `data.templ`, Line: 228, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, " versions. Use the API to access older data.</p></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, " versions. Use the API to access older data.</p></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "<section id=\"license\"><h1>License</h1><p>This data has been scraped and redistributed with permission from the City of Ottawa, and can be used freely as long as the attribution text in the provided files is displayed where the data is used.</p></section><footer><div class=\"copyright\">Copyright 2025 Patrick Gaskin</div><nav><a href=\"https://github.com/pgaskin/ottrec\">GitHub</a></nav></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<section id=\"license\"><h1>License</h1><p>This data has been scraped and redistributed with permission from the City of Ottawa, and can be used freely as long as the attribution text in the provided files is displayed where the data is used.</p></section><footer><div class=\"copyright\">Copyright 2025 Patrick Gaskin</div><nav><a href=\"https://github.com/pgaskin/ottrec\">GitHub</a></nav></footer></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

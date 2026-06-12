@@ -10,11 +10,13 @@ import (
 )
 
 // ScheduleCategory defines a category page at /schedules/{Slug}, matching
-// activities by ottrecql fuzzy names.
+// activities by ottrecql fuzzy names. Icon is a Material Symbols name mapped
+// to a glyph in home.css (the glyph must be included in static/fonts.go).
 type ScheduleCategory struct {
 	Slug        string
 	Name        string
 	Description string
+	Icon        string
 	Activities  []string
 }
 
@@ -23,15 +25,15 @@ type ScheduleCategory struct {
 // ([mapCategories]), but matches with ottrecql fuzzy activity names instead of
 // regexps.
 var ScheduleCategories = []ScheduleCategory{
-	{"swimming", "Swimming", "All swims, including public, lane, and wave swims.", []string{"swim"}},
-	{"lane-swim", "Lane Swim", "Lane swims.", []string{"lane swim"}},
-	{"aquafit", "Aquafit", "Aquafit and aqua lite.", []string{"aqua"}},
-	{"skating", "Skating", "Public, adult, family, senior, and figure skating.", []string{"skat"}},
-	{"hockey", "Hockey", "Hockey, shinny, stick and puck, and ringette.", []string{"hockey", "shinny", "stick and puck", "ringette"}},
-	{"badminton", "Badminton", "Badminton.", []string{"badminton"}},
-	{"basketball", "Basketball", "Basketball.", []string{"basketball"}},
-	{"volleyball", "Volleyball", "Volleyball.", []string{"volleyball"}},
-	{"pickleball", "Pickleball", "Pickleball.", []string{"pickleball"}},
+	{"swimming", "Swimming", "All swims, including public, lane, and wave swims.", "pool", []string{"swim"}},
+	{"lane-swim", "Lane Swim", "Lane swims.", "pool", []string{"lane swim"}},
+	{"aquafit", "Aquafit", "Aquafit and aqua lite.", "water", []string{"aqua"}},
+	{"skating", "Skating", "Public, adult, family, senior, and figure skating.", "ice_skating", []string{"skat"}},
+	{"hockey", "Hockey", "Hockey, shinny, stick and puck, and ringette.", "sports_hockey", []string{"hockey", "shinny", "stick and puck", "ringette"}},
+	{"badminton", "Badminton", "Badminton.", "badminton", []string{"badminton"}},
+	{"basketball", "Basketball", "Basketball.", "sports_basketball", []string{"basketball"}},
+	{"volleyball", "Volleyball", "Volleyball.", "sports_volleyball", []string{"volleyball"}},
+	{"pickleball", "Pickleball", "Pickleball.", "pickleball", []string{"pickleball"}},
 }
 
 // ScheduleCategoryBySlug resolves a slug from a schedules page path.

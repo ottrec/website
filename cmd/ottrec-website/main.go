@@ -26,6 +26,7 @@ var (
 	Addr         = pflag.StringP("addr", "a", ":8083", "listen address")
 	Data         = pflag.StringP("data", "d", "http://localhost:8082/v1/latest/pb", "url or path to data protobuf")
 	DataInterval = pflag.DurationP("data-interval", "i", time.Minute*15, "poll interval for data")
+	HeadHTML     = pflag.String("head-html", "", "raw html to inject at the bottom of <head> on every page")
 	LogLevel     = pflagx.LevelP("log-level", "L", slog.LevelInfo, "log level")
 	LogJSON      = pflag.Bool("log-json", false, "use json logs")
 	Help         = pflag.BoolP("help", "h", false, "show this help text")
@@ -124,7 +125,8 @@ func run() error {
 	}()
 
 	handler, err := routes.Website(routes.WebsiteConfig{
-		Data: getData,
+		Data:     getData,
+		HeadHTML: *HeadHTML,
 	})
 	if err != nil {
 		return fmt.Errorf("initialize routes: %w", err)

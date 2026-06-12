@@ -21,6 +21,7 @@ templ WebsiteMapPage(params WebsiteParams) {
 			<link rel="stylesheet" href={ static.Path(static.LeafletCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.MapCSS) }/>
+			@websiteHeadExtra()
 		</head>
 		<body class="map-page">
 			<nav class="map-topnav">
@@ -100,7 +101,7 @@ type WebsiteMapPopupParams struct {
 // the map page.
 templ WebsiteMapPopup(params WebsiteMapPopupParams) {
 	<div class="fac-popup">
-		@WebsiteFacilityArticle(params.Facility, "", "") {
+		@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{}) {
 			<a href={ templ.URL("/schedules/" + params.Slug) }>Full Schedule</a>
 		}
 	</div>

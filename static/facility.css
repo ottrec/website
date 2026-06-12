@@ -1,9 +1,32 @@
 /* facility article (shared between the map popups/details and the schedules pages) */
 
-article.facility hgroup {
+article.facility .facility-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
 	margin: 0 0 .4rem;
 	padding-bottom: .4rem;
 	border-bottom: 1px solid var(--fxki-ui-2);
+}
+article.facility hgroup {
+	margin: 0;
+}
+article.facility .facility-header-links {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: .1rem;
+	padding-top: .1rem;
+	font-size: .72rem;
+	white-space: nowrap;
+}
+article.facility .facility-header-links a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+article.facility .facility-header-links a:hover {
+	text-decoration: underline;
 }
 article.facility h1 {
 	margin: 0;

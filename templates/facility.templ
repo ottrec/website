@@ -9,43 +9,56 @@ import (
 // WebsiteFacilityArticle renders the full information and schedules for a
 // facility, in a similar structure to pkg/ottrecexph. It is used by the map
 // popups and the schedules pages. Any children are rendered as extra links
-// under the header. If anchors is non-empty, the schedule groups get ids from
-// [facilityAnchorID]. If link is non-empty, the facility name links to it.
-templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, anchors string, link string) {
+// under the header. See [WebsiteFacilityArticleOptions].
+templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArticleOptions) {
 	<article class="facility">
-		<hgroup>
-			<h1 class="facility-name">
-				if link != "" {
-					<a href={ templ.URL(link) }>{ fac.GetName() }</a>
-				} else {
-					{ fac.GetName() }
+		<header class="facility-header">
+			<hgroup>
+				<h1 class="facility-name">
+					if opts.Link != "" {
+						<a href={ templ.URL(opts.Link) }>{ fac.GetName() }</a>
+					} else {
+						{ fac.GetName() }
+					}
+				</h1>
+				if t := fac.GetSourceDate(); !t.IsZero() {
+					<p class="facility-updated">Updated <time datetime={ t.In(ottrecidx.TZ).Format(time.RFC3339) }>{ t.In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time></p>
 				}
-			</h1>
-			if t := fac.GetSourceDate(); !t.IsZero() {
-				<p class="facility-updated">Updated <time datetime={ t.In(ottrecidx.TZ).Format(time.RFC3339) }>{ t.In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time></p>
+			</hgroup>
+			if opts.HeaderLinks {
+				<nav class="facility-header-links">
+					if u := facilityDirectionsURL(fac); u != "" {
+						<a href={ templ.URL(u) } target="_blank" rel="noopener">Directions</a>
+					}
+					if u := fac.GetSourceURL(); u != "" {
+						<a href={ templ.URL(u) } target="_blank" rel="noopener">City of Ottawa</a>
+					}
+				</nav>
 			}
-		</hgroup>
+		</header>
 		<nav class="facility-links">
 			{ children... }
 		</nav>
-		<section class="facility-address">
-			<h2>Address</h2>
-			<address>
-				if addr := strings.TrimSpace(fac.GetAddress()); addr != "" {
-					<p>
-						for i, line := range strings.Split(addr, "\n") {
-							if i > 0 {
-								<br/>
+		if !opts.HeaderLinks {
+			<section class="facility-address">
+				<h2>Address</h2>
+				<address>
+					if addr := strings.TrimSpace(fac.GetAddress()); addr != "" {
+						<p>
+							for i, line := range strings.Split(addr, "\n") {
+								if i > 0 {
+									<br/>
+								}
+								{ strings.TrimSpace(line) }
 							}
-							{ strings.TrimSpace(line) }
-						}
-					</p>
-				}
-				if u := fac.GetSourceURL(); u != "" {
-					<p class="facility-url"><a href={ templ.URL(u) } target="_blank" rel="noopener">{ u }</a></p>
-				}
-			</address>
-		</section>
+						</p>
+					}
+					if u := fac.GetSourceURL(); u != "" {
+						<p class="facility-url"><a href={ templ.URL(u) } target="_blank" rel="noopener">{ u }</a></p>
+					}
+				</address>
+			</section>
+		}
 		if h := strings.TrimSpace(fac.GetSpecialHoursHTML()); h != "" {
 			<section class="facility-special-hours">
 				<h2>Special Hours</h2>
@@ -72,8 +85,8 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, anchors string, link str
 			for i, grp := range indexedSeq(fac.ScheduleGroups()) {
 				<section
 					class="schedule-group"
-					if anchors != "" {
-						id={ facilityAnchorID(anchors, i) }
+					if opts.Anchors != "" {
+						id={ facilityAnchorID(opts.Anchors, i) }
 					}
 				>
 					<h3>{ grp.GetTitle() }</h3>

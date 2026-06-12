@@ -20,6 +20,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.SchedulesCSS) }/>
+			@websiteHeadExtra()
 		</head>
 		<body class="schedules-page">
 			<nav class="map-topnav">
@@ -38,7 +39,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 			</nav>
 			<main>
 				<div class="schedules-layout">
-					if len(params.TOC) > 0 && params.QueryError == "" {
+					if len(params.TOC) > 0 && params.QueryError == "" && !params.Single {
 						<aside class="schedules-toc">
 							<nav aria-label="Facilities">
 								<ul>
@@ -107,9 +108,9 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 							for _, f := range params.TOC {
 								<section class="schedules-facility" id={ f.Slug }>
 									if params.Single {
-										@WebsiteFacilityArticle(f.Ref, f.Slug, "")
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true})
 									} else {
-										@WebsiteFacilityArticle(f.Ref, f.Slug, "/schedules/"+f.Slug)
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: "/schedules/" + f.Slug, HeaderLinks: true})
 									}
 								</section>
 							}
@@ -117,9 +118,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 					</div>
 				</div>
 			</main>
-			if params.Advanced {
-				<script src={ static.Path(static.SchedulesJS) }></script>
-			}
+			<script src={ static.Path(static.SchedulesJS) }></script>
 		</body>
 	</html>
 }

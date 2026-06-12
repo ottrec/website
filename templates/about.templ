@@ -19,6 +19,7 @@ templ WebsiteAboutPage(params WebsiteParams) {
 			<meta name="description" content="About ottrec.ca, where its schedule data comes from, and how to download the raw datasets."/>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.AboutCSS) }/>
+			@websiteHeadExtra()
 		</head>
 		<body class="about-page">
 			<nav class="map-topnav">
@@ -59,12 +60,13 @@ templ WebsiteAboutPage(params WebsiteParams) {
 				</section>
 				<section id="attribution">
 					<h2>Attribution</h2>
-					<ul>
+					<p>
 						for line := range params.Data.GetAttribution() {
-							<li>{ line }</li>
+							{ line }
+							<br/>
 						}
-						<li>Website © <a href="https://www.pgaskin.net">Patrick Gaskin</a>.</li>
-					</ul>
+						Website © <a href="https://www.pgaskin.net">Patrick Gaskin</a>.
+					</p>
 				</section>
 				<section id="data-ottrec-ca">
 					<h2>data.ottrec.ca</h2>

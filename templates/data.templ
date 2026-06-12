@@ -29,6 +29,7 @@ templ DataHome(params DataHomeParams) {
 			<link rel="stylesheet" href={ static.Path(static.DataCSS) }/>
 			<title>Ottawa recreation schedule data</title>
 			<meta name="description" content="Download up-to-date JSON and CSV datasets of the City of Ottawa's drop-in recreation schedules."/>
+			@websiteHeadExtra()
 		</head>
 		<body>
 			<header>

@@ -3,6 +3,8 @@ package templates
 import (
 	"fmt"
 	"iter"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,6 +14,33 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
+
+// WebsiteFacilityArticleOptions controls the optional parts of
+// [WebsiteFacilityArticle].
+type WebsiteFacilityArticleOptions struct {
+	// Anchors, if non-empty, gives the schedule groups ids from
+	// [facilityAnchorID].
+	Anchors string
+	// Link, if non-empty, makes the facility name link to it.
+	Link string
+	// HeaderLinks replaces the address section with small Directions and City
+	// of Ottawa links on the right side of the header.
+	HeaderLinks bool
+}
+
+// facilityDirectionsURL returns a Google Maps directions link for the
+// facility, or an empty string if there's nothing to link to.
+func facilityDirectionsURL(fac ottrecidx.FacilityRef) string {
+	if addr := mapOneLineAddress(fac.GetAddress()); addr != "" {
+		return "https://www.google.com/maps/dir/?api=1&destination=" + url.QueryEscape(addr)
+	}
+	if lng, lat, ok := fac.GetLngLat(); ok {
+		return "https://www.google.com/maps/dir/?api=1&destination=" +
+			strconv.FormatFloat(float64(lat), 'f', -1, 32) + "," +
+			strconv.FormatFloat(float64(lng), 'f', -1, 32)
+	}
+	return ""
+}
 
 // indexedSeq numbers a sequence, for stable anchor ids.
 func indexedSeq[T any, S ~func(func(T) bool)](seq S) iter.Seq2[int, T] {

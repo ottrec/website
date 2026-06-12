@@ -1,0 +1,168 @@
+body.home-page {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+.home-page main {
+	flex: 1;
+	width: 100%;
+	max-width: 60rem;
+	margin: 0 auto;
+	padding: 1.5rem 1.5rem 3rem;
+}
+
+/* material symbols icons (the glyphs must be listed in static/fonts.go) */
+
+.home-page [data-icon]::before {
+	font-family: 'Material Symbols Outlined';
+	font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+	font-weight: normal;
+	font-style: normal;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	white-space: nowrap;
+	direction: ltr;
+	-moz-osx-font-smoothing: grayscale;
+}
+.home-page [data-icon="map"]::before { content: '\e55b'; }
+.home-page [data-icon="calendar_month"]::before { content: '\ebcc'; }
+.home-page [data-icon="overview"]::before { content: '\e4a7'; }
+.home-page [data-icon="pool"]::before { content: '\eb48'; }
+.home-page [data-icon="water"]::before { content: '\f084'; }
+.home-page [data-icon="ice_skating"]::before { content: '\e50b'; }
+.home-page [data-icon="sports_hockey"]::before { content: '\ea2b'; }
+.home-page [data-icon="badminton"]::before { content: '\f2a8'; }
+.home-page [data-icon="sports_basketball"]::before { content: '\ea26'; }
+.home-page [data-icon="sports_volleyball"]::before { content: '\ea31'; }
+.home-page [data-icon="pickleball"]::before { content: '\f2a6'; }
+
+/* hero */
+
+.home-hero {
+	margin: 2.5rem 0 2rem;
+	text-align: center;
+}
+.home-hero h1 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 2rem;
+	margin: 0 0 .5rem;
+}
+.home-hero p {
+	max-width: 34rem;
+	margin: 0 auto 1.25rem;
+	color: var(--fxki-tx-2);
+}
+/* section tiles */
+
+.home-tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+	gap: 1rem;
+	margin: 2rem 0;
+}
+.home-tiles a {
+	position: relative;
+	overflow: hidden;
+	display: block;
+	padding: 1rem 1.1rem 1.1rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .6rem;
+	background: var(--fxki-bg-2);
+	color: inherit;
+	text-decoration: none;
+	line-height: 1.4;
+}
+.home-tiles a:hover {
+	background: var(--fxki-bg-3);
+}
+.home-tiles h2 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.05rem;
+	margin: 0 0 .25rem;
+}
+.home-tiles p {
+	position: relative;
+	z-index: 2;
+	margin: 0;
+	font-size: .85rem;
+	color: var(--fxki-tx-2);
+}
+.home-tiles a::before {
+	position: absolute;
+	right: .4rem;
+	bottom: .3rem;
+	z-index: 1;
+	font-size: 3.25rem;
+	color: var(--fxki-ui-2);
+}
+
+/* category pills (in the hero, under the search box) */
+
+.home-cats {
+	margin: 1rem auto 0;
+	max-width: 38rem;
+}
+.home-cats ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: .4rem;
+}
+.home-cats a {
+	display: inline-flex;
+	align-items: center;
+	gap: .4em;
+	padding: .3em .85em;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: 2em;
+	background: var(--fxki-bg-2);
+	color: inherit;
+	font-size: .85rem;
+	text-decoration: none;
+}
+.home-cats a:hover {
+	background: var(--fxki-bg-3);
+	border-color: var(--fxki-ui-3);
+}
+.home-cats a::before {
+	font-size: 1.15em;
+	color: var(--fxki-tx-2);
+}
+
+/* footer */
+
+.site-footer {
+	width: 100%;
+	max-width: 60rem;
+	margin: 0 auto;
+	padding: 1rem 1.5rem 2rem;
+	border-top: 1px solid var(--fxki-ui-2);
+	font-size: .8rem;
+	color: var(--fxki-tx-2);
+}
+.site-footer p {
+	margin: .25rem 0;
+}
+.site-footer nav ul {
+	list-style: none;
+	margin: .25rem 0;
+	padding: 0;
+}
+.site-footer nav li {
+	display: inline;
+}
+.site-footer nav li:not(:last-of-type)::after {
+	content: "\00a0\2022\00a0";
+	color: var(--fxki-tx-3);
+}
+.site-footer nav a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.site-footer nav a:hover {
+	text-decoration: underline;
+}
