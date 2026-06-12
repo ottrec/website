@@ -517,6 +517,25 @@ ul#fac-list {
 	cursor: pointer;
 }
 
+/* transient message over the map (click to dismiss); kept above the mobile
+ * facilities sheet */
+#map-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 3.2rem;
+	transform: translateX(-50%);
+	z-index: 1500;
+	max-width: min(28rem, calc(100vw - 2rem));
+	padding: .5rem .9rem;
+	background: var(--fxki-bg-2);
+	color: var(--fxki-tx-2);
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .3rem;
+	font-size: .85rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+	cursor: pointer;
+}
+
 /* narrow screens: filters become an overlay panel behind a bar of chips, and
  * the facility list becomes an expandable bottom sheet */
 

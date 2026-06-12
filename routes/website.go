@@ -156,10 +156,26 @@ func (h *websiteMapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Vary", "Accept-Encoding")
 	w.Header().Set("Cache-Control", "public, no-cache")
 
+	// the client-side f-* filter params don't affect the page output, so keep
+	// them, but canonicalize anything else away
 	if r.URL.RawQuery != "" {
-		w.Header().Set("Cache-Control", "no-store")
-		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
-		return
+		q := r.URL.Query()
+		clean := true
+		for k := range q {
+			if !strings.HasPrefix(k, "f-") {
+				delete(q, k)
+				clean = false
+			}
+		}
+		if !clean {
+			w.Header().Set("Cache-Control", "no-store")
+			u := r.URL.EscapedPath()
+			if enc := q.Encode(); enc != "" {
+				u += "?" + enc
+			}
+			http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+			return
+		}
 	}
 
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {

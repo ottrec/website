@@ -35,6 +35,18 @@ function showError(msg: string) {
 window.addEventListener('error', (ev) => showError(ev.message || 'unknown error'))
 window.addEventListener('unhandledrejection', (ev) => showError((ev.reason && ev.reason.message) || String(ev.reason)))
 
+// transient toast over the map (e.g., when stale url filters are reset)
+
+function showToast(msg: string) {
+	document.getElementById('map-toast')?.remove()
+	const toast = document.createElement('div')
+	toast.id = 'map-toast'
+	toast.textContent = msg
+	toast.addEventListener('click', () => toast.remove())
+	document.body.append(toast)
+	setTimeout(() => toast.remove(), 8000)
+}
+
 /**
  * A filter selects facilities by day, time slot, category, activity, and name.
  *
@@ -533,6 +545,99 @@ function syncActivityVisibility() {
 	activitiesFilteredEl.hidden = !catFiltered
 }
 
+// url filter state
+
+// syncURL reflects the filter state in the query parameters, all prefixed
+// with "f-" (the page's canonical URL keeps them out of indexing). f-v
+// versions the format and f-t records the data date the filters were applied
+// against, in case they're needed to interpret old links later. Debounced
+// since Safari rate-limits history.replaceState.
+let urlTimer: number | undefined
+function syncURL() {
+	clearTimeout(urlTimer)
+	urlTimer = setTimeout(() => {
+		const params = new URLSearchParams()
+		if (filter.days.size)
+			params.set('f-days', [...filter.days].sort((a, b) => a - b).map((d) => data.days[d]!).join(','))
+		if (filter.slots.size)
+			params.set('f-times', [...filter.slots].sort((a, b) => a - b).map((s) => data.slots[s]!).join(','))
+		if (filter.categories.size) {
+			params.set('f-cat', [...filter.categories].sort((a, b) => a - b).map((c) => data.categories[c]!).join(','))
+			// with categories selected, store the activities unchecked from
+			// them instead of the checked ones
+			for (let a = 0; a < data.activities.length; a++)
+				if (data.activityInCategories(a, filter.categories) && !filter.activities.has(a))
+					params.append('f-xact', data.activities[a]!)
+		} else {
+			for (const a of [...filter.activities].sort((x, y) => x - y))
+				params.append('f-act', data.activities[a]!)
+		}
+		if (filter.name)
+			params.set('f-q', filter.name)
+		if (filter.starredOnly)
+			params.set('f-starred', '1')
+		if (!params.keys().next().done) {
+			params.set('f-v', '1')
+			params.set('f-t', data.updated)
+		}
+		const qs = params.toString().replace(/%3A/gi, ':').replace(/%2C/gi, ',')
+		const url = location.pathname + (qs ? '?' + qs : '') + location.hash
+		if (url !== location.pathname + location.search + location.hash)
+			history.replaceState(null, '', url)
+	}, 300)
+}
+
+// loadURLState restores the filter state from the query parameters. If any
+// stored days, times, or categories no longer exist (i.e., the available
+// options changed since the link was made), that filter is reset so results
+// aren't unexpectedly missing, and a toast is shown.
+function loadURLState() {
+	const params = new URLSearchParams(location.search)
+	const reset: string[] = []
+	// an unrecognized f-* param means the link is from a newer format; reset
+	// everything rather than restoring it partially
+	const known = ['f-v', 'f-t', 'f-days', 'f-times', 'f-cat', 'f-act', 'f-xact', 'f-q', 'f-starred']
+	for (const key of params.keys())
+		if (key.startsWith('f-') && !known.includes(key)) {
+			showToast('Some filters were reset because the schedule data changed (all).')
+			return
+		}
+	const restore = (param: string, what: string, labels: string[], set: Set<number>) => {
+		const v = params.get(param)
+		if (!v) return
+		const idx = v.split(',').map((label) => labels.indexOf(label))
+		if (idx.includes(-1)) reset.push(what)
+		else idx.forEach((i) => set.add(i))
+	}
+	restore('f-days', 'weekdays', data.days, filter.days)
+	restore('f-times', 'times', data.slots, filter.slots)
+	restore('f-cat', 'categories', data.categories, filter.categories)
+	if (filter.categories.size) {
+		// the url stores the activities unchecked from the selected categories
+		applyCategorySelection()
+		for (const name of params.getAll('f-xact')) {
+			const a = data.activities.indexOf(name)
+			if (a >= 0) filter.activities.delete(a)
+			else if (!reset.includes('activities')) // a previously unchecked activity is gone
+				reset.push('activities')
+		}
+	} else {
+		// without valid categories, any stored exclusions can't be applied
+		if (params.getAll('f-xact').length && !reset.includes('activities'))
+			reset.push('activities')
+		for (const name of params.getAll('f-act')) {
+			const a = data.activities.indexOf(name)
+			if (a >= 0) filter.activities.add(a)
+			else if (!reset.includes('activities')) // a previously selected activity is gone
+				reset.push('activities')
+		}
+	}
+	filter.name = params.get('f-q') || ''
+	filter.starredOnly = params.get('f-starred') === '1'
+	if (reset.length)
+		showToast('Some filters were reset because the schedule data changed (' + reset.join(', ') + ').')
+}
+
 // rendering
 
 function update() {
@@ -548,6 +653,7 @@ function update() {
 	const count = visible.length + '/' + data.facilities.length + ' facilit' + (data.facilities.length === 1 ? 'y' : 'ies')
 	facCountEl.textContent = count
 	sheetToggleEl.textContent = count + (document.body.classList.contains('list-open') ? ' ▾' : ' ▴')
+	syncURL()
 }
 
 function cmpName(a: number, b: number) {
@@ -728,6 +834,7 @@ sheetToggleEl.addEventListener('click', () => {
 })
 
 buildFilters()
+loadURLState()
 syncStarredFilter()
 syncControls()
 update()
