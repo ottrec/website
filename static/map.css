@@ -21,7 +21,6 @@ body.map-page {
 	padding: .4rem .75rem;
 	border-bottom: 1px solid var(--fxki-ui-2);
 	background: var(--fxki-bg);
-	overflow-x: auto;
 	position: relative;
 	z-index: 1250;
 }
@@ -38,6 +37,7 @@ body.map-page {
 }
 #filter-chips {
 	display: flex;
+	flex-wrap: wrap;
 	gap: .35rem;
 	align-items: center;
 }
@@ -99,9 +99,6 @@ body.map-page {
 	right: .65rem;
 	z-index: 1000;
 	pointer-events: none;
-}
-.map-chips #filter-chips {
-	flex-wrap: wrap;
 }
 
 /* filters pane */
