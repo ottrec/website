@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -411,18 +410,19 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		paths = append(paths, "schedules/"+cat.Slug)
 	}
 
-	var b strings.Builder
-	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
-	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
-	lastmod := data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02")
-	for _, p := range paths {
-		b.WriteString("\t<url><loc>")
-		xml.EscapeText(&b, []byte(h.base(r)+p))
-		b.WriteString("</loc><lastmod>" + lastmod + "</lastmod></url>\n")
+	urls := make([]string, len(paths))
+	for i, p := range paths {
+		urls[i] = h.base(r) + p
 	}
-	b.WriteString("</urlset>\n")
 
-	etag := `W/"` + data.Index().Hash() + `"`
+	buf, err := sitemapXML(data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02"), urls)
+	if err != nil {
+		slog.Error("website: failed to render sitemap", "error", err)
+		http.Error(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	etag := etagWeak(data.Index().Hash())
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, no-cache")
 	w.Header().Set("ETag", etag)
@@ -430,7 +430,7 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
-	w.Write([]byte(b.String()))
+	w.Write(buf)
 }
 
 type websiteActivitiesHandler struct {

@@ -68,6 +68,10 @@ func Data(cfg DataConfig) (http.Handler, error) {
 		Base:  "/export/",
 		Cache: cfg.Cache,
 	})
+	mux.Handle("GET /robots.txt", dataRobotsHandler{})
+	mux.Handle("GET /sitemap.xml", &dataSitemapHandler{
+		Cache: cfg.Cache,
+	})
 	mux.Handle("/static/", static.Handler(static.Data))
 
 	// so if they panic, they panic early
@@ -125,6 +129,56 @@ func (h *dataHomeHandler) serveError(w http.ResponseWriter, message string, code
 	d.Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
 	io.WriteString(w, message+"\n")
+}
+
+type dataRobotsHandler struct{}
+
+func (dataRobotsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	body := "User-agent: *\n" +
+		"Disallow: /preview\n" +
+		"Disallow: /v1/\n" +
+		"Disallow: /export/\n" +
+		"\n" +
+		"Sitemap: https://data.ottrec.ca/sitemap.xml\n"
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, no-cache")
+	w.Write([]byte(body))
+}
+
+type dataSitemapHandler struct {
+	Cache *ottrecdata.Cache
+}
+
+func (h *dataSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	id, updated, _, err := h.Cache.ResolveVersion(r.Context(), "latest")
+	if err != nil {
+		slog.Error("data: failed to resolve latest version", "error", err)
+		http.Error(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if id == "" {
+		http.Error(w, "data not available, try again later", http.StatusServiceUnavailable)
+		return
+	}
+
+	buf, err := sitemapXML(updated.In(ottrecidx.TZ).Format("2006-01-02"), []string{
+		"https://data.ottrec.ca/",
+	})
+	if err != nil {
+		slog.Error("data: failed to render sitemap", "error", err)
+		http.Error(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	etag := etagWeak(id)
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, no-cache")
+	w.Header().Set("ETag", etag)
+	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+	w.Write(buf)
 }
 
 type dataPreviewHandler struct {
