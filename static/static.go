@@ -18,6 +18,7 @@ import (
 
 	"github.com/klauspost/compress/gzip"
 	"github.com/klauspost/compress/zstd"
+	"github.com/pgaskin/ottrec-website/internal/esbuild"
 	"github.com/pgaskin/ottrec-website/internal/httpx"
 	"github.com/pgaskin/ottrec-website/internal/postcss"
 )
@@ -43,13 +44,13 @@ var (
 	WebsiteCSS    = newFile("website.css")
 	FacilityCSS   = newFile("facility.css")
 	MapCSS        = newFile("map.css")
-	MapJS         = newFile("map.js")
+	MapJS         = newFile("map.ts")
 	ActivitiesCSS = newFile("activities.css")
 	SchedulesCSS  = newFile("schedules.css")
-	SchedulesJS   = newFile("schedules.js")
+	SchedulesJS   = newFile("schedules.ts")
 	AboutCSS      = newFile("about.css")
 	HomeCSS       = newFile("home.css")
-	ThemeJS       = newFile("theme.js")
+	ThemeJS       = newFile("theme.ts")
 
 	Website = newGroup("website",
 		WebsiteCSS,
@@ -143,6 +144,13 @@ func newFile(name string) *file {
 				buf = []byte(regexp.MustCompile(`url\([^)]+\)`).ReplaceAllStringFunc(css, func(css string) string {
 					return "url(" + getFile(string(css[strings.IndexByte(css, '(')+1:len(css)-1])).HashName + ")"
 				}))
+			case ".ts":
+				js, err := esbuild.Transform(name, string(buf))
+				if err != nil {
+					return nil, fmt.Errorf("compile ts: %w", err)
+				}
+				buf = []byte(js)
+				ext = ".js" // served as plain js
 			}
 		}
 
@@ -160,7 +168,7 @@ func newFile(name string) *file {
 
 		sum := sha1.Sum(buf)
 		hash := base32.StdEncoding.EncodeToString(sum[:])
-		hashName := strings.TrimSuffix(name, ext) + "-" + hash[:10] + ext
+		hashName := strings.TrimSuffix(name, path.Ext(name)) + "-" + hash[:10] + ext
 
 		return &file{
 			Name:        name,
