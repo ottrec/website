@@ -49,6 +49,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 				<header class="home-hero">
 					<h1>Find drop-in recreation in Ottawa</h1>
 					<p>Swims, skates, and sports at every City of Ottawa facility, collected daily and searchable in one place.</p>
+					<p class="home-updated">Schedules updated <time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>{ params.Data.Index().Updated().In(ottrecidx.TZ).Format("January 2, 2006") }</time>.</p>
 					<nav class="home-cats" aria-label="Categories">
 						<ul>
 							for _, cat := range ScheduleCategories {
@@ -87,6 +88,8 @@ templ WebsiteHomePage(params WebsiteParams) {
 	</html>
 }
 
+// WebsiteErrorPage is used for all website error responses, including 404s
+// and data-unavailable errors (so it cannot depend on the data).
 templ WebsiteErrorPage(title, message string) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -99,9 +102,18 @@ templ WebsiteErrorPage(title, message string) {
 			@websiteHeadExtra()
 		</head>
 		<body>
-			<div class="error-page">
-				{ message }
-			</div>
+			<nav class="map-topnav">
+				<a class="brand" href="/">ottrec.ca</a>
+				<a class="nav" href="/map">Map</a>
+				<a class="nav" href="/schedules">Schedules</a>
+				<a class="nav" href="/activities">Activities</a>
+				<a class="nav" href="/about">About</a>
+			</nav>
+			<main class="error-page">
+				<h1>{ title }</h1>
+				<p>{ message }</p>
+				<p><a href="/">Go to the homepage</a></p>
+			</main>
 		</body>
 	</html>
 }

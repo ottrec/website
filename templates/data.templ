@@ -15,6 +15,26 @@ type DataHomeParams struct {
 	Versions  []ottrecdata.DataVersion
 }
 
+// DataErrorPage is the plain error page for the data site, unchanged from
+// before the website error page gained the website navbar.
+templ DataErrorPage(title, message string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="robots" content="noindex"/>
+			<title>{ title }</title>
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+		</head>
+		<body>
+			<div class="error-page">
+				{ message }
+			</div>
+		</body>
+	</html>
+}
+
 templ DataHome(params DataHomeParams) {
 	<!DOCTYPE html>
 	<html lang="en">

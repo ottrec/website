@@ -53,6 +53,11 @@ body.home-page {
 	margin: 0 auto 1.25rem;
 	color: var(--fxki-tx-2);
 }
+.home-hero .home-updated {
+	margin: -1rem auto 1.25rem;
+	font-size: .8rem;
+	color: var(--fxki-tx-3);
+}
 /* section tiles */
 
 .home-tiles {

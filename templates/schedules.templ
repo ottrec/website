@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"cmp"
 	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
 	"github.com/pgaskin/ottrec-website/static"
 	"time"
@@ -16,7 +17,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 				<link rel="canonical" href={ params.Base + params.Canonical }/>
 			}
 			<title>{ params.Title } - Ottawa Recreation Schedules</title>
-			<meta name="description" content={ params.Description }/>
+			<meta name="description" content={ cmp.Or(params.MetaDescription, params.Description) }/>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.SchedulesCSS) }/>
@@ -110,7 +111,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 									if params.Single {
 										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true})
 									} else {
-										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: "/schedules/" + f.Slug, HeaderLinks: true})
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: "/schedules/facility/" + f.Slug, HeaderLinks: true})
 									}
 								</section>
 							}

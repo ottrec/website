@@ -245,7 +245,7 @@ const tileURL = (dark) => 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_a
 const tiles = L.tileLayer(tileURL(darkQuery.matches), {
 	subdomains: 'abcd',
 	maxZoom: 20,
-	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.pgaskin.net">Patrick Gaskin</a>',
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://github.com/pgaskin">Patrick Gaskin</a>',
 }).addTo(map);
 darkQuery.addEventListener('change', (ev) => tiles.setUrl(tileURL(ev.matches)));
 

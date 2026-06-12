@@ -178,12 +178,13 @@ func SchedulesFacilityTOC(slug string, fac ottrecidx.FacilityRef) []SchedulesTOC
 // WebsiteSchedulesParams parameterizes the shared schedules page template for
 // the root, category, and single-facility variants.
 type WebsiteSchedulesParams struct {
-	Base        string
-	Data        ottrecidx.DataRef // only used for the data timestamp
-	Canonical   string            // canonical path relative to Base, e.g. "schedules"
-	Active      string            // active category navbar entry ("all" or a category slug; "" for none)
-	Title       string
-	Description string
+	Base            string
+	Data            ottrecidx.DataRef // only used for the data timestamp
+	Canonical       string            // canonical path relative to Base, e.g. "schedules"
+	Active          string            // active category navbar entry ("all" or a category slug; "" for none)
+	Title           string
+	Description     string // page subtitle, and the meta description unless MetaDescription is set
+	MetaDescription string
 	Search        bool                   // show the search box
 	Advanced      bool                   // advanced (ottrecql) search mode
 	Query         string                 // current search box contents

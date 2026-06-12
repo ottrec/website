@@ -253,6 +253,31 @@ table {
     font-variation-settings: "wdth" 87.5;
 }
 
+/* website error pages (main, not div: the data site error page is unstyled) */
+
+main.error-page {
+    max-width: 44rem;
+    margin: 4rem auto;
+    padding: 0 1rem;
+    text-align: center;
+}
+main.error-page h1 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.5rem;
+    margin: 0 0 .5rem;
+}
+main.error-page p {
+    margin: .5rem 0;
+    color: var(--fxki-tx-2);
+}
+main.error-page a {
+    color: var(--fxki-bl);
+    text-decoration: none;
+}
+main.error-page a:hover {
+    text-decoration: underline;
+}
+
 /* top nav shared by the map and activities pages */
 
 .map-topnav {
@@ -290,6 +315,12 @@ table {
     font-size: .8rem;
     color: var(--fxki-tx-2);
     white-space: nowrap;
+}
+@media (max-width: 540px) {
+    /* it gets cut off by the nav links otherwise */
+    .map-topnav time {
+        display: none;
+    }
 }
 
 .material-symbols-outlined {

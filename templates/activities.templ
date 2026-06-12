@@ -60,7 +60,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 										<tbody>
 											for _, f := range card.Facilities {
 												<tr>
-													<th class="fac" scope="row"><a href={ templ.URL("/schedules/" + f.Slug) }>{ f.Name }</a></th>
+													<th class="fac" scope="row"><a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a></th>
 													for d := range mapDays {
 														for p := range activityPeriodShort {
 															<td><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>

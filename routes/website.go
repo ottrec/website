@@ -2,10 +2,13 @@ package routes
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -55,13 +58,40 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /schedules/{key}", &websiteSchedulesKeyHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /schedules/facility/{slug}", &websiteSchedulesFacilityHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /robots.txt", &websiteRobotsHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /sitemap.xml", &websiteSitemapHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("GET /api/ottrecql/validate", &websiteOttrecqlValidateHandler{})
 	mux.Handle("GET /about", &websiteAboutHandler{
 		websiteHandlerBase: base,
 	})
 	mux.Handle("/static/", static.Handler(static.Website))
 
-	return commonMiddleware(mux), nil
+	return commonMiddleware(redirectTrailingSlash(mux)), nil
+}
+
+// redirectTrailingSlash permanently redirects paths with trailing slashes to
+// the canonical slash-less ones. The static subtree is excluded since
+// [http.ServeMux] redirects the other way for subtree roots.
+func redirectTrailingSlash(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if p := r.URL.Path; len(p) > 1 && strings.HasSuffix(p, "/") && !strings.HasPrefix(p, "/static/") {
+			u := *r.URL
+			u.Path = strings.TrimRight(p, "/")
+			if u.Path == "" {
+				u.Path = "/"
+			}
+			http.Redirect(w, r, u.String(), http.StatusPermanentRedirect)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 type websiteHandlerBase struct {
@@ -160,15 +190,16 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
 		params := templates.WebsiteSchedulesParams{
-			Base:        h.base(r),
-			Data:        data,
-			Canonical:   "schedules",
-			Active:      "all",
-			Title:       "Schedules",
-			Description: "Drop-in schedules across all City of Ottawa recreation facilities.",
-			Search:      true,
-			Advanced:    advanced,
-			Query:       q,
+			Base:            h.base(r),
+			Data:            data,
+			Canonical:       "schedules",
+			Active:          "all",
+			Title:           "Schedules",
+			Description:     "Drop-in schedules across all City of Ottawa recreation facilities.",
+			MetaDescription: "All City of Ottawa drop-in recreation schedules on one page, searchable and updated daily.",
+			Search:          true,
+			Advanced:        advanced,
+			Query:           q,
 		}
 		filtered := data
 		switch {
@@ -246,8 +277,8 @@ func (h *websiteOttrecqlValidateHandler) ServeHTTP(w http.ResponseWriter, r *htt
 	json.NewEncoder(w).Encode(resp)
 }
 
-// websiteSchedulesKeyHandler serves the category and single-facility schedule
-// pages under /schedules/.
+// websiteSchedulesKeyHandler serves the category schedule pages under
+// /schedules/, redirecting old facility page paths to /schedules/facility/.
 type websiteSchedulesKeyHandler struct {
 	websiteHandlerBase
 }
@@ -263,33 +294,128 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	key := r.PathValue("key")
-	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
-		params := templates.WebsiteSchedulesParams{
-			Base: h.base(r),
-			Data: data,
-		}
-		if cat, ok := templates.ScheduleCategoryBySlug(key); ok {
-			filtered, err := templates.SchedulesFilter(data, cat.Query())
-			if err != nil {
-				return nil, 0, err
+	if _, ok := templates.ScheduleCategoryBySlug(key); !ok {
+		// the facility pages used to live at /schedules/{slug}
+		if data, ok := h.Data(); ok {
+			if _, ok := templates.MapFacilityBySlug(data, key); ok {
+				w.Header().Set("Cache-Control", "no-store")
+				http.Redirect(w, r, "/schedules/facility/"+url.PathEscape(key), http.StatusPermanentRedirect)
+				return
 			}
-			params.Canonical = "schedules/" + cat.Slug
-			params.Active = cat.Slug
-			params.Title = cat.Name + " Schedules"
-			params.Description = cat.Description
-			params.CategoryTerms = cat.Activities
-			params.TOC = templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data))
-		} else if fac, ok := templates.MapFacilityBySlug(data, key); ok {
-			params.Canonical = "schedules"
-			params.Title = fac.GetName()
-			params.Description = "Drop-in schedules for " + fac.GetName() + "."
-			params.Single = true
-			params.TOC = templates.SchedulesFacilityTOC(key, fac)
-		} else {
-			return templates.WebsiteErrorPage("Not Found", "no schedule category or facility matching "+strconv.Quote(key)), http.StatusNotFound, nil
 		}
-		return templates.WebsiteSchedulesPage(params), http.StatusOK, nil
+	}
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		cat, ok := templates.ScheduleCategoryBySlug(key)
+		if !ok {
+			return templates.WebsiteErrorPage("Not Found", "no schedule category matching "+strconv.Quote(key)), http.StatusNotFound, nil
+		}
+		filtered, err := templates.SchedulesFilter(data, cat.Query())
+		if err != nil {
+			return nil, 0, err
+		}
+		return templates.WebsiteSchedulesPage(templates.WebsiteSchedulesParams{
+			Base:            h.base(r),
+			Data:            data,
+			Canonical:       "schedules/" + cat.Slug,
+			Active:          cat.Slug,
+			Title:           cat.Name + " Schedules",
+			Description:     cat.Description,
+			MetaDescription: "City of Ottawa drop-in " + strings.ToLower(cat.Name) + " schedules across all recreation facilities.",
+			CategoryTerms:   cat.Activities,
+			TOC:             templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data)),
+		}), http.StatusOK, nil
 	})
+}
+
+// websiteSchedulesFacilityHandler serves the single-facility schedule pages.
+type websiteSchedulesFacilityHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteSchedulesFacilityHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+
+	slug := r.PathValue("slug")
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		fac, ok := templates.MapFacilityBySlug(data, slug)
+		if !ok {
+			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
+		}
+		return templates.WebsiteSchedulesPage(templates.WebsiteSchedulesParams{
+			Base:        h.base(r),
+			Data:        data,
+			Canonical:   "schedules",
+			Title:       fac.GetName(),
+			Description: "Drop-in recreation schedules for " + fac.GetName() + " in Ottawa.",
+			Single:      true,
+			TOC:         templates.SchedulesFacilityTOC(slug, fac),
+		}), http.StatusOK, nil
+	})
+}
+
+// websiteRobotsHandler serves robots.txt, disallowing the API and the
+// HTML/page fragments which canonicalize elsewhere.
+type websiteRobotsHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteRobotsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	body := "User-agent: *\n" +
+		"Disallow: /api/\n" +
+		"Disallow: /map/facility/\n" +
+		"Disallow: /schedules/facility/\n" +
+		"\n" +
+		"Sitemap: " + h.base(r) + "sitemap.xml\n"
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, no-cache")
+	w.Write([]byte(body))
+}
+
+// websiteSitemapHandler generates the sitemap from the indexable pages, with
+// the data timestamp as the last modification date.
+type websiteSitemapHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	data, ok := h.Data()
+	if !ok {
+		http.Error(w, "data not available, try again later", http.StatusServiceUnavailable)
+		return
+	}
+
+	paths := []string{"", "map", "schedules", "activities", "about"}
+	for _, cat := range templates.ScheduleCategories {
+		paths = append(paths, "schedules/"+cat.Slug)
+	}
+
+	var b strings.Builder
+	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
+	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
+	lastmod := data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02")
+	for _, p := range paths {
+		b.WriteString("\t<url><loc>")
+		xml.EscapeText(&b, []byte(h.base(r)+p))
+		b.WriteString("</loc><lastmod>" + lastmod + "</lastmod></url>\n")
+	}
+	b.WriteString("</urlset>\n")
+
+	etag := `W/"` + data.Index().Hash() + `"`
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, no-cache")
+	w.Header().Set("ETag", etag)
+	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+	w.Write([]byte(b.String()))
 }
 
 type websiteActivitiesHandler struct {

@@ -102,7 +102,7 @@ type WebsiteMapPopupParams struct {
 templ WebsiteMapPopup(params WebsiteMapPopupParams) {
 	<div class="fac-popup">
 		@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{}) {
-			<a href={ templ.URL("/schedules/" + params.Slug) }>Full Schedule</a>
+			<a href={ templ.URL("/schedules/facility/" + params.Slug) }>Full Schedule</a>
 		}
 	</div>
 }

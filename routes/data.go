@@ -100,7 +100,7 @@ func (h *dataHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := templates.Render(w, r, templates.WebsiteErrorPage, latest, func() (c templ.Component, status int, err error) {
+	if err := templates.Render(w, r, templates.DataErrorPage, latest, func() (c templ.Component, status int, err error) {
 		versions := slices.Collect(iterLimit(h.Cache.DataVersions(r.Context())(&err), h.MaxHistoricalVersions))
 		if err != nil {
 			return nil, http.StatusInternalServerError, fmt.Errorf("get data versions: %w", err)
