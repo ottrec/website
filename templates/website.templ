@@ -21,12 +21,38 @@ templ websiteHeadExtra() {
 	}
 }
 
+// websiteThemeHead applies the color scheme override saved by the navbar
+// toggle. The inline script must run before first paint to avoid flashing the
+// wrong theme.
+templ websiteThemeHead() {
+	@templ.Raw(`<script>try{const t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.style.colorScheme=t}catch(e){}</script>`)
+	<script src={ static.Path(static.ThemeJS) } defer></script>
+}
+
+// websiteTopNav renders the shared navbar. active is the slug of the active
+// nav link ("" for none), and updated is the data timestamp (zero to omit,
+// e.g., when the data isn't available).
+templ websiteTopNav(active string, updated time.Time) {
+	<nav class="map-topnav">
+		<a class="brand" href="/">ottrec.ca</a>
+		<a class={ "nav", templ.KV("active", active == "map") } href="/map">Map</a>
+		<a class={ "nav", templ.KV("active", active == "schedules") } href="/schedules">Schedules</a>
+		<a class={ "nav", templ.KV("active", active == "activities") } href="/activities">Activities</a>
+		<a class={ "nav", templ.KV("active", active == "about") } href="/about">About</a>
+		if !updated.IsZero() {
+			<time datetime={ updated.In(ottrecidx.TZ).Format(time.RFC3339) }>updated { updated.In(ottrecidx.TZ).Format("2006-01-02") }</time>
+		}
+		<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+	</nav>
+}
+
 templ WebsiteHomePage(params WebsiteParams) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
 			if params.Base != "" {
 				<link rel="canonical" href={ params.Base }/>
 			}
@@ -37,14 +63,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 			@websiteHeadExtra()
 		</head>
 		<body class="home-page">
-			<nav class="map-topnav">
-				<a class="brand" href="/">ottrec.ca</a>
-				<a class="nav" href="/map">Map</a>
-				<a class="nav" href="/schedules">Schedules</a>
-				<a class="nav" href="/activities">Activities</a>
-				<a class="nav" href="/about">About</a>
-				<time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>updated { params.Data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02") }</time>
-			</nav>
+			@websiteTopNav("", params.Data.Index().Updated())
 			<main>
 				<header class="home-hero">
 					<h1>Find drop-in recreation in Ottawa</h1>
@@ -96,19 +115,14 @@ templ WebsiteErrorPage(title, message string) {
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
 			<meta name="robots" content="noindex"/>
 			<title>{ title }</title>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			@websiteHeadExtra()
 		</head>
 		<body>
-			<nav class="map-topnav">
-				<a class="brand" href="/">ottrec.ca</a>
-				<a class="nav" href="/map">Map</a>
-				<a class="nav" href="/schedules">Schedules</a>
-				<a class="nav" href="/activities">Activities</a>
-				<a class="nav" href="/about">About</a>
-			</nav>
+			@websiteTopNav("", time.Time{})
 			<main class="error-page">
 				<h1>{ title }</h1>
 				<p>{ message }</p>

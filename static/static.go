@@ -49,6 +49,7 @@ var (
 	SchedulesJS   = newFile("schedules.js")
 	AboutCSS      = newFile("about.css")
 	HomeCSS       = newFile("home.css")
+	ThemeJS       = newFile("theme.js")
 
 	Website = newGroup("website",
 		WebsiteCSS,
@@ -60,6 +61,7 @@ var (
 		SchedulesJS,
 		AboutCSS,
 		HomeCSS,
+		ThemeJS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
 		SymbolsWOFF2,

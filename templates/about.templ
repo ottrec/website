@@ -1,10 +1,6 @@
 package templates
 
-import (
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/static"
-	"time"
-)
+import "github.com/pgaskin/ottrec-website/static"
 
 templ WebsiteAboutPage(params WebsiteParams) {
 	<!DOCTYPE html>
@@ -12,6 +8,7 @@ templ WebsiteAboutPage(params WebsiteParams) {
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
 			if params.Base != "" {
 				<link rel="canonical" href={ params.Base + "about" }/>
 			}
@@ -22,14 +19,7 @@ templ WebsiteAboutPage(params WebsiteParams) {
 			@websiteHeadExtra()
 		</head>
 		<body class="about-page">
-			<nav class="map-topnav">
-				<a class="brand" href="/">ottrec.ca</a>
-				<a class="nav" href="/map">Map</a>
-				<a class="nav" href="/schedules">Schedules</a>
-				<a class="nav" href="/activities">Activities</a>
-				<a class="nav active" href="/about">About</a>
-				<time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>updated { params.Data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02") }</time>
-			</nav>
+			@websiteTopNav("about", params.Data.Index().Updated())
 			<main>
 				<h1>About</h1>
 				<section id="about">

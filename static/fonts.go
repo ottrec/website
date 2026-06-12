@@ -67,6 +67,9 @@ func main() {
 			'\uf2a8', // badminton
 			'\uf2a6', // pickleball
 			'\uf20e', // database
+			'\ue518', // light_mode
+			'\ue51c', // dark_mode
+			'\ue1ab', // brightness_auto
 		})},
 	})
 

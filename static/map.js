@@ -240,14 +240,22 @@ const activitiesFilteredEl = document.getElementById('filter-activities-filtered
 
 const map = L.map('map').setView([45.4215, -75.6972], 11);
 
-// light/dark tiles following the color scheme
+// light/dark tiles following the effective color scheme (the navbar toggle
+// override from theme.js, else the browser preference)
+const effectiveDark = () => {
+	const cs = document.documentElement.style.colorScheme;
+	if (cs === 'dark') return true;
+	if (cs === 'light') return false;
+	return darkQuery.matches;
+};
 const tileURL = (dark) => 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png';
-const tiles = L.tileLayer(tileURL(darkQuery.matches), {
+const tiles = L.tileLayer(tileURL(effectiveDark()), {
 	subdomains: 'abcd',
 	maxZoom: 20,
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://github.com/pgaskin">Patrick Gaskin</a>',
 }).addTo(map);
-darkQuery.addEventListener('change', (ev) => tiles.setUrl(tileURL(ev.matches)));
+darkQuery.addEventListener('change', () => tiles.setUrl(tileURL(effectiveDark())));
+window.addEventListener('themechange', () => tiles.setUrl(tileURL(effectiveDark())));
 
 const markers = new Map(); // facility index -> L.Marker
 const popupCache = new Map(); // slug -> Promise<string>
