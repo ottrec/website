@@ -90,6 +90,7 @@ body.map-page {
 	color: var(--fxki-paper);
 	cursor: pointer;
 	white-space: nowrap;
+	pointer-events: auto;
 }
 #filter-chips .fchip::after {
 	content: ' \00d7';
@@ -127,6 +128,19 @@ body.map-page {
 #map {
 	position: absolute;
 	inset: 0;
+}
+/* filter chips overlaid on the map (the chips element is moved here from the
+ * filter bar on wide screens) */
+.map-chips {
+	position: absolute;
+	top: .65rem;
+	left: 3.4rem; /* clear the leaflet zoom control */
+	right: .65rem;
+	z-index: 1000;
+	pointer-events: none;
+}
+.map-chips #filter-chips {
+	flex-wrap: wrap;
 }
 
 /* filters pane */

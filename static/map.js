@@ -225,6 +225,15 @@ const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 const facCountEl = document.getElementById('fac-count');
 const sheetToggleEl = document.getElementById('fac-sheet-toggle');
 const filterChipsEl = document.getElementById('filter-chips');
+
+// the chips live in the mobile filter bar on narrow screens and overlaid on
+// the map on wide ones
+function placeChips() {
+	if (mobileQuery.matches) document.querySelector('.map-filterbar').append(filterChipsEl);
+	else document.getElementById('map-chips').append(filterChipsEl);
+}
+mobileQuery.addEventListener('change', placeChips);
+placeChips();
 const activitiesFilteredEl = document.getElementById('filter-activities-filtered');
 
 // map
