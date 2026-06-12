@@ -12,45 +12,6 @@ body.map-page {
 	display: none;
 }
 
-/* top nav */
-
-.map-topnav {
-	display: flex;
-	align-items: baseline;
-	gap: 1.25rem;
-	padding: .6rem 1rem;
-	border-bottom: 1px solid var(--fxki-ui-2);
-	background: var(--fxki-bg);
-	position: relative;
-	z-index: 1300;
-}
-.map-topnav .brand {
-	font-family: 'Source Serif 4', serif;
-	font-weight: 700;
-	font-size: 1.1rem;
-	color: inherit;
-	text-decoration: none;
-}
-.map-topnav a.nav {
-	color: var(--fxki-tx-2);
-	text-decoration: none;
-	font-size: .9rem;
-}
-.map-topnav a.nav:hover {
-	color: var(--fxki-tx);
-	text-decoration: underline;
-}
-.map-topnav a.nav.active {
-	color: var(--fxki-tx);
-	font-weight: 600;
-}
-.map-topnav time {
-	margin-left: auto;
-	font-size: .8rem;
-	color: var(--fxki-tx-2);
-	white-space: nowrap;
-}
-
 /* mobile filter bar */
 
 .map-filterbar {

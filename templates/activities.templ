@@ -1,0 +1,80 @@
+package templates
+
+import (
+	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/static"
+	"time"
+)
+
+templ WebsiteActivitiesPage(params WebsiteParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			if params.Base != "" {
+				<link rel="canonical" href={ params.Base + "activities" }/>
+			}
+			<title>Activities - Ottawa Recreation Schedules</title>
+			<meta name="description" content="Which City of Ottawa recreation facilities offer each category of activities, by weekday and time of day."/>
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.ActivitiesCSS) }/>
+		</head>
+		<body class="activities-page">
+			<nav class="map-topnav">
+				<a class="brand" href="/">ottrec.ca</a>
+				<a class="nav" href="/map">Map</a>
+				<a class="nav" href="/schedules">Schedules</a>
+				<a class="nav active" href="/activities">Activities</a>
+				<a class="nav" href="/about">About</a>
+				<time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>updated { params.Data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02") }</time>
+			</nav>
+			<main>
+				<header class="activities-header">
+					<h1>Activities</h1>
+					<p>Facilities offering each category of activities, by weekday: <b class="per-m">m</b> = morning (until 11:00), <b class="per-a">a</b> = afternoon (11:00 to 17:00), <b class="per-e">e</b> = evening (from 17:00).</p>
+				</header>
+				<div class="activity-cards">
+					for _, card := range buildActivityCards(params.Data) {
+						if len(card.Facilities) > 0 {
+							<section class="activity-card">
+								<h2>{ card.Name }</h2>
+								<div class="activity-table">
+									<table>
+										<thead>
+											<tr>
+												<th class="fac" rowspan="2" scope="col">Facility</th>
+												for _, day := range mapDays {
+													<th colspan="3" scope="colgroup">{ day }</th>
+												}
+											</tr>
+											<tr>
+												for range mapDays {
+													for p, short := range activityPeriodShort {
+														<th scope="col"><abbr title={ activityPeriodTitle[p] }>{ short }</abbr></th>
+													}
+												}
+											</tr>
+										</thead>
+										<tbody>
+											for _, f := range card.Facilities {
+												<tr>
+													<th class="fac" scope="row">{ f.Name }</th>
+													for d := range mapDays {
+														for p := range activityPeriodShort {
+															<td><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>
+														}
+													}
+												</tr>
+											}
+										</tbody>
+									</table>
+								</div>
+							</section>
+						}
+					}
+				</div>
+			</main>
+		</body>
+	</html>
+}

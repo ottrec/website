@@ -39,6 +39,9 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /map/facility/{slug}", &websiteMapFacilityHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /activities", &websiteActivitiesHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("/static/", static.Handler(static.Website))
 
 	return commonMiddleware(mux), nil
@@ -113,6 +116,28 @@ func (h *websiteMapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
 		return templates.WebsiteMapPage(templates.WebsiteParams{
+			Base: h.base(r),
+			Data: data,
+		}), http.StatusOK, nil
+	})
+}
+
+type websiteActivitiesHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteActivitiesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		return templates.WebsiteActivitiesPage(templates.WebsiteParams{
 			Base: h.base(r),
 			Data: data,
 		}), http.StatusOK, nil

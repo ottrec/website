@@ -89,19 +89,19 @@ func mapActivityName(act ottrecidx.ActivityRef) string {
 	return strings.ToLower(strings.Join(strings.Fields(act.GetLabel()), " "))
 }
 
-// mapMaskSetRange sets the slot bits overlapping the clock range start-end (in
+// maskSetRange sets the slot bits overlapping the clock range start-end (in
 // minutes) on weekday wd, wrapping overnight ranges onto the next day.
-func mapMaskSetRange(m *[7]byte, wd, start, end int) {
+func maskSetRange(m *[7]byte, slots [][2]int, wd, start, end int) {
 	for start >= 24*60 {
 		wd = (wd + 1) % 7
 		start -= 24 * 60
 		end -= 24 * 60
 	}
 	if end > 24*60 {
-		mapMaskSetRange(m, (wd+1)%7, 0, min(end-24*60, 24*60))
+		maskSetRange(m, slots, (wd+1)%7, 0, min(end-24*60, 24*60))
 		end = 24 * 60
 	}
-	for s, slot := range mapSlots {
+	for s, slot := range slots {
 		if start < slot[1] && slot[0] < end {
 			m[wd] |= 1 << s
 		}
@@ -163,7 +163,7 @@ func buildMapData(data ottrecidx.DataRef) mapDataJSON {
 				if !ok {
 					continue
 				}
-				mapMaskSetRange(m, int(wd), int(r.Start), int(r.End))
+				maskSetRange(m, mapSlots, int(wd), int(r.Start), int(r.End))
 			}
 		}
 		raw := make([]byte, 0, len(masks)*9)

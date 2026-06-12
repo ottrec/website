@@ -39,15 +39,17 @@ var (
 	LeafletCSS = newFile("lib/leaflet.css")
 	LeafletJS  = newFile("lib/leaflet.js")
 
-	DataCSS    = newFile("data.css")
-	WebsiteCSS = newFile("website.css")
-	MapCSS     = newFile("map.css")
-	MapJS      = newFile("map.js")
+	DataCSS       = newFile("data.css")
+	WebsiteCSS    = newFile("website.css")
+	MapCSS        = newFile("map.css")
+	MapJS         = newFile("map.js")
+	ActivitiesCSS = newFile("activities.css")
 
 	Website = newGroup("website",
 		WebsiteCSS,
 		MapCSS,
 		MapJS,
+		ActivitiesCSS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
 		SymbolsWOFF2,
