@@ -1,0 +1,276 @@
+/* secondary category navbar */
+
+.schedules-catnav {
+	display: flex;
+	gap: 1rem;
+	padding: .45rem 1rem;
+	border-bottom: 1px solid var(--fxki-ui-2);
+	background: var(--fxki-bg-2);
+	overflow-x: auto;
+}
+.schedules-catnav a {
+	color: var(--fxki-tx-2);
+	text-decoration: none;
+	font-size: .85rem;
+	white-space: nowrap;
+}
+.schedules-catnav a:hover {
+	color: var(--fxki-tx);
+	text-decoration: underline;
+}
+.schedules-catnav a.active {
+	color: var(--fxki-bl);
+	font-weight: 600;
+}
+
+/* table/list view toggle */
+
+.schedules-catnav .schedules-view {
+	display: flex;
+	flex-shrink: 0;
+	align-self: center;
+	margin-left: auto;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	overflow: hidden;
+}
+.schedules-catnav .schedules-view a {
+	padding: .1rem .6rem;
+	font-size: .75rem;
+}
+.schedules-catnav .schedules-view a:hover {
+	text-decoration: none;
+}
+.schedules-catnav .schedules-view a + a {
+	border-left: 1px solid var(--fxki-ui-2);
+}
+.schedules-catnav .schedules-view a.active {
+	background: var(--fxki-ui);
+	color: var(--fxki-tx);
+	font-weight: 600;
+}
+
+/* page layout */
+
+.schedules-page main {
+	max-width: 82rem;
+	margin: 0 auto;
+	padding: 1rem;
+}
+.schedules-layout {
+	display: flex;
+	align-items: flex-start;
+	gap: 1.5rem;
+}
+.schedules-content {
+	flex: 1;
+	min-width: 0;
+}
+
+/* table of contents sidebar */
+
+.schedules-toc {
+	position: sticky;
+	top: 1rem;
+	width: 13rem;
+	flex-shrink: 0;
+	max-height: calc(100vh - 2rem);
+	overflow-y: auto;
+	font-size: .7rem;
+}
+.schedules-toc ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.schedules-toc ul ul {
+	padding-left: 1.3rem;
+}
+.schedules-toc > nav > ul > li {
+	margin: .4rem 0;
+}
+.schedules-toc a {
+	display: block;
+	padding: .05rem 0;
+	color: var(--fxki-tx-3);
+	text-decoration: none;
+}
+.schedules-toc > nav > ul > li > a {
+	color: var(--fxki-tx-2);
+	position: relative;
+	padding-left: .9em;
+}
+/* arrow gutter for the currently visible facility (set by schedules.js) */
+.schedules-toc > nav > ul > li > a::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	color: var(--fxki-tx-3);
+}
+.schedules-toc > nav > ul > li > a.active::before {
+	content: '▸';
+}
+.schedules-toc a.active {
+	color: var(--fxki-tx);
+	font-weight: 600;
+}
+.schedules-toc a:hover {
+	color: var(--fxki-bl);
+	text-decoration: underline;
+}
+@media (max-width: 900px) {
+	.schedules-toc {
+		display: none;
+	}
+}
+.schedules-facility,
+.schedules-page .schedule-group {
+	scroll-margin-top: .75rem;
+}
+.schedules-page article.facility h1 {
+	font-size: 1.15rem;
+}
+.schedules-header h1 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.4rem;
+	margin: 0 0 .25rem;
+}
+.schedules-header p {
+	margin: 0 0 .75rem;
+	font-size: .85rem;
+	color: var(--fxki-tx-2);
+}
+.schedules-header .schedules-note {
+	margin: -.5rem 0 .75rem;
+	font-size: .75rem;
+	color: var(--fxki-tx-3);
+}
+.schedules-header .schedules-note code {
+	font-family: ui-monospace, monospace;
+	font-size: .95em;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui);
+	border-radius: .2em;
+	padding: 0 .25em;
+}
+
+/* search box */
+
+.schedules-search {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	margin: .25rem 0 1rem;
+}
+.schedules-search input {
+	flex: 1;
+	font: inherit;
+	font-size: .9rem;
+	padding: .35em .6em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .35rem;
+	background: var(--fxki-bg);
+	color: inherit;
+}
+.schedules-search button {
+	font: inherit;
+	font-size: .9rem;
+	padding: .35em 1em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .35rem;
+	background: var(--fxki-bg-2);
+	color: inherit;
+	cursor: pointer;
+}
+.schedules-search button:hover {
+	background: var(--fxki-bg-3);
+}
+
+/* advanced search */
+
+.schedules-search-advanced {
+	flex-direction: column;
+	align-items: flex-start;
+}
+.schedules-search-advanced textarea {
+	align-self: stretch;
+	max-width: none;
+	font-family: ui-monospace, monospace;
+	font-size: .85rem;
+	padding: .35em .6em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .35rem;
+	background: var(--fxki-bg);
+	color: inherit;
+	resize: vertical;
+}
+.schedules-search-advanced .row {
+	display: flex;
+	align-items: baseline;
+	gap: 1rem;
+}
+.schedules-search-mode {
+	font-size: .8rem;
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.schedules-search-mode:hover {
+	text-decoration: underline;
+}
+.schedules-query-error {
+	color: var(--fxki-re);
+	font-size: .85rem;
+}
+.schedules-search-advanced .schedules-query-error {
+	margin: 0;
+}
+.schedules-query-help {
+	margin: .5rem 0 1rem;
+	font-size: .8rem;
+	color: var(--fxki-tx-2);
+}
+.schedules-query-help summary {
+	cursor: pointer;
+	color: var(--fxki-bl);
+}
+.schedules-query-help h3 {
+	margin: .75rem 0 .25rem;
+	font-size: .8rem;
+	color: var(--fxki-tx);
+}
+.schedules-query-help p,
+.schedules-query-help ul {
+	margin: .35rem 0;
+}
+.schedules-query-help dl {
+	margin: .35rem 0;
+}
+.schedules-query-help dt {
+	margin: .5rem 0 .1rem;
+}
+.schedules-query-help dd {
+	margin: 0 0 .25rem 1rem;
+}
+.schedules-query-help code {
+	font-family: ui-monospace, monospace;
+	font-size: .95em;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui);
+	border-radius: .2em;
+	padding: 0 .25em;
+}
+
+/* facility sections */
+
+.schedules-empty {
+	color: var(--fxki-tx-2);
+}
+.schedules-facility {
+	margin: 1.5rem 0;
+	padding-top: 1rem;
+	border-top: 2px solid var(--fxki-ui-2);
+}
+.schedules-facility:first-of-type {
+	border-top: none;
+	padding-top: 0;
+}

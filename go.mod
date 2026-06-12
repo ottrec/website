@@ -9,6 +9,7 @@ tool (
 
 require (
 	github.com/a-h/templ v0.3.943
+	github.com/evanw/esbuild v0.25.11
 	github.com/fastschema/qjs v0.0.4
 	github.com/kelindar/bitmap v1.5.3
 	github.com/klauspost/compress v1.18.0
@@ -29,7 +30,6 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cli/browser v1.3.0 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
-	github.com/evanw/esbuild v0.25.11 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/kelindar/simd v1.1.2 // indirect

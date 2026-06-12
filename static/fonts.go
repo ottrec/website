@@ -60,6 +60,16 @@ func main() {
 			'\ue5d3', // more_horiz
 			'\ue889', // history
 			'\uf84d', // code_blocks
+			'\uebcc', // calendar_month
+			'\uea2b', // sports_hockey
+			'\uea26', // sports_basketball
+			'\uea31', // sports_volleyball
+			'\uf2a8', // badminton
+			'\uf2a6', // pickleball
+			'\uf20e', // database
+			'\ue518', // light_mode
+			'\ue51c', // dark_mode
+			'\ue1ab', // brightness_auto
 		})},
 	})
 

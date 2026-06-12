@@ -1,0 +1,610 @@
+html, body {
+	height: 100%;
+	overflow: hidden;
+}
+
+body.map-page {
+	display: flex;
+	flex-direction: column;
+}
+
+.mobile-only {
+	display: none;
+}
+
+/* mobile filter bar */
+
+.map-filterbar {
+	display: none;
+	align-items: center;
+	gap: .5rem;
+	padding: .4rem .75rem;
+	border-bottom: 1px solid var(--fxki-ui-2);
+	background: var(--fxki-bg);
+	overflow-x: auto;
+	position: relative;
+	z-index: 1250;
+}
+.map-filterbar button#btn-filters {
+	font: inherit;
+	font-size: .8rem;
+	padding: .25em .75em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: 1em;
+	background: var(--fxki-bg-2);
+	color: inherit;
+	cursor: pointer;
+	white-space: nowrap;
+}
+#filter-chips {
+	display: flex;
+	gap: .35rem;
+	align-items: center;
+}
+#filter-chips .fchip {
+	font: inherit;
+	font-size: .75rem;
+	padding: .15em .7em;
+	border: none;
+	border-radius: 1em;
+	background: var(--fxki-bl);
+	color: var(--fxki-paper);
+	cursor: pointer;
+	white-space: nowrap;
+	pointer-events: auto;
+}
+#filter-chips .fchip::after {
+	content: ' \00d7';
+	opacity: .7;
+}
+
+/* three-pane layout */
+
+.map-main {
+	flex: 1;
+	display: flex;
+	min-height: 0;
+}
+.map-filters {
+	width: 16.5%;
+	min-width: 11rem;
+	overflow-y: auto;
+	border-right: 1px solid var(--fxki-ui-2);
+	padding: .75rem;
+	background: var(--fxki-bg);
+}
+.map-facilities {
+	width: 16.5%;
+	min-width: 14rem;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	border-left: 1px solid var(--fxki-ui-2);
+	background: var(--fxki-bg);
+}
+.map-map {
+	flex: 1;
+	position: relative;
+}
+#map {
+	position: absolute;
+	inset: 0;
+}
+/* filter chips overlaid on the map (the chips element is moved here from the
+ * filter bar on wide screens) */
+.map-chips {
+	position: absolute;
+	top: .65rem;
+	left: 3.4rem; /* clear the leaflet zoom control */
+	right: .65rem;
+	z-index: 1000;
+	pointer-events: none;
+}
+.map-chips #filter-chips {
+	flex-wrap: wrap;
+}
+
+/* filters pane */
+
+.map-filters section {
+	margin-bottom: 1rem;
+}
+.map-filters h2 {
+	display: flex;
+	align-items: center;
+	gap: .35em;
+	margin: 0 0 .35rem;
+	font-size: .7rem;
+	font-weight: 700;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--fxki-tx-2);
+}
+.map-filters h2 .h2-actions {
+	margin-left: auto;
+	display: flex;
+	gap: .25em;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-transform: none;
+}
+.map-filters h2 .h2-actions button {
+	font: inherit;
+	background: none;
+	border: none;
+	border-radius: .25em;
+	color: var(--fxki-bl);
+	cursor: pointer;
+	padding: .1em .3em;
+}
+.map-filters h2 .h2-actions button:hover {
+	text-decoration: underline;
+}
+.day-row {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+.day-row button {
+	font: inherit;
+	font-size: .65rem;
+	padding: .4em 0;
+	border: 1px solid var(--fxki-ui);
+	border-radius: .25rem;
+	background: var(--fxki-bg);
+	color: var(--fxki-tx-3);
+	cursor: pointer;
+}
+.day-row button.on {
+	background: light-dark(var(--fxki-blue-50), var(--fxki-blue-950));
+	border-color: light-dark(var(--fxki-blue-150), var(--fxki-blue-900));
+	color: var(--fxki-bl);
+}
+label.check {
+	display: flex;
+	align-items: center;
+	gap: .4em;
+	font-size: .85rem;
+	padding: .1em 0;
+	cursor: pointer;
+}
+label.check input {
+	appearance: none;
+	margin: 0;
+	flex: none;
+	width: 1em;
+	height: 1em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .25em;
+	background: var(--fxki-bg-2);
+	display: grid;
+	place-content: center;
+	cursor: pointer;
+}
+label.check input::before {
+	content: '';
+	width: .55em;
+	height: .55em;
+	transform: scale(0);
+	background: var(--fxki-paper);
+	clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+label.check input:checked {
+	background: var(--fxki-bl);
+	border-color: var(--fxki-bl);
+}
+label.check input:checked::before {
+	transform: scale(1);
+}
+label.check input:focus-visible {
+	outline: 2px solid var(--fxki-bl);
+	outline-offset: 1px;
+}
+label.check .name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+label.check .count {
+	flex: none;
+	font-size: .7em;
+	color: var(--fxki-tx-2);
+	background: var(--fxki-ui);
+	border-radius: .75em;
+	padding: .1em .6em;
+}
+label.check.zero {
+	opacity: .45;
+}
+label.check[hidden] {
+	display: none;
+}
+.map-filters h2 .filtered-flag {
+	display: inline-block;
+	margin-left: .35em;
+	font: inherit;
+	font-size: .85em;
+	letter-spacing: normal;
+	text-transform: none;
+	background: var(--fxki-bl);
+	color: var(--fxki-paper);
+	border: none;
+	border-radius: .8em;
+	padding: .05em .6em;
+	vertical-align: text-bottom;
+	cursor: pointer;
+}
+.map-filters h2 .filtered-flag::after {
+	content: ' \00d7';
+	opacity: .7;
+}
+.map-filters h2 .filtered-flag[hidden] {
+	display: none;
+}
+
+/* facility list pane */
+
+.sheet-toggle {
+	display: none;
+}
+.map-facilities > header {
+	padding: .6rem .75rem;
+	border-bottom: 1px solid var(--fxki-ui-2);
+	display: flex;
+	flex-direction: column;
+	gap: .4rem;
+}
+.map-facilities > header .row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: .5rem;
+}
+#fac-count {
+	font-size: .8rem;
+	color: var(--fxki-tx-2);
+}
+#fac-order {
+	font: inherit;
+	font-size: .8rem;
+	background: var(--fxki-bg);
+	color: inherit;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .3rem;
+	padding: .1em .25em;
+}
+#fac-search {
+	width: 100%;
+	font: inherit;
+	font-size: .85rem;
+	padding: .3em .5em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .3rem;
+	background: var(--fxki-bg);
+	color: inherit;
+}
+ul#fac-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	flex: 1;
+	min-height: 0;
+}
+#fac-list li {
+	padding: .5rem .75rem;
+	border-bottom: 1px solid var(--fxki-ui);
+	cursor: pointer;
+}
+#fac-list li:hover,
+#fac-list li.hl {
+	background: var(--fxki-bg-3);
+}
+#fac-list h2 {
+	margin: 0;
+	font-size: .875rem;
+	font-weight: 600;
+	line-height: 1.3;
+}
+#fac-list .addr {
+	margin: .1rem 0 0;
+	font-size: .75rem;
+	color: var(--fxki-tx-2);
+	line-height: 1.3;
+}
+#fac-list .chips {
+	margin: .3rem 0 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .2rem;
+}
+.chip {
+	font-size: .65rem;
+	line-height: 1.4;
+	background: var(--fxki-ui);
+	color: var(--fxki-tx-2);
+	padding: .05em .5em;
+	border-radius: .7em;
+	white-space: nowrap;
+}
+.chip.sel {
+	background: var(--fxki-bl);
+	color: var(--fxki-paper);
+}
+
+/* map markers and popups */
+
+.fac-pin {
+	/* the wrapper is larger than the visible pin to give a bigger click target */
+	width: 20px;
+	height: 20px;
+	margin: 3px;
+	border-radius: 50%;
+	background: var(--fxki-bl);
+	border: 2px solid var(--fxki-bg);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .4);
+	opacity: .75;
+	/* longhand: a comma-separated transition shorthand hangs the embedded
+	 * postcss (internal/postcss) in an infinite loop */
+	transition-property: transform, opacity;
+	transition-duration: .1s;
+}
+.fac-pin-wrap.hl .fac-pin {
+	transform: scale(1.4);
+	background: var(--fxki-or);
+	opacity: 1;
+}
+.leaflet-container {
+	background: var(--fxki-bg-2);
+	font: inherit;
+}
+.leaflet-bar a {
+	background: var(--fxki-bg);
+	color: var(--fxki-tx);
+	border-bottom-color: var(--fxki-ui-2);
+}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background: var(--fxki-bg-2);
+	color: var(--fxki-tx);
+}
+.leaflet-bar a.leaflet-disabled {
+	background: var(--fxki-bg-2);
+	color: var(--fxki-tx-3);
+}
+.leaflet-container .leaflet-control-attribution {
+	/* --fxki-bg (paper/black) with alpha; can't use color-mix since postcss
+	 * may drop it for older targets, leaving leaflet's white fallback */
+	background: light-dark(rgba(255, 252, 240, .8), rgba(16, 15, 15, .8));
+	color: var(--fxki-tx-2);
+}
+.leaflet-container .leaflet-control-attribution a {
+	color: var(--fxki-bl);
+}
+.leaflet-container .leaflet-control-attribution a:hover {
+	color: var(--fxki-bl);
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: var(--fxki-bg);
+	color: var(--fxki-tx);
+}
+.leaflet-popup-content {
+	font: inherit;
+	font-size: .85rem;
+	line-height: 1.4;
+	margin: .8rem 1rem;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip-container {
+	animation: fac-popup-in .2s ease-out;
+}
+.leaflet-tooltip {
+	font: inherit;
+	font-size: .75rem;
+	padding: .15rem .5rem;
+	background: var(--fxki-bg);
+	color: var(--fxki-tx);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .3rem;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+}
+.leaflet-tooltip-top::before {
+	border-top-color: var(--fxki-ui-2);
+}
+.leaflet-container a.leaflet-popup-close-button {
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	font-size: 1.4rem;
+	line-height: 2rem;
+	text-align: center;
+	color: var(--fxki-tx-2);
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+	color: var(--fxki-tx);
+}
+@keyframes fac-popup-in {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+}
+
+.fac-popup-loading,
+.fac-popup-error {
+	font-size: .8rem;
+	color: var(--fxki-tx-2);
+}
+
+/* facility details panel over the map (mobile only; the map popups are used on
+ * wider screens) */
+
+.fac-detail {
+	display: none;
+	flex-direction: column;
+	position: absolute;
+	inset: .75rem .75rem 3rem;
+	z-index: 1100;
+	background: var(--fxki-bg);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .5rem;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+	overflow: hidden;
+	animation: fac-popup-in .2s ease-out;
+}
+.fac-detail > header {
+	flex: none;
+	display: flex;
+	justify-content: flex-end;
+	padding: .4rem .6rem;
+	border-bottom: 1px solid var(--fxki-ui-2);
+}
+#fac-detail-close {
+	font: inherit;
+	font-size: .85rem;
+	padding: .25em 1em;
+	border: none;
+	border-radius: .3rem;
+	background: var(--fxki-bg-2);
+	color: inherit;
+	cursor: pointer;
+}
+#fac-detail-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: .6rem .9rem;
+	font-size: .85rem;
+	line-height: 1.4;
+}
+
+
+/* error banner */
+
+#js-error-banner {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 2000;
+	display: flex;
+	align-items: center;
+	gap: .75rem;
+	padding: .5rem 1rem;
+	background: light-dark(var(--fxki-red-50), var(--fxki-red-950));
+	color: var(--fxki-re);
+	border-top: 1px solid light-dark(var(--fxki-red-150), var(--fxki-red-900));
+	font-size: .85rem;
+}
+#js-error-banner span {
+	flex: 1;
+}
+#js-error-banner button {
+	font: inherit;
+	font-size: 1.1rem;
+	line-height: 1;
+	background: none;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+/* narrow screens: filters become an overlay panel behind a bar of chips, and
+ * the facility list becomes an expandable bottom sheet */
+
+@media (max-width: 900px) {
+	.mobile-only {
+		display: flex;
+	}
+	.map-filterbar {
+		display: flex;
+	}
+	.map-filters {
+		display: none;
+	}
+	body.filters-open .map-filters {
+		display: block;
+		position: fixed;
+		inset: 0;
+		width: auto;
+		min-width: 0;
+		z-index: 1400;
+		border-right: none;
+	}
+	.map-filters > header.mobile-only {
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: .75rem;
+	}
+	.map-filters > header.mobile-only h1 {
+		margin: 0;
+		font-size: 1rem;
+	}
+	#btn-filters-done {
+		font: inherit;
+		font-size: .85rem;
+		padding: .25em 1em;
+		border: none;
+		border-radius: .3rem;
+		background: var(--fxki-bl);
+		color: var(--fxki-paper);
+		cursor: pointer;
+	}
+	.map-facilities {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: auto;
+		min-width: 0;
+		max-height: 55%;
+		z-index: 1200;
+		border-left: none;
+		border-top: 1px solid var(--fxki-ui-2);
+		box-shadow: 0 -2px 8px rgba(0, 0, 0, .15);
+	}
+	.sheet-toggle {
+		display: block;
+		font: inherit;
+		font-size: .85rem;
+		padding: .5em;
+		border: none;
+		background: none;
+		color: inherit;
+		cursor: pointer;
+		flex: none;
+	}
+	.map-facilities > header,
+	ul#fac-list {
+		display: none;
+	}
+	body.list-open .map-facilities > header {
+		display: flex;
+	}
+	body.list-open ul#fac-list {
+		display: block;
+	}
+	/* the facility details are shown in a panel covering most of the map
+	 * (with a margin) instead of an anchored popup, so they can't get cut
+	 * off */
+	body.detail-open .fac-detail {
+		display: flex;
+	}
+	/* keep the attribution above the collapsed facilities sheet */
+	.leaflet-container .leaflet-bottom {
+		bottom: 2.4rem;
+	}
+	/* slightly larger filter controls for touch */
+	.map-filters h2 {
+		font-size: .8rem;
+	}
+	.day-row button {
+		font-size: .8rem;
+	}
+	label.check {
+		font-size: 1rem;
+		padding: .2em 0;
+	}
+}

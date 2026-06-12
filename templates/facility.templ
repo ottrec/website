@@ -1,0 +1,243 @@
+package templates
+
+import (
+	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"strings"
+	"time"
+)
+
+// WebsiteFacilityArticle renders the full information and schedules for a
+// facility, in a similar structure to pkg/ottrecexph. It is used by the map
+// popups and the schedules pages. Any children are rendered as extra links
+// under the header. See [WebsiteFacilityArticleOptions].
+templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArticleOptions) {
+	<article class="facility">
+		<header class="facility-header">
+			<hgroup>
+				<h1 class="facility-name">
+					if opts.Link != "" {
+						<a href={ templ.URL(opts.Link) }>{ fac.GetName() }</a>
+					} else {
+						{ fac.GetName() }
+					}
+				</h1>
+				if t := fac.GetSourceDate(); !t.IsZero() {
+					<p class="facility-updated">Updated <time datetime={ t.In(ottrecidx.TZ).Format(time.RFC3339) }>{ t.In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time></p>
+				}
+			</hgroup>
+			if opts.HeaderLinks {
+				<nav class="facility-header-links">
+					if u := facilityDirectionsURL(fac); u != "" {
+						<a href={ templ.URL(u) } target="_blank" rel="noopener">Directions</a>
+					}
+					if u := fac.GetSourceURL(); u != "" {
+						<a href={ templ.URL(u) } target="_blank" rel="noopener">City of Ottawa</a>
+					}
+				</nav>
+			}
+		</header>
+		<nav class="facility-links">
+			{ children... }
+		</nav>
+		if !opts.HeaderLinks {
+			<section class="facility-address">
+				<h2>Address</h2>
+				<address>
+					if addr := strings.TrimSpace(fac.GetAddress()); addr != "" {
+						<p>
+							for i, line := range strings.Split(addr, "\n") {
+								if i > 0 {
+									<br/>
+								}
+								{ strings.TrimSpace(line) }
+							}
+						</p>
+					}
+					if u := fac.GetSourceURL(); u != "" {
+						<p class="facility-url"><a href={ templ.URL(u) } target="_blank" rel="noopener">{ u }</a></p>
+					}
+				</address>
+			</section>
+		}
+		if h := strings.TrimSpace(fac.GetSpecialHoursHTML()); h != "" {
+			<section class="facility-special-hours">
+				@facilityBox("Special Hours", false, opts.List) {
+					@rawScrapedHTML(h)
+				}
+			</section>
+		}
+		if h := strings.TrimSpace(fac.GetNotificationsHTML()); h != "" {
+			<section class="facility-notifications">
+				@facilityBox("Notifications", false, opts.List) {
+					@rawScrapedHTML(h)
+				}
+			</section>
+		}
+		if hasFacilityErrors(fac) {
+			<section class="facility-errors">
+				<h2>Errors</h2>
+				<ul>
+					for e := range fac.GetErrors() {
+						<li>{ e }</li>
+					}
+				</ul>
+			</section>
+		}
+		<section class={ "facility-schedules", templ.KV("facility-schedules-list", opts.List) }>
+			for i, grp := range indexedSeq(fac.ScheduleGroups()) {
+				<section
+					class="schedule-group"
+					if opts.Anchors != "" {
+						id={ facilityAnchorID(opts.Anchors, i) }
+					}
+				>
+					if !opts.List {
+						<h3>{ grp.GetTitle() }</h3>
+					}
+					if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
+						<section class="schedule-group-changes">
+							@facilityBox("Schedule Changes", true, opts.List) {
+								@rawScrapedHTML(h)
+							}
+						</section>
+					}
+					if hasReservationLinks(grp) {
+						<section class="schedule-group-reservation">
+							<h4>Reservation</h4>
+							<ul>
+								for u := range grp.GetReservationLinks() {
+									<li><a href={ templ.URL(u.URL) } target="_blank" rel="noopener">{ u.Label }</a></li>
+								}
+							</ul>
+						</section>
+					}
+					for sch := range grp.Schedules() {
+						if opts.List {
+							@websiteFacilityScheduleList(sch)
+						} else {
+							@websiteFacilitySchedule(sch)
+						}
+					}
+				</section>
+			}
+		</section>
+	</article>
+}
+
+// facilityBox renders the header of a boxed section around its children,
+// collapsible (open by default) on the schedules list view. sub uses the
+// schedule-group heading level (the styles are identical).
+templ facilityBox(title string, sub bool, collapse bool) {
+	if collapse {
+		<details open>
+			<summary>{ title }</summary>
+			{ children... }
+		</details>
+	} else {
+		if sub {
+			<h4>{ title }</h4>
+		} else {
+			<h2>{ title }</h2>
+		}
+		{ children... }
+	}
+}
+
+// activityResv renders the reservation requirement badge for an activity, if
+// any, with a leading space.
+templ activityResv(act ottrecidx.ActivityRef) {
+	if req, def := act.GuessReservationRequirement(); req {
+		{ " " }
+		if def {
+			<span class="resv resv-required" title="reservation required"></span>
+		} else {
+			<span class="resv resv-maybe" title="reservation may be required"></span>
+		}
+	}
+}
+
+// websiteFacilityScheduleList renders a schedule as a compact per-activity
+// list of day/time rows (the schedules pages' list view) instead of a table.
+// The schedule name/caption is elided; the date range is repeated on each
+// activity instead.
+templ websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) {
+	<div class={ scheduleClass(sch), "schedule-list" }>
+		for act := range sch.Activities() {
+			<div class="schedule-list-activity">
+				<p class="schedule-list-name">
+					<span class="activity">{ activityLabel(act) }</span>
+					@activityResv(act)
+					if d := scheduleDateRangeLabel(sch); d != "" {
+						{ " " }
+						<span class="schedule-date">{ d }</span>
+					}
+				</p>
+				if activityHasTimes(act) {
+					<ul class="schedule-list-times">
+						for i := range sch.NumDays() {
+							if activityHasDayTimes(act, i) {
+								<li>
+									<span class="day">{ scheduleListDayLabel(sch, i) }</span>
+									<span class="times">
+										for tm := range act.DayTimes(i) {
+											<span class="time">{ timeLabel(tm) }</span>
+										}
+									</span>
+								</li>
+							}
+						}
+					</ul>
+				}
+			</div>
+		}
+	</div>
+}
+
+templ websiteFacilitySchedule(sch ottrecidx.ScheduleRef) {
+	<div class="table-wrap">
+		<table class={ scheduleClass(sch) }>
+			<caption>
+				if s := sch.GetName(); s != "" {
+					<span class="schedule-name">{ s }</span>
+					if d := scheduleDateRangeLabel(sch); d != "" {
+						{ " " }
+						<span class="schedule-date">({ d })</span>
+					}
+				} else {
+					{ sch.GetCaption() }
+				}
+			</caption>
+			<thead>
+				<tr>
+					<th></th>
+					for i := range sch.NumDays() {
+						<th>
+							if d, ok := sch.GetDayDate(i); ok {
+								{ d.String() }
+							} else {
+								{ sch.GetDay(i) }
+							}
+						</th>
+					}
+				</tr>
+			</thead>
+			<tbody>
+				for act := range sch.Activities() {
+					<tr>
+						<th>
+							<span class="activity">{ activityLabel(act) }</span>
+							@activityResv(act)
+						</th>
+						for i := range sch.NumDays() {
+							<td>
+								for tm := range act.DayTimes(i) {
+									<span class="time">{ timeLabel(tm) }</span>
+								}
+							</td>
+						}
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

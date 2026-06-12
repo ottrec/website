@@ -1,0 +1,174 @@
+package templates
+
+import (
+	"cmp"
+	"github.com/pgaskin/ottrec-website/static"
+)
+
+templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
+			@websiteIconsHead()
+			if params.Base != "" {
+				<link rel="canonical" href={ params.Base + params.Canonical }/>
+			}
+			<title>{ params.Title } - Ottawa Recreation Schedules</title>
+			<meta name="description" content={ cmp.Or(params.MetaDescription, params.Description) }/>
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.SchedulesCSS) }/>
+			@websiteHeadExtra()
+		</head>
+		<body class="schedules-page">
+			@websiteTopNav("schedules", params.Data.Index().Updated())
+			<nav class="schedules-catnav">
+				<a href={ templ.URL(schedulesNavHref("/schedules", params.List)) } class={ templ.KV("active", params.Active == "all") }>All</a>
+				for _, cat := range ScheduleCategories {
+					<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
+				}
+				<div class="schedules-view" role="group" aria-label="Schedule view">
+					<a
+						href={ templ.URL(schedulesViewHref(params, false)) }
+						class={ templ.KV("active", !params.List) }
+						if !params.List {
+							aria-current="true"
+						}
+					>Table</a>
+					<a
+						href={ templ.URL(schedulesViewHref(params, true)) }
+						class={ templ.KV("active", params.List) }
+						if params.List {
+							aria-current="true"
+						}
+					>List</a>
+				</div>
+			</nav>
+			<main>
+				<div class="schedules-layout">
+					if len(params.TOC) > 0 && params.QueryError == "" && !params.Single {
+						<aside class="schedules-toc">
+							<nav aria-label="Facilities">
+								<ul>
+									for _, f := range params.TOC {
+										<li>
+											<a href={ templ.URL("#" + f.Slug) }>{ f.Name }</a>
+											if len(f.Groups) > 0 {
+												<ul>
+													for _, g := range f.Groups {
+														<li><a href={ templ.URL("#" + g.ID) }>{ g.Title }</a></li>
+													}
+												</ul>
+											}
+										</li>
+									}
+								</ul>
+							</nav>
+						</aside>
+					}
+					<div class="schedules-content">
+						if !params.Single {
+							<header class="schedules-header">
+								<h1>{ params.Title }</h1>
+								if params.Description != "" {
+									<p>{ params.Description }</p>
+								}
+								if len(params.CategoryTerms) > 0 {
+									<p class="schedules-note">
+										This category may not be complete; it includes activities whose names match
+										for i, term := range params.CategoryTerms {
+											if i > 0 {
+												{ "," }
+											}
+											{ " " }
+											<code>{ term }</code>
+										}
+										{ "." }
+									</p>
+								}
+								if params.Search {
+									if params.Advanced {
+										<form class="schedules-search schedules-search-advanced" action="/schedules" method="get">
+											<input type="hidden" name="advanced" value="1"/>
+											if params.List {
+												<input type="hidden" name="mode" value="list"/>
+											}
+											<textarea name="q" rows="3" placeholder={ `activity("swim") and time(sa su @ 9:00a-12:00p)` } aria-label="Search query">{ params.Query }</textarea>
+											<div class="row">
+												<button type="submit">Search</button>
+												<a class="schedules-search-mode" href={ templ.URL(schedulesNavHref("/schedules", params.List)) }>Simple search</a>
+											</div>
+										</form>
+										@schedulesQueryHelp()
+									} else {
+										<form class="schedules-search" action="/schedules" method="get">
+											if params.List {
+												<input type="hidden" name="mode" value="list"/>
+											}
+											<input type="search" name="q" value={ params.Query } placeholder="Search by activity or facility name" aria-label="Search by activity or facility name"/>
+											<button type="submit">Search</button>
+											<a class="schedules-search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query, params.List)) }>Advanced search</a>
+										</form>
+									}
+								}
+							</header>
+						}
+						if params.QueryError != "" {
+							<p class="schedules-query-error">{ params.QueryError }</p>
+						} else if len(params.TOC) == 0 {
+							<p class="schedules-empty">No matching schedules.</p>
+						} else {
+							for _, f := range params.TOC {
+								<section class="schedules-facility" id={ f.Slug }>
+									if params.Single {
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true, List: params.List})
+									} else {
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: schedulesNavHref("/schedules/facility/"+f.Slug, params.List), HeaderLinks: true, List: params.List})
+									}
+								</section>
+							}
+						}
+					</div>
+				</div>
+			</main>
+			<script src={ static.Path(static.SchedulesJS) }></script>
+		</body>
+	</html>
+}
+
+// schedulesQueryHelp documents the ottrecql query language (see
+// pkg/ottrecql/doc.go).
+templ schedulesQueryHelp() {
+	<details class="schedules-query-help">
+		<summary>Query language reference</summary>
+		<p>Queries consist of match functions combined with logical operators, evaluated against every activity time and keeping only the matching ones (empty activities, schedules, and facilities are hidden). From highest to lowest precedence: <code>(...)</code> grouping, <code>not</code>/<code>!</code> negation, <code>and</code>/<code>&amp;&amp;</code> conjunction, <code>or</code>/<code>||</code> disjunction. Whitespace is insignificant. The schedule timezone (America/Toronto) is implied.</p>
+		<h3>Functions</h3>
+		<dl>
+			<dt><code>{ `facility("name", ...)` }</code></dt>
+			<dd>Matches facility names against any of the quoted strings. Matching is fuzzy: each case-insensitive word of the query must be a prefix of a word in the facility name, in the same order, ignoring punctuation. For example, <code>{ `facility("st laurent")` }</code> matches "St. Laurent Complex", and <code>{ `facility("rj kennedy")` }</code> matches "R.J. Kennedy Community Centre and Arena".</dd>
+			<dt><code>{ `activity("name", ...)` }</code></dt>
+			<dd>Like <code>facility()</code>, but matches activity names (both normalized and as written in the schedule). Names are normalized to the infinitive form, e.g., "skate" rather than "skating", so prefer prefixes like <code>{ `activity("skat")` }</code> or <code>{ `activity("lane sw")` }</code>.</dd>
+			<dt><code>{ `time([weekday...|date...] @ [time...|timerange...])` }</code></dt>
+			<dd>
+				Matches activity weekdays and times. Days and times are each OR'd, and either side can be omitted (along with the <code>{ "@" }</code>). Activities with unparseable times are not filtered out.
+				Weekdays are two-letter, three-letter, or full names (<code>mo</code>, <code>mon</code>, <code>monday</code>). Dates are <code>YYYY-MM-DD</code> or <code>today</code>. Times are 24-hour <code>HH:MM</code>, 12-hour <code>HH:MMam</code>/<code>HH:MMpm</code> (or <code>a</code>/<code>p</code>), or <code>now</code>. Time ranges are two dash-separated times; an end time earlier than the start extends into the next day.
+				For example: <code>time(now)</code>, <code>time(mo tu we th fr)</code>, <code>{ `time(sa su @ 12:00)` }</code>, <code>{ `time(mo @ 6:00a-10:00a 6:00p-9:00p)` }</code>.
+			</dd>
+			<dt><code>schdate(date)</code></dt>
+			<dd>Matches schedule groups applicable on the date (<code>YYYY-MM-DD</code> or <code>today</code>), e.g., <code>schdate(today)</code> to show current schedules. Groups without a valid date range are not filtered out.</dd>
+			<dt><code>latlng(lat, lng, km)</code></dt>
+			<dd>Matches facilities within the radius (kilometers) of the coordinates, e.g., <code>latlng(45.42620, -75.69205, 2)</code> matches within 2km of Rideau station.</dd>
+		</dl>
+		<h3>Examples</h3>
+		<ul>
+			<li><code>{ `activity("lane sw") and schdate(today) and time(today @ now)` }</code> — lane swims happening right now</li>
+			<li><code>{ `activity("skat") and not activity("figure") and time(sa su)` }</code> — weekend skating, excluding figure skating</li>
+			<li><code>{ `(activity("pickleball") or activity("badminton")) and time(mo we fr @ 18:00-21:00)` }</code> — racquet sports on weekday evenings</li>
+			<li><code>{ `facility("splash", "wave") or latlng(45.42620, -75.69205, 5)` }</code> — specific or nearby facilities</li>
+		</ul>
+		<p>For best results, keep name queries as minimal as possible (e.g., <code>{ `"lane sw"` }</code> instead of <code>{ `"lane swim"` }</code>) so renamed activities aren't missed.</p>
+	</details>
+}

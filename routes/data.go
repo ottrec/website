@@ -36,12 +36,16 @@ import (
 
 type DataConfig struct {
 	Cache *ottrecdata.Cache
+	// HeadHTML is raw HTML injected at the bottom of <head> on the homepage
+	// (notably, not the ottrecexph-rendered preview).
+	HeadHTML string
 }
 
 func Data(cfg DataConfig) (http.Handler, error) {
 	if cfg.Cache == nil {
 		return nil, fmt.Errorf("no cache specified")
 	}
+	templates.SetHeadExtra(cfg.HeadHTML)
 
 	mux := http.NewServeMux()
 
@@ -96,7 +100,7 @@ func (h *dataHomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := templates.Render(w, r, templates.WebsiteErrorPage, latest, func() (c templ.Component, status int, err error) {
+	if err := templates.Render(w, r, templates.DataErrorPage, latest, func() (c templ.Component, status int, err error) {
 		versions := slices.Collect(iterLimit(h.Cache.DataVersions(r.Context())(&err), h.MaxHistoricalVersions))
 		if err != nil {
 			return nil, http.StatusInternalServerError, fmt.Errorf("get data versions: %w", err)

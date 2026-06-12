@@ -76,7 +76,7 @@ func Render(w http.ResponseWriter, r *http.Request, errp ErrorPageFunc, etagMixi
 	w.Header().Set("ETag", etag.String())
 
 	// if a caching policy isn't already set, allow it to be cached with revalidation
-	if w.Header().Get("Cache-Control") != "" {
+	if w.Header().Get("Cache-Control") == "" {
 		w.Header().Set("Cache-Control", "public")
 	}
 
@@ -199,6 +199,22 @@ func compress(w io.Writer, encoding string, b []byte) error {
 		return fmt.Errorf("unknown encoding %q", encoding)
 	}
 	return nil
+}
+
+// headExtra is raw HTML injected at the bottom of <head> on every page (e.g.,
+// for analytics).
+var headExtra templ.Component
+
+// SetHeadExtra sets raw HTML to inject at the bottom of <head> on every page.
+// It must be called at most once, before anything is rendered. The HTML is
+// mixed into the etags so cached pages revalidate when it changes.
+func SetHeadExtra(html string) {
+	if html == "" {
+		return
+	}
+	headExtra = templ.Raw(html)
+	sum := sha1.Sum([]byte(html))
+	exehash += base32.StdEncoding.EncodeToString(sum[:])
 }
 
 // exehash is a hash of the current binary for use in etags.

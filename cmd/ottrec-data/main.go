@@ -33,6 +33,7 @@ var (
 	RepoBranch   = pflag.String("repo-branch", "v1", "branch to fetch (will be overwriten in the local repo)")
 	RepoRev      = pflag.String("repo-rev", "", "override the rev to scan (for debugging only)")
 	RepoInterval = pflag.DurationP("repo-interval", "i", time.Minute*15, "poll interval for repo (0 to only pull once at startup)")
+	HeadHTML     = pflag.String("head-html", "", "raw html to inject at the bottom of <head> on the homepage")
 	LogLevel     = pflagx.LevelP("log-level", "L", slog.LevelInfo, "log level")
 	LogJSON      = pflag.Bool("log-json", false, "use json logs")
 	Help         = pflag.BoolP("help", "h", false, "show this help text")
@@ -154,7 +155,8 @@ func run() error {
 	}
 
 	handler, err := routes.Data(routes.DataConfig{
-		Cache: cache,
+		Cache:    cache,
+		HeadHTML: *HeadHTML,
 	})
 	if err != nil {
 		return fmt.Errorf("initialize routes: %w", err)

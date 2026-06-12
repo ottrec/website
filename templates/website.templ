@@ -6,11 +6,50 @@ import (
 	"time"
 )
 
-// TODO: favicon
-
 type WebsiteParams struct {
 	Base string
 	Data ottrecidx.DataRef
+}
+
+// websiteHeadExtra renders the raw HTML set by [SetHeadExtra], at the bottom
+// of every page's head.
+templ websiteHeadExtra() {
+	if headExtra != nil {
+		@headExtra
+	}
+}
+
+// websiteThemeHead applies the color scheme override saved by the navbar
+// toggle. The inline script must run before first paint to avoid flashing the
+// wrong theme.
+templ websiteThemeHead() {
+	@templ.Raw(`<script>try{const t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.style.colorScheme=t}catch(e){}</script>`)
+	<script src={ static.Path(static.ThemeJS) } defer></script>
+}
+
+// websiteIconsHead links the site icons. The ico fallback is also reachable
+// at /favicon.ico for clients that never read the page head.
+templ websiteIconsHead() {
+	<link rel="icon" href={ static.Path(static.FaviconICO) } sizes="32x32"/>
+	<link rel="icon" href={ static.Path(static.FaviconSVG) } type="image/svg+xml"/>
+	<link rel="apple-touch-icon" href={ static.Path(static.AppleTouchIconPNG) }/>
+}
+
+// websiteTopNav renders the shared navbar. active is the slug of the active
+// nav link ("" for none), and updated is the data timestamp (zero to omit,
+// e.g., when the data isn't available).
+templ websiteTopNav(active string, updated time.Time) {
+	<nav class="map-topnav">
+		<a class="brand" href="/">ottrec.ca</a>
+		<a class={ "nav", templ.KV("active", active == "map") } href="/map">Map</a>
+		<a class={ "nav", templ.KV("active", active == "schedules") } href="/schedules">Schedules</a>
+		<a class={ "nav", templ.KV("active", active == "activities") } href="/activities">Activities</a>
+		<a class={ "nav", templ.KV("active", active == "about") } href="/about">About</a>
+		if !updated.IsZero() {
+			<time datetime={ updated.In(ottrecidx.TZ).Format(time.RFC3339) }>updated { updated.In(ottrecidx.TZ).Format("2006-01-02") }</time>
+		}
+		<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+	</nav>
 }
 
 templ WebsiteHomePage(params WebsiteParams) {
@@ -19,154 +58,84 @@ templ WebsiteHomePage(params WebsiteParams) {
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
+			@websiteIconsHead()
 			if params.Base != "" {
 				<link rel="canonical" href={ params.Base }/>
 			}
 			<title>Ottawa Recreation Schedules</title>
-			<meta name="description" content="The all-in-one place to quickly find City of Ottawa recreation facilities and schedules."/>
+			<meta name="description" content="Find drop-in swimming, skating, and more at City of Ottawa recreation facilities. All schedules in one place and facilities on a map, updated daily."/>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.HomeCSS) }/>
+			@websiteHeadExtra()
 		</head>
-		<body>
-			<div class="homepage">
-				<header>
-					<h1>ottrec.ca</h1>
-					<p>A better way to find City of Ottawa drop-in activities.</p>
-					<time class="updated" datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>updated { params.Data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time>
+		<body class="home-page">
+			@websiteTopNav("", params.Data.Index().Updated())
+			<main>
+				<header class="home-hero">
+					<h1>Find drop-in recreation in Ottawa</h1>
+					<p>Swims, skates, and sports at every City of Ottawa facility, collected daily and searchable in one place.</p>
+					<p class="home-updated">Schedules updated <time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>{ params.Data.Index().Updated().In(ottrecidx.TZ).Format("January 2, 2006") }</time>.</p>
+					<nav class="home-cats" aria-label="Categories">
+						<ul>
+							for _, cat := range ScheduleCategories {
+								<li><a href={ templ.URL("/schedules/" + cat.Slug) } data-icon={ cat.Icon }>{ cat.Name }</a></li>
+							}
+						</ul>
+					</nav>
 				</header>
-				<main>
-					<nav class="biglinks">
-						<header>
-							<h1>Facilities</h1>
-							<p>View and filter recreation facilities.</p>
-						</header>
-						<ul>
-							<li>
-								<a href="/facilities" data-icon="map">
-									<h2>Map</h2>
-									<p>Map of all facilities, filterable by activity.</p>
-									<p class="fakelink">Facility Map</p>
-								</a>
-							</li>
-							<li>
-								<a href="/activities" data-icon="overview">
-									<h2>Activities</h2>
-									<p>List of facilities offering different activities.</p>
-									<p class="fakelink">Activity List</p>
-								</a>
-							</li>
-						</ul>
-					</nav>
-					<nav class="biglinks">
-						<header>
-							<h1>Schedules</h1>
-							<p>View and filter drop-in schedules across all facilities on a single page.</p>
-						</header>
-						<ul>
-							<li>
-								<a href="/schedules/swimming" data-icon="pool">
-									<h2>Swimming</h2> <!-- note: add a note saying where to find aquafit -->
-									<p>Public, lane, and wave swims.</p> <!-- and sauna -->
-									<p class="fakelink">Swimming Schedule</p>
-								</a>
-							</li>
-							<li>
-								<a href="/schedules/skating" data-icon="ice_skating">
-									<h2>Skating</h2> <!-- note: add a note saying where to find hockey -->
-									<p>Public, adult, family, senior, and figure skating.</p>
-									<p class="fakelink">Skating Schedule</p>
-								</a>
-							</li>
-							<li>
-								<a href="/schedules/sports" data-icon="sports_and_outdoors">
-									<h2>Sports</h2>
-									<p>Gym sports, racquet sports, hockey, stick-and-puck.</p>
-									<p class="fakelink">Sports Schedule</p>
-								</a>
-							</li>
-							<li>
-								<a href="/schedules/aquafit" data-icon="water">
-									<h2>Aquafit</h2>
-									<p>Aquafit and aqua lite.</p>
-									<p class="fakelink">Aquafit Schedule</p>
-								</a>
-							</li>
-							<li>
-								<a href="/schedules/fitness" data-icon="fitness_center">
-									<h2>Fitness</h2>
-									<p>Group fitness classes, weight room.</p>
-									<p class="fakelink">Fitness Schedule</p>
-								</a>
-							</li>
-							<li>
-								<a href="/schedules" data-icon="more_horiz">
-									<h2>Everything</h2>
-									<p>All activities.</p>
-									<p class="fakelink">All Schedules</p>
-								</a>
-							</li>
-						</ul>
-					</nav>
-					<nav class="biglinks">
-						<header>
-							<h1>Advanced</h1>
-							<p>Tools for advanced users.</p>
-						</header>
-						<ul>
-							<li>
-								<a href="/custom" data-icon="search">
-									<h2>Custom</h2>
-									<p>Create a custom page of schedules for the activities and facilities you want.</p>
-									<p class="fakelink">Custom Schedule</p>
-								</a>
-							</li>
-							<li>
-								<a data-icon="history">
-									<h2>Time Machine</h2>
-									<p>View changes to the schedules over time.</p>
-									<p class="fakelink">Coming Soon</p>
-								</a>
-							</li>
-							<li>
-								<a href="https://data.ottrec.ca" data-icon="code_blocks">
-									<h2>Data</h2>
-									<p>Get the raw schedule data as JSON or CSV.</p>
-									<p class="fakelink">Download</p>
-								</a>
-							</li>
-						</ul>
-					</nav>
-				</main>
-				<footer class="site-footer">
-					<p>
-						Copyright 2025 Patrick Gaskin.
-					</p>
-					<nav>
-						<ul>
-							<li><a href="/about">About</a></li>
-							<li><a href="/about">Terms</a></li>
-							<li><a href="/about">Data Sources</a></li>
-						</ul>
-					</nav>
-				</footer>
-			</div>
+				<nav class="home-tiles" aria-label="Sections">
+					<a href="/map" data-icon="map">
+						<h2>Map</h2>
+						<p>Every facility on a map, filterable by activity, weekday, and time.</p>
+					</a>
+					<a href="/schedules" data-icon="calendar_month">
+						<h2>Schedules</h2>
+						<p>Browse or search the full drop-in schedules on a single page.</p>
+					</a>
+					<a href="/activities" data-icon="overview">
+						<h2>Activities</h2>
+						<p>Which facilities offer each activity, by weekday and time of day.</p>
+					</a>
+				</nav>
+			</main>
+			<footer class="site-footer">
+				<p>© 2025–2026 Patrick Gaskin. Not affiliated with the City of Ottawa.</p>
+				<nav>
+					<ul>
+						<li><a href="/about">About</a></li>
+						<li><a href="/about#terms">Terms</a></li>
+						<li><a href="/about#data">Data Sources</a></li>
+						<li><a href="https://data.ottrec.ca">Raw Data</a></li>
+					</ul>
+				</nav>
+			</footer>
 		</body>
 	</html>
 }
 
+// WebsiteErrorPage is used for all website error responses, including 404s
+// and data-unavailable errors (so it cannot depend on the data).
 templ WebsiteErrorPage(title, message string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
+			@websiteIconsHead()
 			<meta name="robots" content="noindex"/>
 			<title>{ title }</title>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+			@websiteHeadExtra()
 		</head>
 		<body>
-			<div class="error-page">
-				{ message }
-			</div>
+			@websiteTopNav("", time.Time{})
+			<main class="error-page">
+				<h1>{ title }</h1>
+				<p>{ message }</p>
+				<p><a href="/">Go to the homepage</a></p>
+			</main>
 		</body>
 	</html>
 }

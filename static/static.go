@@ -18,6 +18,7 @@ import (
 
 	"github.com/klauspost/compress/gzip"
 	"github.com/klauspost/compress/zstd"
+	"github.com/pgaskin/ottrec-website/internal/esbuild"
 	"github.com/pgaskin/ottrec-website/internal/httpx"
 	"github.com/pgaskin/ottrec-website/internal/postcss"
 )
@@ -39,17 +40,42 @@ var (
 	LeafletCSS = newFile("lib/leaflet.css")
 	LeafletJS  = newFile("lib/leaflet.js")
 
-	DataCSS    = newFile("data.css")
-	WebsiteCSS = newFile("website.css")
+	FaviconSVG        = newFile("favicon.svg")
+	FaviconICO        = newFile("favicon.ico")
+	AppleTouchIconPNG = newFile("apple-touch-icon.png")
+
+	DataCSS       = newFile("data.css")
+	WebsiteCSS    = newFile("website.css")
+	FacilityCSS   = newFile("facility.css")
+	MapCSS        = newFile("map.css")
+	MapJS         = newFile("map.ts")
+	ActivitiesCSS = newFile("activities.css")
+	SchedulesCSS  = newFile("schedules.css")
+	SchedulesJS   = newFile("schedules.ts")
+	AboutCSS      = newFile("about.css")
+	HomeCSS       = newFile("home.css")
+	ThemeJS       = newFile("theme.ts")
 
 	Website = newGroup("website",
 		WebsiteCSS,
+		FacilityCSS,
+		MapCSS,
+		MapJS,
+		ActivitiesCSS,
+		SchedulesCSS,
+		SchedulesJS,
+		AboutCSS,
+		HomeCSS,
+		ThemeJS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
 		SymbolsWOFF2,
 		AsapWOFF2,
 		LeafletCSS,
 		LeafletJS,
+		FaviconSVG,
+		FaviconICO,
+		AppleTouchIconPNG,
 	)
 
 	Data = newGroup("data",
@@ -125,6 +151,13 @@ func newFile(name string) *file {
 				buf = []byte(regexp.MustCompile(`url\([^)]+\)`).ReplaceAllStringFunc(css, func(css string) string {
 					return "url(" + getFile(string(css[strings.IndexByte(css, '(')+1:len(css)-1])).HashName + ")"
 				}))
+			case ".ts":
+				js, err := esbuild.Transform(name, string(buf))
+				if err != nil {
+					return nil, fmt.Errorf("compile ts: %w", err)
+				}
+				buf = []byte(js)
+				ext = ".js" // served as plain js
 			}
 		}
 
@@ -136,13 +169,19 @@ func newFile(name string) *file {
 			mimetype = "text/css; charset=utf-8"
 		case ".js":
 			mimetype = "application/javascript; charset=utf-8"
+		case ".svg":
+			mimetype = "image/svg+xml"
+		case ".ico":
+			mimetype = "image/x-icon"
+		case ".png":
+			mimetype = "image/png"
 		default:
 			return nil, fmt.Errorf("no mimetype for %q", ext)
 		}
 
 		sum := sha1.Sum(buf)
 		hash := base32.StdEncoding.EncodeToString(sum[:])
-		hashName := strings.TrimSuffix(name, ext) + "-" + hash[:10] + ext
+		hashName := strings.TrimSuffix(name, path.Ext(name)) + "-" + hash[:10] + ext
 
 		return &file{
 			Name:        name,
