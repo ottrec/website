@@ -53,6 +53,9 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 		websiteHandlerBase: base,
 	})
 	mux.Handle("GET /api/ottrecql/validate", &websiteOttrecqlValidateHandler{})
+	mux.Handle("GET /about", &websiteAboutHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("/static/", static.Handler(static.Website))
 
 	return commonMiddleware(mux), nil
@@ -191,6 +194,28 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			params.TOC = templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data))
 		}
 		return templates.WebsiteSchedulesPage(params), http.StatusOK, nil
+	})
+}
+
+type websiteAboutHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteAboutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		return templates.WebsiteAboutPage(templates.WebsiteParams{
+			Base: h.base(r),
+			Data: data,
+		}), http.StatusOK, nil
 	})
 }
 

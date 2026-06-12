@@ -78,6 +78,18 @@ article.facility .schedule-group-changes {
 	border-radius: .35rem;
 	padding: .35rem .5rem;
 }
+article.facility .facility-errors {
+	background: light-dark(var(--fxki-red-50), var(--fxki-red-950));
+	border: 1px solid light-dark(var(--fxki-red-150), var(--fxki-red-900));
+	border-radius: .35rem;
+	padding: .35rem .5rem;
+}
+article.facility .facility-errors ul {
+	margin: .15rem 0 0;
+	padding-left: 1.1em;
+	font-size: .72rem;
+	color: var(--fxki-re);
+}
 article.facility .schedule-group-reservation {
 	background: var(--fxki-bg-2);
 	border: 1px solid var(--fxki-ui-2);

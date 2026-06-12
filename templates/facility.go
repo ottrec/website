@@ -121,6 +121,13 @@ func hasReservationLinks(grp ottrecidx.ScheduleGroupRef) bool {
 	return false
 }
 
+func hasFacilityErrors(fac ottrecidx.FacilityRef) bool {
+	for range fac.GetErrors() {
+		return true
+	}
+	return false
+}
+
 // rawScrapedHTML normalizes a scraped HTML fragment by round-tripping it
 // through the lenient html5 parser so it can be embedded in a page.
 func rawScrapedHTML(raw string) templ.Component {

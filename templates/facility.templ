@@ -58,6 +58,16 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, anchors string, link str
 				@rawScrapedHTML(h)
 			</section>
 		}
+		if hasFacilityErrors(fac) {
+			<section class="facility-errors">
+				<h2>Errors</h2>
+				<ul>
+					for e := range fac.GetErrors() {
+						<li>{ e }</li>
+					}
+				</ul>
+			</section>
+		}
 		<section class="facility-schedules">
 			for i, grp := range indexedSeq(fac.ScheduleGroups()) {
 				<section
