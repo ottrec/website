@@ -26,6 +26,7 @@ templ WebsiteMapPage(params WebsiteParams) {
 		</head>
 		<body class="map-page">
 			@websiteTopNav("map", params.Data.Index().Updated())
+			<h1 class="visually-hidden">Map of City of Ottawa drop-in recreation facilities</h1>
 			<div class="map-filterbar">
 				<button type="button" id="btn-filters">Filters</button>
 				<div id="filter-chips"></div>
@@ -33,7 +34,7 @@ templ WebsiteMapPage(params WebsiteParams) {
 			<div class="map-main">
 				<aside class="map-filters">
 					<header class="mobile-only">
-						<h1>Filters</h1>
+						<h2>Filters</h2>
 						<button type="button" id="btn-filters-done">Done</button>
 					</header>
 					<section id="filter-starred" hidden>
@@ -60,6 +61,11 @@ templ WebsiteMapPage(params WebsiteParams) {
 				</aside>
 				<div class="map-map">
 					<div id="map"></div>
+					<noscript>
+						<div class="map-noscript">
+							<p>The interactive map needs JavaScript. You can still <a href="/schedules">browse every facility's schedules</a> or see <a href="/activities">which facilities offer each activity</a>.</p>
+						</div>
+					</noscript>
 					<div class="map-chips" id="map-chips"></div>
 					<div class="fac-detail" id="fac-detail">
 						<header>

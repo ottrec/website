@@ -112,6 +112,17 @@ templ WebsiteHomePage(params WebsiteParams) {
 						<p>Find facilities offering each activity, by area, weekday, and time of day.</p>
 					</a>
 				</nav>
+				<section class="home-about">
+					<p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p>
+					<p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current. With it you can:</p>
+					<ul>
+						<li><a href="/map">Browse facilities on a map</a>, filtering by activity, weekday, and time.</li>
+						<li><a href="/schedules">See schedules and alerts</a> across several facilities at once.</li>
+						<li><a href="/activities">Find every facility offering an activity</a> in your area, at the time you want.</li>
+						<li><a href="/schedules?advanced=1">Build a personalized page</a> with only the schedules you care about.</li>
+					</ul>
+					<p>Every facility is tagged with a region name like Barrhaven, Orléans, or Kanata, not just a street address, so you can browse by area and find the facilities in the part of the city you want, without having to know every street name.</p>
+				</section>
 				<section class="home-news" aria-labelledby="home-news-heading">
 					<h2 id="home-news-heading">What's new</h2>
 					<ul>
@@ -150,7 +161,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 						<li><a href="/about">About</a></li>
 						<li><a href="/about#terms">Terms</a></li>
 						<li><a href="/about#data">Data Sources</a></li>
-						<li><a href="https://data.ottrec.ca">Dataset</a></li>
+						<li><a href="https://data.ottrec.ca">Developers</a></li>
 					</ul>
 				</nav>
 			</footer>
@@ -173,7 +184,7 @@ templ WebsiteErrorPage(title, message string) {
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			@websiteHeadExtra()
 		</head>
-		<body>
+		<body class="error-page">
 			@websiteTopNav("", time.Time{})
 			<main class="error-page">
 				<h1>{ title }</h1>

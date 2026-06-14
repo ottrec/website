@@ -842,7 +842,19 @@ function renderList() {
 		li.dataset['index'] = String(i)
 		li.tabIndex = 0
 		const h = document.createElement('h2')
-		h.textContent = f.name
+		// the name links to the full schedule so middle/ctrl/cmd-click and "open
+		// in new tab" work and crawlers see a real href; a plain click shows the
+		// popup instead
+		const link = document.createElement('a')
+		link.href = '/schedules/facility/' + encodeURIComponent(f.slug)
+		link.textContent = f.name
+		link.addEventListener('click', (ev) => {
+			ev.stopPropagation() // don't also trigger the list item's click
+			if (ev.ctrlKey || ev.metaKey || ev.shiftKey) return // let the browser open it
+			ev.preventDefault()
+			focusFacility(i)
+		})
+		h.append(link)
 		const star = document.createElement('button')
 		star.type = 'button'
 		star.className = 'fac-star'

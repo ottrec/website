@@ -253,6 +253,19 @@ table {
     font-variation-settings: "wdth" 87.5;
 }
 
+/* hidden visually but available to screen readers and crawlers */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 /* website error pages (main, not div: the data site error page is unstyled) */
 
 main.error-page {
@@ -293,7 +306,8 @@ main.error-page a:hover {
 /* the homepages open with a hero rather than content, so the nav divider reads
  * as heavy there */
 body.home-page .map-topnav,
-body.data-page .map-topnav {
+body.data-page .map-topnav,
+body.error-page .map-topnav {
     border-bottom: none;
 }
 .map-topnav .brand {
@@ -321,6 +335,7 @@ body.data-page .map-topnav {
  * aligned even before theme.js reveals the toggle) */
 .map-topnav .topnav-end {
     margin-left: auto;
+    align-self: center;
     display: flex;
     align-items: center;
     gap: 1.25rem;

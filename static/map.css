@@ -88,6 +88,23 @@ body.map-page {
 	flex: 1;
 	position: relative;
 }
+/* shown in place of the map when JavaScript is disabled */
+.map-noscript {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+	text-align: center;
+}
+.map-noscript p {
+	max-width: 30rem;
+	color: var(--fxki-tx-2);
+}
+.map-noscript a {
+	color: var(--fxki-bl);
+}
 #map {
 	position: absolute;
 	inset: 0;
@@ -306,6 +323,14 @@ ul#fac-list {
 	font-size: .875rem;
 	font-weight: 600;
 	line-height: 1.3;
+}
+#fac-list h2 a {
+	color: inherit;
+	text-decoration: none;
+}
+#fac-list li:hover h2 a,
+#fac-list li.hl h2 a {
+	text-decoration: underline;
 }
 #fac-list h2 .fac-star {
 	margin-left: .3em;
@@ -576,7 +601,7 @@ ul#fac-list {
 		justify-content: space-between;
 		margin-bottom: .75rem;
 	}
-	.map-filters > header.mobile-only h1 {
+	.map-filters > header.mobile-only h2 {
 		margin: 0;
 		font-size: 1rem;
 	}

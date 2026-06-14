@@ -78,7 +78,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 								}
 								if len(params.CategoryTerms) > 0 {
 									<p class="schedules-note">
-										This category may not be complete; it includes activities whose names match
+										Only includes activities whose names match
 										for i, term := range params.CategoryTerms {
 											if i > 0 {
 												{ "," }
@@ -113,6 +113,9 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 											<a class="schedules-search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query, params.List)) }>Advanced search</a>
 										</form>
 									}
+								}
+								if params.Active == "all" && params.Query == "" && !params.Advanced && !params.List {
+									<p class="schedules-about">Every City of Ottawa recreation facility's drop-in schedules on one page, instead of clicking through each facility's own page. Search by activity or facility name above, or build a <a href="/schedules?advanced=1">custom query</a>. Automatically validated and updated daily.</p>
 								}
 							</header>
 						}

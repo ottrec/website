@@ -239,6 +239,20 @@
 	flex-basis: 100%;
 	font-size: .72rem;
 }
+/* root-page descriptive blurb (mainly for SEO) */
+.schedules-about {
+	margin: .75rem 0 0;
+	font-size: .8rem;
+	line-height: 1.5;
+	color: var(--fxki-tx-3);
+}
+.schedules-about a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.schedules-about a:hover {
+	text-decoration: underline;
+}
 .schedules-query-error {
 	color: var(--fxki-re);
 	font-size: .85rem;

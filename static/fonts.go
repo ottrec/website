@@ -24,6 +24,9 @@ func main() {
 		"family": {"Asap:wdth,wght@75..100,100..900"},
 		"text": {runes(
 			33, 126, // ascii printable
+			0xC0, 0xFF, // latin-1 accented letters (é, à, ç, ô, ...)
+			'Œ', 'œ', // Œ œ
+			'Ÿ', 'Ÿ', // Ÿ
 			'\u2002', '\u201E', // spaces, smart punctuation
 			'\u2022', '\u2022', // bullet
 			'\u2026', '\u2026', // ellipsis
@@ -81,6 +84,9 @@ func main() {
 		"family": {"Source Serif 4:ital,opsz,wght@0,8..60,200..900"},
 		"text": {runes(
 			33, 126, // ascii printable
+			0xC0, 0xFF, // latin-1 accented letters (é, à, ç, ô, ...)
+			'Œ', 'œ', // Œ œ
+			'Ÿ', 'Ÿ', // Ÿ
 		)},
 	})
 
@@ -89,6 +95,9 @@ func main() {
 		"family": {"Source Sans 3:ital,wght@0,200..900"},
 		"text": {runes(
 			33, 126, // ascii printable
+			0xC0, 0xFF, // latin-1 accented letters (é, à, ç, ô, ...)
+			'Œ', 'œ', // Œ œ
+			'Ÿ', 'Ÿ', // Ÿ
 			'\u2002', '\u201E', // spaces, smart punctuation
 			'\u2022', '\u2022', // bullet
 			'\u2026', '\u2026', // ellipsis

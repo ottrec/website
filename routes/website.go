@@ -78,6 +78,13 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("/static/", static.Handler(static.Website))
 	mux.Handle("GET /favicon.ico", static.Handler(static.Website))
 
+	// catch-all for unmatched paths (more specific patterns above win); without
+	// it, http.ServeMux returns a plain-text 404. No method, so it doesn't
+	// conflict with the method-less /static/ subtree.
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		templates.RenderError(w, r, templates.WebsiteErrorPage, "Not Found", "We couldn't find the page you're looking for.", http.StatusNotFound)
+	})
+
 	return commonMiddleware(redirectTrailingSlash(mux)), nil
 }
 

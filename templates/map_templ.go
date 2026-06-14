@@ -132,7 +132,7 @@ func WebsiteMapPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"map-filterbar\"><button type=\"button\" id=\"btn-filters\">Filters</button><div id=\"filter-chips\"></div></div><div class=\"map-main\"><aside class=\"map-filters\"><header class=\"mobile-only\"><h1>Filters</h1><button type=\"button\" id=\"btn-filters-done\">Done</button></header><section id=\"filter-starred\" hidden><div class=\"check-list\"><label class=\"check\"><input type=\"checkbox\" id=\"filter-starred-only\"><span class=\"name\">Starred only</span></label></div></section><section><h2>Weekdays <span class=\"h2-actions\"><button type=\"button\" id=\"filter-days-all\">all</button> <button type=\"button\" id=\"filter-days-none\">none</button></span></h2><div class=\"day-row\" id=\"filter-days\"></div></section><section><h2>Times <span class=\"h2-actions\"><button type=\"button\" id=\"filter-slots-all\">all</button> <button type=\"button\" id=\"filter-slots-none\">none</button></span></h2><div class=\"check-list\" id=\"filter-slots\"></div></section><section><h2>Categories</h2><div class=\"check-list\" id=\"filter-categories\"></div></section><section><h2>Activities <button type=\"button\" class=\"filtered-flag\" id=\"filter-activities-filtered\" title=\"Clear the category filters\" hidden>filtered</button></h2><div class=\"check-list\" id=\"filter-activities\"></div></section></aside><div class=\"map-map\"><div id=\"map\"></div><div class=\"map-chips\" id=\"map-chips\"></div><div class=\"fac-detail\" id=\"fac-detail\"><header><button type=\"button\" id=\"fac-detail-close\">Close ✕</button></header><div id=\"fac-detail-content\"></div></div></div><section class=\"map-facilities\"><button type=\"button\" class=\"sheet-toggle\" id=\"fac-sheet-toggle\">Facilities</button><header><div class=\"row\"><span id=\"fac-count\"></span> <select id=\"fac-order\" aria-label=\"Sort facilities by\"><option value=\"alpha\" selected>A-Z</option> <option value=\"distance\">Distance</option></select></div><input type=\"search\" id=\"fac-search\" placeholder=\"Filter by name\" aria-label=\"Filter facilities by name\"></header><ul id=\"fac-list\"></ul></section></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<h1 class=\"visually-hidden\">Map of City of Ottawa drop-in recreation facilities</h1><div class=\"map-filterbar\"><button type=\"button\" id=\"btn-filters\">Filters</button><div id=\"filter-chips\"></div></div><div class=\"map-main\"><aside class=\"map-filters\"><header class=\"mobile-only\"><h2>Filters</h2><button type=\"button\" id=\"btn-filters-done\">Done</button></header><section id=\"filter-starred\" hidden><div class=\"check-list\"><label class=\"check\"><input type=\"checkbox\" id=\"filter-starred-only\"><span class=\"name\">Starred only</span></label></div></section><section><h2>Weekdays <span class=\"h2-actions\"><button type=\"button\" id=\"filter-days-all\">all</button> <button type=\"button\" id=\"filter-days-none\">none</button></span></h2><div class=\"day-row\" id=\"filter-days\"></div></section><section><h2>Times <span class=\"h2-actions\"><button type=\"button\" id=\"filter-slots-all\">all</button> <button type=\"button\" id=\"filter-slots-none\">none</button></span></h2><div class=\"check-list\" id=\"filter-slots\"></div></section><section><h2>Categories</h2><div class=\"check-list\" id=\"filter-categories\"></div></section><section><h2>Activities <button type=\"button\" class=\"filtered-flag\" id=\"filter-activities-filtered\" title=\"Clear the category filters\" hidden>filtered</button></h2><div class=\"check-list\" id=\"filter-activities\"></div></section></aside><div class=\"map-map\"><div id=\"map\"></div><noscript><div class=\"map-noscript\"><p>The interactive map needs JavaScript. You can still <a href=\"/schedules\">browse every facility's schedules</a> or see <a href=\"/activities\">which facilities offer each activity</a>.</p></div></noscript><div class=\"map-chips\" id=\"map-chips\"></div><div class=\"fac-detail\" id=\"fac-detail\"><header><button type=\"button\" id=\"fac-detail-close\">Close ✕</button></header><div id=\"fac-detail-content\"></div></div></div><section class=\"map-facilities\"><button type=\"button\" class=\"sheet-toggle\" id=\"fac-sheet-toggle\">Facilities</button><header><div class=\"row\"><span id=\"fac-count\"></span> <select id=\"fac-order\" aria-label=\"Sort facilities by\"><option value=\"alpha\" selected>A-Z</option> <option value=\"distance\">Distance</option></select></div><input type=\"search\" id=\"fac-search\" placeholder=\"Filter by name\" aria-label=\"Filter facilities by name\"></header><ul id=\"fac-list\"></ul></section></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -147,7 +147,7 @@ func WebsiteMapPage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(static.Path(static.StarredJS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 87, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 93, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -160,7 +160,7 @@ func WebsiteMapPage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(static.Path(static.MapJS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 88, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 94, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -226,7 +226,7 @@ func WebsiteMapPopup(params WebsiteMapPopupParams) templ.Component {
 			var templ_7745c5c3_Var11 templ.SafeURL
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/schedules/facility/" + params.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 104, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 110, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
