@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/pkg/ottregions"
 )
 
 // activityPeriods contains the time-of-day periods for the activities page as
@@ -21,9 +22,16 @@ var (
 )
 
 // activityCategoryCard is a card on the activities page listing the facilities
-// offering a category of activities.
+// offering a category of activities, grouped by sector.
 type activityCategoryCard struct {
-	Name       string
+	Name   string
+	Groups []activitySectorGroup
+}
+
+// activitySectorGroup is the facilities in a card that fall in one sector
+// ([ottregions.Sector]), the page's top-level row grouping.
+type activitySectorGroup struct {
+	Sector     string // "West", "Central", "East", "South", or "Other"
 	Facilities []activityCategoryFacility
 }
 
@@ -32,13 +40,24 @@ type activityCategoryCard struct {
 // period p. A facility with activities whose times could not be parsed during
 // scraping may have an all-zero mask.
 type activityCategoryFacility struct {
-	Name string
-	Slug string // for the facility schedule page link
-	Mask [7]byte
+	Name   string
+	Slug   string // for the facility schedule page link
+	Region string // place name shown faint beside the name (may be "")
+	Mask   [7]byte
+	sector ottregions.Sector // top-level group
 }
 
 func (f activityCategoryFacility) Available(day, period int) bool {
 	return f.Mask[day]&(1<<period) != 0
+}
+
+// activitySectorOrder is the order sector groups appear in (geographic, core
+// first); [ottregions.SectorUnknown] facilities go in a trailing "Other" group.
+var activitySectorOrder = []ottregions.Sector{
+	ottregions.SectorCentral,
+	ottregions.SectorWest,
+	ottregions.SectorEast,
+	ottregions.SectorSouth,
 }
 
 // buildActivityCards collects, for each category from [mapCategories] (plus
@@ -51,6 +70,7 @@ func buildActivityCards(data ottrecidx.DataRef) []activityCategoryCard {
 	}
 	cards[len(mapCategories)].Name = mapCategoryOther
 
+	flat := make([][]activityCategoryFacility, len(cards)) // per-card, before grouping
 	slugs := map[string]bool{}
 	for fac := range data.Facilities() {
 		slug := mapUniqueSlug(slugs, fac.GetName())
@@ -84,21 +104,50 @@ func buildActivityCards(data ottrecidx.DataRef) []activityCategoryCard {
 				}
 			}
 		}
+		var region string
+		if r := fac.Region(); r != ottregions.RegionUnknown {
+			region = r.Name()
+		}
 		for c, m := range masks {
 			if m != nil {
-				cards[c].Facilities = append(cards[c].Facilities, activityCategoryFacility{
-					Name: fac.GetName(),
-					Slug: slug,
-					Mask: *m,
+				flat[c] = append(flat[c], activityCategoryFacility{
+					Name:   fac.GetName(),
+					Slug:   slug,
+					Region: region,
+					Mask:   *m,
+					sector: fac.Sector(),
 				})
 			}
 		}
 	}
 
 	for c := range cards {
-		slices.SortFunc(cards[c].Facilities, func(a, b activityCategoryFacility) int {
-			return strings.Compare(a.Name, b.Name)
-		})
+		cards[c].Groups = groupBySector(flat[c])
 	}
 	return cards
+}
+
+// groupBySector buckets facilities into [activitySectorOrder] (then a trailing
+// "Other" for those without coordinates), alphabetically within each group.
+func groupBySector(facs []activityCategoryFacility) []activitySectorGroup {
+	bySector := map[ottregions.Sector][]activityCategoryFacility{}
+	for _, f := range facs {
+		bySector[f.sector] = append(bySector[f.sector], f)
+	}
+	var groups []activitySectorGroup
+	add := func(s ottregions.Sector, label string) {
+		fs := bySector[s]
+		if len(fs) == 0 {
+			return
+		}
+		slices.SortFunc(fs, func(a, b activityCategoryFacility) int {
+			return strings.Compare(a.Name, b.Name)
+		})
+		groups = append(groups, activitySectorGroup{Sector: label, Facilities: fs})
+	}
+	for _, s := range activitySectorOrder {
+		add(s, s.String())
+	}
+	add(ottregions.SectorUnknown, "Other")
+	return groups
 }

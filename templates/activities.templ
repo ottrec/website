@@ -28,7 +28,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 				</header>
 				<div class="activity-cards">
 					for _, card := range buildActivityCards(params.Data) {
-						if len(card.Facilities) > 0 {
+						if len(card.Groups) > 0 {
 							<section class="activity-card">
 								<h2>{ card.Name }</h2>
 								<div class="activity-table">
@@ -48,21 +48,29 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 												}
 											</tr>
 										</thead>
-										<tbody>
-											for _, f := range card.Facilities {
-												<tr>
-													<th class="fac" scope="row">
-														<button type="button" class="fac-star" data-fac-star={ f.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
-														<a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a>
-													</th>
-													for d := range mapDays {
-														for p := range activityPeriodShort {
-															<td><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>
-														}
-													}
+										for _, g := range card.Groups {
+											<tbody data-sector={ g.Sector }>
+												<tr class="sector-row">
+													<th class="sector" colspan="22" scope="colgroup">{ g.Sector }</th>
 												</tr>
-											}
-										</tbody>
+												for _, f := range g.Facilities {
+													<tr>
+														<th class="fac" scope="row">
+															<button type="button" class="fac-star" data-fac-star={ f.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
+															<a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a>
+															if f.Region != "" {
+																<span class="fac-region">{ f.Region }</span>
+															}
+														</th>
+														for d := range mapDays {
+															for p := range activityPeriodShort {
+																<td><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>
+															}
+														}
+													</tr>
+												}
+											</tbody>
+										}
 									</table>
 								</div>
 							</section>

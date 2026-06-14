@@ -145,3 +145,28 @@
 	background: var(--per-check, var(--fxki-bl));
 	border-color: var(--per-check, var(--fxki-bl));
 }
+/* top-level sector group header rows */
+.activity-table tr.sector-row th.sector {
+	text-align: left;
+	font-weight: 600;
+	font-size: .72rem;
+	letter-spacing: .03em;
+	text-transform: uppercase;
+	color: var(--fxki-tx-2);
+	/* darker than the card in light mode (lighter would distract); dark is fine */
+	background: light-dark(var(--fxki-ui), var(--fxki-bg));
+	padding: .35rem .4rem .25rem;
+}
+.activity-table tbody.sector-starred tr.sector-row th.sector {
+	color: var(--fxki-bl);
+}
+.activity-table tbody tr.sector-row:hover {
+	background: none;
+}
+/* the place name, faint, beside the facility name */
+.activity-table tbody th.fac .fac-region {
+	margin-left: .5em;
+	font-size: .9em;
+	font-weight: 400;
+	color: var(--fxki-tx-3);
+}
