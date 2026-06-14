@@ -20,8 +20,12 @@ func LocalFS(fsys fs.FS) api.Plugin {
 		Name: "local",
 		Setup: func(build api.PluginBuild) {
 			build.OnResolve(api.OnResolveOptions{Filter: `^\.`}, func(args api.OnResolveArgs) (api.OnResolveResult, error) {
-				dir := "." // the entry's imports resolve from the fs root
-				if args.Namespace == namespace {
+				// resolve relative to the importer's directory: for the stdin
+				// entry that's its Sourcefile dir (e.g. "." for a root entry
+				// like map.ts, or "ottrecql-editor" for a subdir entry); for an
+				// already-resolved local module it's that module's own dir
+				dir := "."
+				if args.Importer != "" {
 					dir = path.Dir(args.Importer)
 				}
 				p := path.Join(dir, args.Path)
