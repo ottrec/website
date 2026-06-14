@@ -35,6 +35,10 @@ var assets = asset.NewSet(res, mimeType)
 var vendored = npm.NewStore(must(fs.Sub(res, "lib"))).
 	Entry("leaflet", "dist/leaflet-src.esm.js") // force leaflet to use ESM instead of CJS
 
+// localFiles lets bundled .ts entry modules import sibling source files (e.g.
+// theme.ts importing ./theme-apply) from the embedded FS.
+var localFiles = esbuild.LocalFS(res)
+
 // pkgFS returns the filesystem of a vendored npm package.
 func pkgFS(name string) fs.FS { return must(vendored.FS(name)) }
 
@@ -52,6 +56,12 @@ func Path(a *asset.Asset) string {
 		panic(err)
 	}
 	return Base + b.Name
+}
+
+// InlineJS returns the compiled JavaScript of a, for inlining into a page (e.g.
+// a pre-paint <script> in the head). The asset is not served separately.
+func InlineJS(a *asset.Asset) string {
+	return string(must(a.Built()).Data)
 }
 
 // Handler builds and warms g, then returns it as an [http.Handler]. Compile
@@ -122,7 +132,7 @@ func compileCSS(name string, data []byte, resolve func(string) (string, error)) 
 // compileTS bundles a TypeScript module to minified JavaScript, resolving
 // imports of vendored npm packages.
 func compileTS(name string, data []byte, _ func(string) (string, error)) ([]byte, string, error) {
-	js, err := esbuild.Transform(name, string(data), vendored.Plugin())
+	js, err := esbuild.Transform(name, string(data), vendored.Plugin(), localFiles)
 	if err != nil {
 		return nil, "", err
 	}
@@ -161,6 +171,9 @@ var (
 	HomeCSS       = assets.Register("home.css", css)
 	ThemeJS       = assets.Register("theme.ts", ts)
 	StarredJS     = assets.Register("starred.ts", ts)
+
+	// compiled and inlined into the head (see InlineJS), not served on its own
+	ThemeApplyJS = assets.Register("theme-apply.ts", ts)
 )
 
 var Website = assets.

@@ -85,7 +85,8 @@ func websiteAboutExtra() templ.Component {
 }
 
 // websiteThemeHead applies the color scheme override saved by the navbar
-// toggle. The inline script must run before first paint to avoid flashing the
+// toggle. The inline script (the compiled theme-apply.ts, shared with the
+// navbar toggle in theme.ts) must run before first paint to avoid flashing the
 // wrong theme.
 func websiteThemeHead() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -108,7 +109,7 @@ func websiteThemeHead() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templ.Raw(`<script>try{const t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.style.colorScheme=t}catch(e){}</script>`).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templ.Raw("<script>"+static.InlineJS(static.ThemeApplyJS)+"</script>").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -119,7 +120,7 @@ func websiteThemeHead() templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(static.Path(static.ThemeJS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 35, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 36, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -163,7 +164,7 @@ func websiteIconsHead() templ.Component {
 		var templ_7745c5c3_Var6 templ.SafeURL
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.FaviconICO))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 41, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 42, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -176,7 +177,7 @@ func websiteIconsHead() templ.Component {
 		var templ_7745c5c3_Var7 templ.SafeURL
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.FaviconSVG))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 42, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 43, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -189,7 +190,7 @@ func websiteIconsHead() templ.Component {
 		var templ_7745c5c3_Var8 templ.SafeURL
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.AppleTouchIconPNG))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 43, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 44, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -327,7 +328,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(updated.In(ottrecidx.TZ).Format(time.RFC3339))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 57, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 58, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -340,7 +341,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(updated.In(ottrecidx.TZ).Format("2006-01-02"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 57, Col: 123}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 58, Col: 123}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -400,7 +401,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			var templ_7745c5c3_Var21 templ.SafeURL
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinURLErrs(params.Base)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 72, Col: 44}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 73, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -418,7 +419,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var22 templ.SafeURL
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.WebsiteCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 76, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 77, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -431,7 +432,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var23 templ.SafeURL
 		templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.HomeCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 77, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 78, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 		if templ_7745c5c3_Err != nil {
@@ -460,7 +461,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 86, Col: 131}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 87, Col: 131}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -473,7 +474,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var25 string
 		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(params.Data.Index().Updated().In(ottrecidx.TZ).Format("January 2, 2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 86, Col: 208}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 87, Col: 208}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 		if templ_7745c5c3_Err != nil {
@@ -491,7 +492,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			var templ_7745c5c3_Var26 templ.SafeURL
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/schedules/" + cat.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 90, Col: 57}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 91, Col: 57}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -504,7 +505,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(cat.Icon)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 90, Col: 80}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 91, Col: 80}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -517,7 +518,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(cat.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 90, Col: 93}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 91, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
@@ -578,7 +579,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var30 string
 		templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 136, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 137, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 		if templ_7745c5c3_Err != nil {
@@ -591,7 +592,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var31 templ.SafeURL
 		templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.WebsiteCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 137, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 138, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 		if templ_7745c5c3_Err != nil {
@@ -620,7 +621,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var32 string
 		templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 143, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 144, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 		if templ_7745c5c3_Err != nil {
@@ -633,7 +634,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var33 string
 		templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(message)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 144, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 145, Col: 16}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 		if templ_7745c5c3_Err != nil {
