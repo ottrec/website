@@ -543,10 +543,11 @@ ul#fac-list {
 	.map-filterbar {
 		display: flex;
 	}
+	/* the filters become a full-screen overlay that fades/slides in and out. it
+	 * stays rendered (not display:none) so the close can transition; visibility
+	 * flips at the end of the fade via its stepped interpolation, so one
+	 * duration animates both directions. longhand transition (see .fac-pin). */
 	.map-filters {
-		display: none;
-	}
-	body.filters-open .map-filters {
 		display: block;
 		position: fixed;
 		inset: 0;
@@ -554,6 +555,19 @@ ul#fac-list {
 		min-width: 0;
 		z-index: 1400;
 		border-right: none;
+		visibility: hidden;
+		opacity: 0;
+		transform: translateY(8px);
+		pointer-events: none;
+		transition-property: opacity, transform, visibility;
+		transition-duration: .2s;
+		transition-timing-function: ease-out;
+	}
+	body.filters-open .map-filters {
+		visibility: visible;
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
 	}
 	.map-filters > header.mobile-only {
 		align-items: center;
@@ -608,11 +622,26 @@ ul#fac-list {
 	body.list-open ul#fac-list {
 		display: block;
 	}
-	/* the facility details are shown in a panel covering most of the map
-	 * (with a margin) instead of an anchored popup, so they can't get cut
-	 * off */
-	body.detail-open .fac-detail {
+	/* the facility details are shown in a panel covering most of the map (with a
+	 * margin) instead of an anchored popup, so they can't get cut off. it fades
+	 * in/out like the filter overlay above (kept rendered so the close
+	 * transitions), replacing the open-only keyframe animation. */
+	.fac-detail {
 		display: flex;
+		visibility: hidden;
+		opacity: 0;
+		transform: translateY(8px);
+		pointer-events: none;
+		animation: none;
+		transition-property: opacity, transform, visibility;
+		transition-duration: .2s;
+		transition-timing-function: ease-out;
+	}
+	body.detail-open .fac-detail {
+		visibility: visible;
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
 	}
 	/* keep the attribution above the collapsed facilities sheet */
 	.leaflet-container .leaflet-bottom {
