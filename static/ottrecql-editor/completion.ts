@@ -1,6 +1,6 @@
 import { StateField, RangeSetBuilder, EditorState } from "@codemirror/state"
 import { EditorView, Decoration, DecorationSet } from "@codemirror/view"
-import { autocompletion, Completion, CompletionSource } from "@codemirror/autocomplete"
+import { autocompletion, startCompletion, Completion, CompletionSource } from "@codemirror/autocomplete"
 import { Extension } from "@codemirror/state"
 import { isFunction, WEEKDAYS } from "./language"
 
@@ -8,8 +8,9 @@ import { isFunction, WEEKDAYS } from "./language"
 // by the caller so the styling can live with the component (see component.ts).
 export type DocNode = (signature: string, doc: string, ...examples: string[]) => Node
 
-// applyOperator completes an infix operator (and/or) with surrounding spaces,
-// adding the leading space only when one isn't already there.
+// applyOperator completes an operator (and/or/not) with surrounding spaces,
+// adding the leading space only when one isn't already there, then reopens the
+// completion popup so the next expression's options show right away.
 function applyOperator(op: string) {
     return (view: EditorView, _completion: Completion, from: number, to: number) => {
         const before = from > 0 ? view.state.doc.sliceString(from - 1, from) : ''
@@ -19,6 +20,7 @@ function applyOperator(op: string) {
             changes: { from, to, insert },
             selection: { anchor: from + insert.length },
         })
+        startCompletion(view)
     }
 }
 
@@ -98,7 +100,7 @@ function createCompletions(doc: DocNode): Record<string, Completion[]> {
                 info: () => doc('latlng(lat, lng, km)', 'Matches facilities within a radius (km) of the given coordinates.', 'latlng(45.42620, -75.69205, 2)')
             },
             {
-                label: 'not', type: 'keyword',
+                label: 'not', type: 'keyword', apply: applyOperator('not'),
                 info: () => doc('not expr  |  !expr', 'Logical NOT. Excludes results that match the expression.', 'not activity("adult")', '!facility("plant")')
             },
             {
