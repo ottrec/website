@@ -51,7 +51,10 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 										<tbody>
 											for _, f := range card.Facilities {
 												<tr>
-													<th class="fac" scope="row"><a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a></th>
+													<th class="fac" scope="row">
+														<button type="button" class="fac-star" data-fac-star={ f.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
+														<a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a>
+													</th>
 													for d := range mapDays {
 														for p := range activityPeriodShort {
 															<td><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>
@@ -67,6 +70,8 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 					}
 				</div>
 			</main>
+			<script src={ static.Path(static.StarredJS) }></script>
+			<script src={ static.Path(static.ActivitiesJS) }></script>
 		</body>
 	</html>
 }

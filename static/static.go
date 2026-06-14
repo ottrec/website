@@ -51,6 +51,7 @@ var (
 	MapCSS        = newFile("map.css")
 	MapJS         = newFile("map.ts")
 	ActivitiesCSS = newFile("activities.css")
+	ActivitiesJS  = newFile("activities.ts")
 	SchedulesCSS  = newFile("schedules.css")
 	SchedulesJS   = newFile("schedules.ts")
 	AboutCSS      = newFile("about.css")
@@ -64,6 +65,7 @@ var (
 		MapCSS,
 		MapJS,
 		ActivitiesCSS,
+		ActivitiesJS,
 		SchedulesCSS,
 		SchedulesJS,
 		AboutCSS,
