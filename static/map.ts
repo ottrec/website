@@ -366,6 +366,19 @@ const tiles = L.tileLayer(tileURL(effectiveDark()), {
 darkQuery.addEventListener('change', () => tiles.setUrl(tileURL(effectiveDark())))
 window.addEventListener('themechange', () => tiles.setUrl(tileURL(effectiveDark())))
 
+// Leaflet suppresses tooltips while the map is dragging, but then fires a
+// tooltipopen for every pin the cursor passed over in a burst right after
+// dragend (with no matching mouseover/mouseout), leaving several stuck open. To
+// guard against this, only allow a tooltip to open for the pin the cursor is
+// genuinely over: hoveredIndex tracks that from real mouseover/mouseout events.
+let dragging = false
+let hoveredIndex: number | null = null
+map.on('dragstart', () => {
+	dragging = true
+	for (const m of markers.values()) m.closeTooltip()
+})
+map.on('dragend', () => { dragging = false })
+
 const markers = new Map<number, L.Marker>()   // facility index -> marker
 const pinIcons = new Map<number, L.DivIcon>()  // facility index -> pin icon
 const popupCache = new Map<string, Promise<string>>() // slug -> popup content
@@ -380,6 +393,11 @@ for (const f of data.facilities) {
 	})
 	const marker = L.marker([f.lat, f.lng], {icon})
 	marker.bindTooltip(f.name, {direction: 'top', offset: [0, -12]})
+	marker.on('tooltipopen', () => {
+		// suppress tooltips opened while dragging or replayed afterwards for pins
+		// the cursor isn't actually over (see hoveredIndex above)
+		if (dragging || hoveredIndex !== f.index) marker.closeTooltip()
+	})
 	marker.bindPopup('<div class="fac-popup-loading">Loading…</div>', {
 		minWidth: 400,
 		maxWidth: 600,
@@ -405,8 +423,11 @@ for (const f of data.facilities) {
 			loadPopup(f, popup)
 		}
 	})
-	marker.on('mouseover', () => setHighlight(f.index, true))
-	marker.on('mouseout', () => setHighlight(f.index, false))
+	marker.on('mouseover', () => { hoveredIndex = f.index; setHighlight(f.index, true) })
+	marker.on('mouseout', () => {
+		if (hoveredIndex === f.index) hoveredIndex = null
+		setHighlight(f.index, false)
+	})
 	markers.set(f.index, marker)
 	pinIcons.set(f.index, icon)
 }
