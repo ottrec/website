@@ -186,9 +186,16 @@ class FacilityData {
 		return !any && !q.timeFiltered
 	}
 
-	#facilityMatches(i: number, q: Query): boolean {
+	// #facilityPrefilter applies the parts of the query that gate a facility
+	// independently of its activity entries: the starred-only and name filters.
+	#facilityPrefilter(i: number, q: Query): boolean {
 		if (q.starred && !q.starred.has(i)) return false
 		if (q.name && !this.#nameLower[i]!.includes(q.name)) return false
+		return true
+	}
+
+	#facilityMatches(i: number, q: Query): boolean {
+		if (!this.#facilityPrefilter(i, q)) return false
 		const start = this.#entryStart[i]!, end = this.#entryStart[i + 1]!
 		if (start === end) // no activity data at all; show unless filtering by activity, category, or time
 			return !q.activities && !q.cats && !q.timeFiltered
@@ -233,8 +240,7 @@ class FacilityData {
 		const q = this.#prepare(filter)
 		const counts = new Uint32Array(this.activities.length)
 		for (let i = 0; i < this.facilities.length; i++) {
-			if (q.starred && !q.starred.has(i)) continue
-			if (q.name && !this.#nameLower[i]!.includes(q.name)) continue
+			if (!this.#facilityPrefilter(i, q)) continue
 			for (let e = this.#entryStart[i]!; e < this.#entryStart[i + 1]!; e++) {
 				const a = this.#entryActivity[e]!
 				if (q.cats && !(this.#activityCats[a]! & q.cats)) continue
@@ -251,8 +257,7 @@ class FacilityData {
 		const q = this.#prepare(filter)
 		const counts = new Uint32Array(this.categories.length)
 		for (let i = 0; i < this.facilities.length; i++) {
-			if (q.starred && !q.starred.has(i)) continue
-			if (q.name && !this.#nameLower[i]!.includes(q.name)) continue
+			if (!this.#facilityPrefilter(i, q)) continue
 			let bits = 0
 			for (let e = this.#entryStart[i]!; e < this.#entryStart[i + 1]!; e++)
 				if (this.#entryTimeMatches(e, q))
@@ -270,8 +275,7 @@ class FacilityData {
 		const q = this.#prepare(filter)
 		const counts = new Uint32Array(this.slots.length)
 		for (let i = 0; i < this.facilities.length; i++) {
-			if (q.starred && !q.starred.has(i)) continue
-			if (q.name && !this.#nameLower[i]!.includes(q.name)) continue
+			if (!this.#facilityPrefilter(i, q)) continue
 			let slotBits = 0
 			for (let e = this.#entryStart[i]!; e < this.#entryStart[i + 1]!; e++) {
 				if (!this.#activityAllowed(this.#entryActivity[e]!, q)) continue
@@ -345,42 +349,44 @@ const tiles = L.tileLayer(tileURL(effectiveDark()), {
 darkQuery.addEventListener('change', () => tiles.setUrl(tileURL(effectiveDark())))
 window.addEventListener('themechange', () => tiles.setUrl(tileURL(effectiveDark())))
 
-const markers = new Map<number, any>() // facility index -> L.Marker
+const markers = new Map<number, L.Marker>()   // facility index -> marker
+const pinIcons = new Map<number, L.DivIcon>()  // facility index -> pin icon
 const popupCache = new Map<string, Promise<string>>() // slug -> popup content
 const pinHTML = (slug: string) => '<div class="fac-pin' + (ottrecStarred.has(slug) ? ' starred' : '') + '"></div>'
 for (const f of data.facilities) {
 	if (!f.lat && !f.lng) continue
-	const marker = L.marker([f.lat, f.lng], {
-		icon: L.divIcon({
-			className: 'fac-pin-wrap',
-			html: pinHTML(f.slug),
-			iconSize: [30, 30],
-			iconAnchor: [15, 15],
-		}),
+	const icon = L.divIcon({
+		className: 'fac-pin-wrap',
+		html: pinHTML(f.slug),
+		iconSize: [30, 30],
+		iconAnchor: [15, 15],
 	})
+	const marker = L.marker([f.lat, f.lng], {icon})
 	marker.bindTooltip(f.name, {direction: 'top', offset: [0, -12]})
 	marker.bindPopup('<div class="fac-popup-loading">Loading…</div>', {
 		minWidth: 400,
 		maxWidth: 600,
 		maxHeight: 520,
 	})
-	marker.on('popupopen', (ev: any) => {
+	marker.on('popupopen', (ev: L.PopupEvent) => {
+		const popup = ev.popup
 		if (mobileQuery.matches) {
 			// on mobile, the details are shown in a panel over the map instead
 			// of an anchored popup, so they can't get cut off
-			map.closePopup(ev.popup)
+			map.closePopup(popup)
 			openDetail(f)
 		} else {
 			// let the popup grow to fit the schedule tables if there's room
 			const size = map.getSize()
-			ev.popup.options.maxWidth = Math.max(400, Math.min(880, size.x - 120))
-			ev.popup.options.maxHeight = Math.max(320, Math.min(680, size.y - 120))
-			loadPopup(f, ev.popup)
+			popup.options.maxWidth = Math.max(400, Math.min(880, size.x - 120))
+			popup.options.maxHeight = Math.max(320, Math.min(680, size.y - 120))
+			loadPopup(f, popup)
 		}
 	})
 	marker.on('mouseover', () => setHighlight(f.index, true))
 	marker.on('mouseout', () => setHighlight(f.index, false))
 	markers.set(f.index, marker)
+	pinIcons.set(f.index, icon)
 }
 
 // fetchFacility fetches (and caches) the facility popup content.
@@ -393,14 +399,26 @@ function fetchFacility(f: Facility): Promise<string> {
 	return popupCache.get(f.slug)!
 }
 
-async function loadPopup(f: Facility, popup: any) {
+// renderFacility fetches the facility content and hands it to setContent, then
+// wires up its star button. Both the anchored popup and the mobile detail panel
+// go through here; isStale lets each skip the write if a newer open has
+// superseded it (the panel is reused across facilities, and a popup may close
+// mid-fetch). On error the cache entry is dropped so a reopen refetches.
+async function renderFacility(f: Facility, setContent: (html: string) => void, isStale: () => boolean) {
+	let html
 	try {
-		popup.setContent(await fetchFacility(f))
-	} catch (err) {
+		html = await fetchFacility(f)
+	} catch {
 		popupCache.delete(f.slug)
-		popup.setContent('<div class="fac-popup-error">Failed to load facility info.</div>')
+		html = '<div class="fac-popup-error">Failed to load facility info.</div>'
 	}
+	if (isStale()) return
+	setContent(html)
 	ottrecStarred.sync() // wire up the star button in the inserted content
+}
+
+function loadPopup(f: Facility, popup: L.Popup) {
+	renderFacility(f, (html) => popup.setContent(html), () => !popup.isOpen())
 }
 
 // facility details panel over the map for mobile
@@ -408,21 +426,11 @@ async function loadPopup(f: Facility, popup: any) {
 const detailContentEl = document.getElementById('fac-detail-content')!
 let detailToken = 0
 
-async function openDetail(f: Facility) {
+function openDetail(f: Facility) {
 	const token = ++detailToken
 	detailContentEl.innerHTML = '<div class="fac-popup-loading">Loading…</div>'
 	document.body.classList.add('detail-open')
-	let html
-	try {
-		html = await fetchFacility(f)
-	} catch (err) {
-		popupCache.delete(f.slug)
-		html = '<div class="fac-popup-error">Failed to load facility info.</div>'
-	}
-	if (token === detailToken) {
-		detailContentEl.innerHTML = html
-		ottrecStarred.sync() // wire up the star button in the inserted content
-	}
+	renderFacility(f, (html) => detailContentEl.innerHTML = html, () => token !== detailToken)
 }
 
 function setHighlight(i: number, on: boolean) {
@@ -451,7 +459,14 @@ function focusFacility(i: number) {
 
 // filter controls
 
-let dayBtns: HTMLButtonElement[] = [], slotRows: HTMLLabelElement[] = [], catRows: HTMLLabelElement[] = [], actRows: HTMLLabelElement[] = []
+// a checkbox filter row, keeping its input and count cell for cheap updates
+interface CheckRow {
+	row: HTMLLabelElement
+	input: HTMLInputElement
+	count: HTMLElement
+}
+
+let dayBtns: HTMLButtonElement[] = [], slotRows: CheckRow[] = [], catRows: CheckRow[] = [], actRows: CheckRow[] = []
 
 function buildFilters() {
 	const daysEl = document.getElementById('filter-days')!
@@ -484,7 +499,7 @@ function applyCategorySelection() {
 				filter.activities.add(a)
 }
 
-function buildCheckList(el: HTMLElement, labels: string[], set: Set<number>, changed?: () => void): HTMLLabelElement[] {
+function buildCheckList(el: HTMLElement, labels: string[], set: Set<number>, changed?: () => void): CheckRow[] {
 	return labels.map((label, i) => {
 		const row = document.createElement('label')
 		row.className = 'check'
@@ -504,23 +519,23 @@ function buildCheckList(el: HTMLElement, labels: string[], set: Set<number>, cha
 		count.className = 'count'
 		row.append(input, name, count)
 		el.append(row)
-		return row
+		return {row, input, count}
 	})
 }
 
 function syncControls() {
 	starredOnlyEl.checked = filter.starredOnly
 	dayBtns.forEach((btn, d) => btn.classList.toggle('on', filter.days.has(d)))
-	slotRows.forEach((row, i) => row.querySelector('input')!.checked = filter.slots.has(i))
-	catRows.forEach((row, i) => row.querySelector('input')!.checked = filter.categories.has(i))
-	actRows.forEach((row, i) => row.querySelector('input')!.checked = filter.activities.has(i))
+	slotRows.forEach((r, i) => r.input.checked = filter.slots.has(i))
+	catRows.forEach((r, i) => r.input.checked = filter.categories.has(i))
+	actRows.forEach((r, i) => r.input.checked = filter.activities.has(i))
 	searchEl.value = filter.name
 }
 
-function applyCounts(rows: HTMLLabelElement[], counts: Uint32Array) {
-	rows.forEach((row, i) => {
-		row.querySelector('.count')!.textContent = String(counts[i])
-		row.classList.toggle('zero', counts[i] === 0)
+function applyCounts(rows: CheckRow[], counts: Uint32Array) {
+	rows.forEach((r, i) => {
+		r.count.textContent = String(counts[i])
+		r.row.classList.toggle('zero', counts[i] === 0)
 	})
 }
 
@@ -528,8 +543,8 @@ function applyCounts(rows: HTMLLabelElement[], counts: Uint32Array) {
 // selected categories (still showing explicitly selected activities).
 function syncActivityVisibility() {
 	const catFiltered = filter.categories.size > 0
-	actRows.forEach((row, a) => {
-		row.hidden = catFiltered && !data.activityInCategories(a, filter.categories) && !filter.activities.has(a)
+	actRows.forEach((r, a) => {
+		r.row.hidden = catFiltered && !data.activityInCategories(a, filter.categories) && !filter.activities.has(a)
 	})
 	activitiesFilteredEl.hidden = !catFiltered
 }
@@ -773,7 +788,7 @@ starredOnlyEl.addEventListener('change', () => {
 ottrecStarred.onchange(() => {
 	for (const [i, marker] of markers) {
 		const html = pinHTML(data.facilities[i]!.slug)
-		marker.options.icon.options.html = html // for markers (re-)added later
+		pinIcons.get(i)!.options.html = html // for markers (re-)added later
 		const el = marker.getElement()
 		if (el) el.innerHTML = html
 	}
