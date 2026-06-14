@@ -39,22 +39,39 @@ type Options struct {
 const xhtml xmlwriter.NS = "http://www.w3.org/1999/xhtml"
 
 const css = `
-	html {
+	/* flexoki palette, matching the main ottrec.ca website (website.css) */
+	:root {
 		color-scheme: light dark;
-		background: light-dark(#eaecf5, #0b0d10);
-		color: light-dark(#18181c, #d8dce8);
+		--bg:    light-dark(#FFFCF0, #100F0F); /* paper / black */
+		--bg-2:  light-dark(#F2F0E5, #1C1B1A); /* base-50 / base-950 */
+		--bg-3:  light-dark(#E6E4D9, #282726); /* base-100 / base-900 */
+		--tx:    light-dark(#100F0F, #CECDC3); /* black / base-200 */
+		--tx-2:  light-dark(#6F6E69, #878580); /* base-600 / base-500 */
+		--ui-2:  light-dark(#DAD8CE, #343331); /* base-150 / base-850 */
+		--bl:    light-dark(#205EA6, #4385BE); /* blue-600 / blue-400 */
+		--bl-bg: light-dark(#E1ECEB, #133051); /* blue-50 / blue-850 */
+		--ye-bg: light-dark(#FAEEC6, #241E08); /* yellow-50 / yellow-950 */
+		--ye-ui: light-dark(#F1D67E, #503D02); /* yellow-150 / yellow-850 */
+		--re:    light-dark(#AF3029, #D14D41); /* red-600 / red-400 */
+		--re-bg: light-dark(#FFE1D5, #261312); /* red-50 / red-950 */
+		--re-ui: light-dark(#FDB2A2, #551B18); /* red-150 / red-850 */
+	}
+
+	html {
+		background: var(--bg);
+		color: var(--tx);
 		font-size: 16px;
 	}
 	body {
 		margin: 0;
 		font-size: .875rem;
 		line-height: 1.5;
-		font-family: sans-serif;
+		font-family: 'Source Sans 3', system-ui, sans-serif;
 	}
 	h1, h2, h3, h4 {
 		margin: 0;
 		line-height: 1.3;
-		font-family: sans-serif;
+		font-family: 'Source Sans 3', system-ui, sans-serif;
 		font-weight: 700;
 	}
 
@@ -62,20 +79,21 @@ const css = `
 		margin: 1rem;
 		padding: .875rem 1.125rem 1.25rem;
 		border-radius: .6rem;
-		background: light-dark(#fff, #111418);
+		background: var(--bg-2);
 	}
 	article > hgroup {
 		padding-bottom: .55rem;
 		margin-bottom: .75rem;
-		border-bottom: 1px solid light-dark(#dce2ee, #25303a);
+		border-bottom: 1px solid var(--ui-2);
 	}
 	article > hgroup h1 {
-		font-size: 1.1em;
+		font-family: 'Source Serif 4', Georgia, serif;
+		font-size: 1.2em;
 	}
 	article > hgroup p {
 		margin: .2em 0 0;
 		font-size: .8em;
-		color: light-dark(#5c6880, #7888a4);
+		color: var(--tx-2);
 	}
 	article > section {
 		margin-top: .75rem;
@@ -86,20 +104,20 @@ const css = `
 		font-weight: 700;
 		letter-spacing: .06em;
 		text-transform: uppercase;
-		color: light-dark(#5c6880, #6878a0);
+		color: var(--tx-2);
 	}
 
 	.facility-address-section, .schedule-group-reservation {
-		background: light-dark(#f2f5fa, #1a1e2a);
+		background: var(--bg-3);
 		padding: .45em .7em;
 		border-radius: .4rem;
-		border: 1px solid light-dark(#dce2ee, #25303a);
+		border: 1px solid var(--ui-2);
 	}
 	.facility-special-hours, .facility-notifications, .schedule-group-schedule-changes {
-		background: light-dark(#fffbeb, #1c1800);
+		background: var(--ye-bg);
 		padding: .45em .7em;
 		border-radius: .4rem;
-		border: 1px solid light-dark(#fde68a, #3d3000);
+		border: 1px solid var(--ye-ui);
 	}
 	.facility-special-hours .raw-html,
 	.facility-notifications .raw-html,
@@ -111,14 +129,14 @@ const css = `
 		margin-top: .2em;
 	}
 	.facility-errors {
-		background: light-dark(#fff2f2, #1c0808);
+		background: var(--re-bg);
 		padding: .45em .7em;
 		border-radius: .4rem;
-		border: 1px solid light-dark(#fca5a5, #3d1010);
+		border: 1px solid var(--re-ui);
 	}
 
 	a {
-		color: light-dark(#2563eb, #60a5fa);
+		color: var(--bl);
 		text-decoration: none;
 	}
 	a:hover, a:focus {
@@ -135,13 +153,13 @@ const css = `
 	.facility-url a {
 		font-size: .85em;
 		word-break: break-all;
-		color: light-dark(#5070a8, #7090c0);
+		color: var(--tx-2);
 	}
 
 	.facility-errors ul {
 		margin: .2em 0 0;
 		padding-left: 1em;
-		color: light-dark(#b91c1c, #f87171);
+		color: var(--re);
 	}
 	.facility-errors ul li {
 		margin: .05em 0;
@@ -152,11 +170,11 @@ const css = `
 
 	.raw-html {
 		font-size: .85em;
-		background: light-dark(#f5f7fc, #161a22);
+		background: var(--bg-3);
 		padding: .4em .65em;
 		border-radius: .35rem;
 		margin-top: .35em;
-		border: 1px solid light-dark(#dce2ee, #25303a);
+		border: 1px solid var(--ui-2);
 	}
 	.raw-html ul, .raw-html ol {
 		margin: .15em 0;
@@ -172,7 +190,7 @@ const css = `
 		margin: .2em 0;
 	}
 	.raw-html h3, .raw-html h4 {
-		font-family: sans-serif;
+		font-family: 'Source Sans 3', system-ui, sans-serif;
 		font-size: .85em;
 		font-weight: 600;
 		margin: .5em 0 .1em;
@@ -192,8 +210,8 @@ const css = `
 		margin-bottom: .45rem;
 		font-size: .95em;
 		font-weight: bold;
-		color: light-dark(#18181c, #c0c8d8);
-		border-bottom: 2px solid light-dark(#dce2ee, #25303a);
+		color: var(--tx);
+		border-bottom: 2px solid var(--ui-2);
 		padding-bottom: .3em;
 	}
 	section.schedule-group > section > h4 {
@@ -201,7 +219,7 @@ const css = `
 		font-weight: 700;
 		letter-spacing: .06em;
 		text-transform: uppercase;
-		color: light-dark(#5c6880, #6878a0);
+		color: var(--tx-2);
 		margin-bottom: .25em;
 	}
 	section.schedule-group > section {
@@ -227,24 +245,25 @@ const css = `
 		border-collapse: collapse;
 		min-width: 100%;
 		font-size: .8em;
+		font-family: 'Asap', 'Source Sans 3', sans-serif;
 	}
 	table caption {
 		text-align: left;
 		font-weight: bold;
 		padding: .25em .1em .4em;
 		font-size: 1.1em;
-		color: light-dark(#18181c, #c0c8d8);
+		color: var(--tx);
 	}
 	table th, table td {
 		vertical-align: top;
-		border: 1px solid light-dark(#dce2ee, #25303a);
+		border: 1px solid var(--ui-2);
 		padding: .25em .4em;
 	}
 	table th {
 		font-weight: bold;
 	}
 	table thead th {
-		background: light-dark(#edf1f8, #1a1e2a);
+		background: var(--bg-3);
 		font-size: .9em;
 		text-align: center;
 	}
@@ -255,7 +274,7 @@ const css = `
 		min-width: 7rem;
 		max-width: 9rem;
 		word-break: break-word;
-		background: light-dark(#f7fafd, #181e28);
+		background: var(--bg-2);
 	}
 	table td {
 		text-align: center;
@@ -269,7 +288,7 @@ const css = `
 		margin: 1rem;
 		text-align: center;
 		font-size: .75em;
-		color: light-dark(#5c6880, #7888a4);
+		color: var(--tx-2);
 	}
 	footer p {
 		margin: .15em 0;
@@ -300,15 +319,15 @@ const css = `
 		font-weight: 700;
 	}
 	.activity-reservation-required {
-		background: light-dark(#dbeafe, #1a3060);
-		color: light-dark(#1d4ed8, #60a5fa);
+		background: var(--bl-bg);
+		color: var(--bl);
 	}
 	.activity-reservation-required::after {
 		content: 'R';
 	}
 	.activity-reservation-required-maybe {
-		background: light-dark(#dce2ee, #25303a);
-		color: light-dark(#5c6880, #7888a4);
+		background: var(--bg-3);
+		color: var(--tx-2);
 	}
 	.activity-reservation-required-maybe::after {
 		content: 'R?';

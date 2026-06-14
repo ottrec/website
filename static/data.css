@@ -1,356 +1,273 @@
-@font-face {
-    font-family: 'Source Sans 3';
-    font-style: normal;
-    font-weight: 200 900;
-    font-display: swap;
-    src: url(fonts/source_sans_3.woff2);
+/* data.ottrec.ca — layered on website.css, which provides the flexoki theme,
+ * the shared navbar (.map-topnav) + theme toggle, the fonts, and the footer
+ * (.site-footer). This file styles the data documentation page itself. */
+
+.data-page main {
+	max-width: 52rem;
+	margin: 0 auto;
+	padding: 1rem 1.5rem 2.5rem;
 }
 
-* {
-    box-sizing: border-box;
+/* page header */
+.data-header {
+	margin: 1.5rem 0 2rem;
+}
+.data-header h1 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.7rem;
+	font-weight: 700;
+	margin: 0;
 }
 
-html {
-    color-scheme: light dark;
-    background: light-dark(#eaecf5, #0b0d10);
-    color: light-dark(#18181c, #d8dce8);
-    font-size: 16px;
-    font-optical-sizing: auto;
-    padding: 0 1rem;
+/* sections */
+.data-page section {
+	margin: 2rem 0;
+}
+.data-page section > h2 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.2rem;
+	font-weight: 600;
+	margin: 0 0 .6rem;
+	padding-bottom: .3rem;
+	border-bottom: 1px solid var(--fxki-ui-2);
+}
+.data-page section h3 {
+	font-size: .95rem;
+	font-weight: 600;
+	margin: 1.25rem 0 .4rem;
+}
+.data-page p {
+	margin: .5rem 0;
+	color: var(--fxki-tx-2);
+	line-height: 1.55;
+}
+.data-page a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.data-page a:hover {
+	text-decoration: underline;
 }
 
-body {
-    font-family: 'Source Sans 3', system-ui, sans-serif;
-    font-size: 1rem;
-    max-width: 768px;
-    margin: 0 auto;
+/* download links — quiet bordered buttons */
+.data-page .dl {
+	display: inline-block;
+	font-family: monospace;
+	font-size: .8rem;
+	padding: .15em .55em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .35rem;
+	background: var(--fxki-bg-2);
+	color: var(--fxki-tx);
+	text-decoration: none;
+	white-space: nowrap;
+}
+.data-page .dl:hover {
+	border-color: var(--fxki-bl);
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.data-page .dl.dl-meta {
+	background: none;
+	border-style: dashed;
+	color: var(--fxki-tx-2);
+}
+.data-page .dl.dl-meta:hover {
+	border-style: solid;
+	color: var(--fxki-bl);
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Source Sans 3', system-ui, sans-serif;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.3;
+/* simplified downloads list */
+.data-page ul.downloads {
+	list-style: none;
+	margin: .75rem 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: .4rem;
+}
+.data-page ul.downloads li {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+}
+.data-page ul.downloads li > span {
+	min-width: 2.5rem;
+	font-size: .72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .05em;
+	color: var(--fxki-tx-2);
 }
 
-a {
-    color: light-dark(#2563eb, #60a5fa);
-    text-decoration: none;
-    &:hover {
-        text-decoration: underline;
-    }
+/* raw downloads list */
+.data-page ul.raw-downloads {
+	list-style: none;
+	margin: .75rem 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: .5rem;
+}
+.data-page ul.raw-downloads li {
+	display: flex;
+	align-items: baseline;
+	gap: .7rem;
+}
+.data-page ul.raw-downloads li > span {
+	font-size: .85rem;
+	color: var(--fxki-tx-2);
 }
 
-header {
-    text-align: center;
-    padding: 1.5rem 0 .75rem;
-
-    > h1 {
-        font-size: 1.4rem;
-    }
+/* schema + history tables (table font is Asap, set in website.css) */
+.data-page table.schema,
+.data-page table.history {
+	width: 100%;
+	border-collapse: collapse;
+	border: 1px solid var(--fxki-ui-2);
+	font-size: .8rem;
+	margin: .75rem 0;
+}
+.data-page table.schema tr,
+.data-page table.history tr {
+	border-bottom: 1px solid var(--fxki-ui-2);
+}
+.data-page table.schema td,
+.data-page table.schema th,
+.data-page table.history td,
+.data-page table.history th {
+	text-align: left;
+	vertical-align: middle;
+	padding: .3rem .7rem;
+	font-weight: normal;
 }
 
-section {
-    background: light-dark(#f8f9fc, #111418);
-    border-radius: .6rem;
-    padding: .875rem 1.125rem 1.25rem;
-    margin: 1rem 0;
-
-    > h1 {
-        font-size: 1.1em;
-        padding-bottom: .55rem;
-        margin-bottom: .75rem;
-        border-bottom: 1px solid light-dark(#dce2ee, #25303a);
-        color: light-dark(#18181c, #c0c8d8);
-    }
-
-    > h2 {
-        font-size: .72em;
-        font-weight: 700;
-        letter-spacing: .06em;
-        text-transform: uppercase;
-        color: light-dark(#5c6880, #6878a0);
-        margin: 1.25rem 0 .4rem;
-    }
-
-    > table {
-        margin: .6rem 0;
-    }
-
-    > p {
-        font-size: .9em;
-        margin: .5rem 0;
-        color: light-dark(#333848, #b0b8c8);
-    }
+/* schema table */
+.data-page table.schema tr.controls {
+	background: var(--fxki-bg-2);
+}
+.data-page table.schema tr.controls label {
+	display: flex;
+	align-items: center;
+	gap: .5em;
+	font-size: .72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .05em;
+	color: var(--fxki-tx-2);
+}
+.data-page table.schema tr.controls select {
+	font: inherit;
+	text-transform: none;
+	letter-spacing: normal;
+	padding: .15em .4em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .3em;
+	background: var(--fxki-bg);
+	color: inherit;
+}
+.data-page table.schema tr.schema-table {
+	background: var(--fxki-bg-2);
+}
+.data-page table.schema tr.schema-table th {
+	font-weight: 600;
+}
+.data-page table.schema tr.schema-column th {
+	padding-left: 1.75rem;
+}
+.data-page table.schema td {
+	color: var(--fxki-tx-2);
+}
+/* format toggle: show only the selected format's name (CSS-only via :has) */
+@supports not selector(:has(option:checked)) {
+	.data-page table.schema tr.controls,
+	.data-page table.schema [data-format]:not([data-format=""]) {
+		display: none !important;
+	}
+}
+@supports selector(:has(option:checked)) {
+	.data-page table.schema:has(tr.controls select.format > option[value=""]:checked) [data-format]:not([data-format=""]),
+	.data-page table.schema:has(tr.controls select.format > option[value="json"]:checked) [data-format]:not([data-format="json"]),
+	.data-page table.schema:has(tr.controls select.format > option[value="csv"]:checked) [data-format]:not([data-format="csv"]) {
+		display: none !important;
+	}
 }
 
-.dl {
-    display: inline-block;
-    font-family: monospace;
-    font-size: .8em;
-    font-weight: 600;
-    padding: .2em .55em;
-    border-radius: .35em;
-    border: 1px solid light-dark(#dce2ee, #25303a);
-    background: light-dark(#f2f5fa, #1a1e2a);
-    color: light-dark(#2563eb, #60a5fa);
-    text-decoration: none;
-    white-space: nowrap;
-
-    &:hover {
-        background: light-dark(#dbeafe, #1a3060);
-        text-decoration: none;
-    }
-
-    &.dl-meta {
-        color: light-dark(#5c6880, #7888a4);
-        border-style: dashed;
-
-        &:hover {
-            color: light-dark(#2563eb, #60a5fa);
-            border-style: solid;
-        }
-    }
+/* history table */
+.data-page table.history thead tr {
+	background: var(--fxki-bg-2);
+}
+.data-page table.history thead th {
+	font-size: .72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .05em;
+	color: var(--fxki-tx-2);
+}
+.data-page table.history td > .dl + .dl {
+	margin-left: .25rem;
+}
+.data-page table.history .rev {
+	display: inline-block;
+	font-size: .7rem;
+	padding: .05em .4em;
+	border-radius: .3em;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	color: var(--fxki-tx-2);
+	vertical-align: middle;
 }
 
-ul.downloads {
-    list-style: none;
-    margin: .75rem 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: .4rem;
-
-    li {
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-
-        > span {
-            font-size: .75em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: light-dark(#5c6880, #7888a4);
-            min-width: 2.5rem;
-        }
-    }
+/* API reference */
+.data-page dl.api {
+	margin: .5rem 0;
 }
-
-ul.raw-downloads {
-    list-style: none;
-    margin: .75rem 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: .45rem;
-
-    li {
-        display: flex;
-        align-items: baseline;
-        gap: .7rem;
-
-        > span {
-            font-size: .85em;
-            color: light-dark(#5c6880, #7888a4);
-        }
-    }
+.data-page dl.api dt {
+	font-family: monospace;
+	font-size: .85rem;
+	font-weight: 600;
+	color: var(--fxki-tx);
+	margin-top: .5rem;
 }
-
-table.schema {
-    border-collapse: collapse;
-    width: 100%;
-    border: 1px solid light-dark(#dce2ee, #25303a);
-    font-size: .85em;
-
-    tr {
-        border-bottom: 1px solid light-dark(#dce2ee, #25303a);
-    }
-
-    td, th {
-        vertical-align: middle;
-        font-weight: normal;
-        text-align: left;
-        padding: .25rem .75rem;
-    }
-
-    tr.controls {
-        background: light-dark(#edf1f8, #1a1e2a);
-
-        label {
-            font-size: .8em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: light-dark(#5c6880, #6878a0);
-            display: flex;
-            align-items: center;
-            gap: .5em;
-        }
-
-        select {
-            font-family: inherit;
-            font-size: 1em;
-            font-weight: normal;
-            text-transform: none;
-            letter-spacing: normal;
-            padding: .15em .4em;
-            border: 1px solid light-dark(#dce2ee, #25303a);
-            border-radius: .3em;
-            background: light-dark(#fff, #161a22);
-            color: inherit;
-        }
-    }
-
-    tr.schema-table {
-        background: light-dark(#f2f5fa, #1a1e2a);
-
-        td, th {
-            font-weight: 600;
-        }
-    }
-
-    tr.schema-column th {
-        padding-left: 2rem;
-    }
-
-    @supports not selector(:has(option:checked)) {
-        tr.controls,
-        [data-format]:not([data-format=""]) {
-            display: none !important;
-        }
-    }
-
-    @supports selector(:has(option:checked)) {
-        &:has(tr.controls select.format > option[value=""]:checked) [data-format]:not([data-format=""]),
-        &:has(tr.controls select.format > option[value="json"]:checked) [data-format]:not([data-format="json"]),
-        &:has(tr.controls select.format > option[value="csv"]:checked) [data-format]:not([data-format="csv"]) {
-            display: none !important;
-        }
-    }
+.data-page dl.api dt span.param {
+	background: var(--fxki-bg-3);
+	color: var(--fxki-bl);
+	padding: 0 .25em;
+	margin: 0 .1em;
+	border-radius: .3em;
 }
-
-table.history {
-    border-collapse: collapse;
-    width: 100%;
-    border: 1px solid light-dark(#dce2ee, #25303a);
-    font-size: .85em;
-
-    tr {
-        border-bottom: 1px solid light-dark(#dce2ee, #25303a);
-    }
-
-    td, th {
-        vertical-align: middle;
-        padding: .3rem .75rem;
-    }
-
-    th {
-        font-weight: 600;
-        text-align: left;
-    }
-
-    thead tr {
-        background: light-dark(#edf1f8, #1a1e2a);
-
-        th {
-            font-size: .8em;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            color: light-dark(#5c6880, #6878a0);
-        }
-    }
-
-    td {
-        text-align: left;
-
-        > .dl + .dl {
-            margin-left: .3rem;
-        }
-    }
-
-    .rev {
-        display: inline-block;
-        font-size: .72em;
-        font-weight: 700;
-        padding: .1em .45em;
-        border-radius: .35em;
-        background: light-dark(#f2f5fa, #1a1e2a);
-        border: 1px solid light-dark(#dce2ee, #25303a);
-        color: light-dark(#5c6880, #7888a4);
-        vertical-align: middle;
-    }
+.data-page dl.api dt span.opt::before {
+	content: '[';
+	color: var(--fxki-tx-3);
+	margin-left: .1em;
 }
-
-dl.api {
-    margin: .5rem 0;
-    font-size: .9em;
-
-    dt {
-        font-weight: 600;
-        font-family: monospace;
-        font-size: 1em;
-        color: light-dark(#2563eb, #60a5fa);
-
-        span.param {
-            background: light-dark(#dbeafe, #1a3060);
-            color: light-dark(#1d4ed8, #60a5fa);
-            padding: 0 .25em;
-            margin: 0 .1em;
-            border-radius: .3em;
-        }
-
-        span.opt {
-            &::before, &::after {
-                color: light-dark(#0003, #fff3);
-                margin: 0 .1em;
-            }
-            &::before { content: '['; }
-            &::after { content: ']'; }
-        }
-    }
-
-    dd {
-        margin: .35rem 0 1rem 1.5rem;
-        color: light-dark(#333848, #b0b8c8);
-
-        pre, code {
-            font-size: .85em;
-            font-family: monospace;
-        }
-
-        pre {
-            display: block;
-            background: light-dark(#f2f5fa, #1a1e2a);
-            border: 1px solid light-dark(#dce2ee, #25303a);
-            border-radius: .35rem;
-            padding: .5em .75em;
-            overflow-x: auto;
-            margin: .35em 0;
-        }
-
-        code {
-            display: inline;
-            background: light-dark(#dbeafe, #1a3060);
-            color: light-dark(#1d4ed8, #60a5fa);
-            padding: .1em .3em;
-            border-radius: .25em;
-        }
-    }
+.data-page dl.api dt span.opt::after {
+	content: ']';
+	color: var(--fxki-tx-3);
+	margin-right: .1em;
 }
-
-footer {
-    text-align: center;
-    font-size: .75em;
-    color: light-dark(#5c6880, #7888a4);
-    margin: 1rem;
-    padding: .5rem 0 1.5rem;
-
-    > nav > a {
-        color: inherit;
-        &:hover {
-            color: light-dark(#2563eb, #60a5fa);
-            text-decoration: underline;
-        }
-    }
+.data-page dl.api dd {
+	margin: .35rem 0 1rem 1.5rem;
+	color: var(--fxki-tx-2);
+	font-size: .9rem;
+	line-height: 1.5;
+}
+.data-page dl.api dd pre,
+.data-page dl.api dd code {
+	font-family: monospace;
+	font-size: .85em;
+}
+.data-page dl.api dd pre {
+	display: block;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	padding: .5em .75em;
+	overflow-x: auto;
+	margin: .4em 0;
+}
+.data-page dl.api dd code {
+	background: var(--fxki-bg-3);
+	padding: .1em .3em;
+	border-radius: .25em;
 }

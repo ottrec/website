@@ -73,6 +73,7 @@ func Data(cfg DataConfig) (http.Handler, error) {
 		Cache: cfg.Cache,
 	})
 	mux.Handle("/static/", static.Handler(static.Data))
+	mux.Handle("GET /favicon.ico", static.Handler(static.Data))
 
 	// so if they panic, they panic early
 	dataExportSchemaCSV()

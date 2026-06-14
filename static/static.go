@@ -204,8 +204,18 @@ var Website = assets.
 
 var Data = assets.
 	NewGroup(Base,
+		// the data site now shares the main site's chrome (flexoki theme,
+		// navbar, theme toggle, icons); data.css layers on website.css
+		WebsiteCSS,
 		DataCSS,
+		ThemeJS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
+		AsapWOFF2,
+		SymbolsWOFF2,
+		FaviconSVG,
+		FaviconICO,
+		AppleTouchIconPNG,
 	).
-	Cache("public, max-age=86400")
+	Cache("public, max-age=86400").
+	Alias("/favicon.ico", FaviconICO)

@@ -137,37 +137,3 @@ body.home-page {
 	font-size: 1.15em;
 	color: var(--fxki-tx-2);
 }
-
-/* footer */
-
-.site-footer {
-	width: 100%;
-	max-width: 60rem;
-	margin: 0 auto;
-	padding: 1rem 1.5rem 2rem;
-	border-top: 1px solid var(--fxki-ui-2);
-	font-size: .8rem;
-	color: var(--fxki-tx-2);
-}
-.site-footer p {
-	margin: .25rem 0;
-}
-.site-footer nav ul {
-	list-style: none;
-	margin: .25rem 0;
-	padding: 0;
-}
-.site-footer nav li {
-	display: inline;
-}
-.site-footer nav li:not(:last-of-type)::after {
-	content: "\00a0\2022\00a0";
-	color: var(--fxki-tx-3);
-}
-.site-footer nav a {
-	color: var(--fxki-bl);
-	text-decoration: none;
-}
-.site-footer nav a:hover {
-	text-decoration: underline;
-}
