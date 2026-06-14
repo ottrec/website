@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"path"
 	"regexp"
 	"slices"
@@ -18,9 +19,9 @@ import (
 
 	"github.com/klauspost/compress/gzip"
 	"github.com/klauspost/compress/zstd"
+	"github.com/pgaskin/go-lightningcss"
 	"github.com/pgaskin/ottrec-website/internal/esbuild"
 	"github.com/pgaskin/ottrec-website/internal/httpx"
-	"github.com/pgaskin/ottrec-website/internal/postcss"
 )
 
 // TODO: refactor, compress assets in the background, support renaming assets per group
@@ -146,11 +147,23 @@ func newFile(name string) *file {
 		if !strings.Contains(name, "/") {
 			switch ext {
 			case ".css":
-				css, err := postcss.Transform(string(buf), "defaults, safari > 15, chrome > 110, firefox > 110")
-				if err != nil {
-					return nil, fmt.Errorf("compile css: %w", err)
+				if noop, _ := strconv.ParseBool(os.Getenv("DEBUG_POSTCSS_NOOP")); !noop {
+					res, err := lightningcss.Transform(buf, &lightningcss.Options{
+						Filename: name,
+						Minify:   true,
+						Nesting:  true,
+						Targets: lightningcss.Targets{
+							Chrome:  lightningcss.Version(110, 0, 0),
+							Safari:  lightningcss.Version(15, 0, 0),
+							Firefox: lightningcss.Version(110, 0, 0),
+						},
+					})
+					if err != nil {
+						return nil, fmt.Errorf("compile css: %w", err)
+					}
+					buf = res.Code
 				}
-				buf = []byte(regexp.MustCompile(`url\([^)]+\)`).ReplaceAllStringFunc(css, func(css string) string {
+				buf = []byte(regexp.MustCompile(`url\([^)]+\)`).ReplaceAllStringFunc(string(buf), func(css string) string {
 					return "url(" + getFile(string(css[strings.IndexByte(css, '(')+1:len(css)-1])).HashName + ")"
 				}))
 			case ".ts":

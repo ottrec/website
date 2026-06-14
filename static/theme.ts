@@ -24,7 +24,17 @@ function init(btn: HTMLElement) {
 	}
 
 	function apply(t: Theme) {
-		document.documentElement.style.colorScheme = (t === 'light' || t === 'dark') ? t : ''
+		document.documentElement.style.colorScheme = (t === 'light' || t === 'dark') ? t : 'light dark'
+
+		// also update the fallback for browsers which don't support it
+		if (t === 'auto') {
+			document.documentElement.style.removeProperty('--lightningcss-light')
+			document.documentElement.style.removeProperty('--lightningcss-dark')
+		} else {
+			document.documentElement.style.setProperty('--lightningcss-light', (t === 'light') ? 'initial' : ' ')
+			document.documentElement.style.setProperty('--lightningcss-dark', (t === 'dark') ? 'initial' : ' ')
+		}
+
 		btn.dataset['theme'] = t // the icon is set from this in css
 		btn.setAttribute('aria-label', 'Color scheme: ' + LABELS[t])
 		window.dispatchEvent(new CustomEvent('themechange'))
