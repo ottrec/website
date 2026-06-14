@@ -249,37 +249,57 @@
 .schedules-query-help {
 	margin: .5rem 0 1rem;
 	font-size: .8rem;
+	line-height: 1.55;
 	color: var(--fxki-tx-2);
+	overflow-wrap: break-word;
 }
 .schedules-query-help summary {
+	width: fit-content;
 	cursor: pointer;
 	color: var(--fxki-bl);
+	font-weight: 600;
+}
+.schedules-query-help summary:hover {
+	text-decoration: underline;
+}
+.schedules-query-help[open] summary {
+	margin-bottom: .5rem;
 }
 .schedules-query-help h3 {
-	margin: .75rem 0 .25rem;
+	margin: 1.1rem 0 .4rem;
 	font-size: .8rem;
+	font-weight: 700;
 	color: var(--fxki-tx);
 }
-.schedules-query-help p,
-.schedules-query-help ul {
-	margin: .35rem 0;
+.schedules-query-help p {
+	margin: .5rem 0;
 }
 .schedules-query-help dl {
-	margin: .35rem 0;
+	margin: 0;
 }
 .schedules-query-help dt {
-	margin: .5rem 0 .1rem;
+	margin: .7rem 0 .25rem;
 }
+/* a guide line ties each description to its function signature */
 .schedules-query-help dd {
-	margin: 0 0 .25rem 1rem;
+	margin: 0 0 .5rem;
+	padding-left: .85rem;
+	border-left: 2px solid var(--fxki-ui-2);
+}
+.schedules-query-help ul {
+	margin: .5rem 0;
+	padding-left: 1.15rem;
+}
+.schedules-query-help li {
+	margin: .35rem 0;
 }
 .schedules-query-help code {
 	font-family: ui-monospace, monospace;
-	font-size: .95em;
+	font-size: .92em;
 	background: var(--fxki-bg-2);
-	border: 1px solid var(--fxki-ui);
-	border-radius: .2em;
-	padding: 0 .25em;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .25em;
+	padding: .05em .3em;
 }
 
 /* facility sections */

@@ -64,10 +64,12 @@ templ websiteTopNav(active string, updated time.Time) {
 		<a class={ "nav", templ.KV("active", active == "schedules") } href="/schedules">Schedules</a>
 		<a class={ "nav", templ.KV("active", active == "activities") } href="/activities">Activities</a>
 		<a class={ "nav", templ.KV("active", active == "about") } href="/about">About</a>
-		if !updated.IsZero() {
-			<time datetime={ updated.In(ottrecidx.TZ).Format(time.RFC3339) }>updated { updated.In(ottrecidx.TZ).Format("2006-01-02") }</time>
-		}
-		<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+		<div class="topnav-end">
+			<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+			if !updated.IsZero() {
+				<time datetime={ updated.In(ottrecidx.TZ).Format(time.RFC3339) }>updated<br/>{ updated.In(ottrecidx.TZ).Format("2006-01-02 15:04") }</time>
+			}
+		</div>
 	</nav>
 }
 

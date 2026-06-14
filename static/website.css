@@ -300,7 +300,7 @@ main.error-page a:hover {
 .map-topnav a.nav {
     color: var(--fxki-tx-2);
     text-decoration: none;
-    font-size: .9rem;
+    font-size: 1rem;
 }
 .map-topnav a.nav:hover {
     color: var(--fxki-tx);
@@ -310,15 +310,23 @@ main.error-page a:hover {
     color: var(--fxki-tx);
     font-weight: 600;
 }
-.map-topnav time {
+/* the theme toggle and updated time, pushed to the right as a group (the
+ * container, not the toggle, carries margin-left:auto so the time stays right-
+ * aligned even before theme.js reveals the toggle) */
+.map-topnav .topnav-end {
     margin-left: auto;
-    font-size: .8rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+.map-topnav time {
+    font-size: .72rem;
+    line-height: 1.2;
+    text-align: right;
     color: var(--fxki-tx-2);
     white-space: nowrap;
 }
 .map-topnav .theme-toggle {
-    align-self: center;
-    margin-left: .75rem;
     padding: .25em;
     border: 1px solid var(--fxki-ui-2);
     border-radius: 50%;
@@ -353,9 +361,6 @@ main.error-page a:hover {
     /* it gets cut off by the nav links otherwise */
     .map-topnav time {
         display: none;
-    }
-    .map-topnav .theme-toggle {
-        margin-left: auto;
     }
 }
 
