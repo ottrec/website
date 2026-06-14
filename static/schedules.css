@@ -229,6 +229,16 @@
 .schedules-search-mode:hover {
 	text-decoration: underline;
 }
+/* simple search: wrap the advanced-search link onto its own line, tight under
+ * the input on the left, in slightly smaller text */
+.schedules-search:not(.schedules-search-advanced) {
+	flex-wrap: wrap;
+	row-gap: .1rem;
+}
+.schedules-search:not(.schedules-search-advanced) .schedules-search-mode {
+	flex-basis: 100%;
+	font-size: .72rem;
+}
 .schedules-query-error {
 	color: var(--fxki-re);
 	font-size: .85rem;
