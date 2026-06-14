@@ -25,6 +25,11 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 						<button type="button" class="fac-star" data-fac-star={ opts.Star } aria-pressed="false" aria-label="Star facility" hidden></button>
 					}
 				</h1>
+				if opts.Region {
+					if s := facilityRegionLabel(fac); s != "" {
+						<p class="facility-region">{ s }</p>
+					}
+				}
 				if t := fac.GetSourceDate(); !t.IsZero() {
 					<p class="facility-updated">Updated <time datetime={ t.In(ottrecidx.TZ).Format(time.RFC3339) }>{ t.In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time></p>
 				}

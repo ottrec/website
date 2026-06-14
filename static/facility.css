@@ -41,6 +41,11 @@ article.facility h1 a:hover {
 	color: var(--fxki-bl);
 	text-decoration: underline;
 }
+article.facility .facility-region {
+	margin: .05rem 0 0;
+	font-size: .75rem;
+	color: var(--fxki-tx-2);
+}
 article.facility .facility-updated {
 	margin: .1rem 0 0;
 	font-size: .7rem;

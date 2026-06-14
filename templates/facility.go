@@ -10,6 +10,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/pkg/ottregions"
 	"github.com/pgaskin/ottrec/schema"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -33,6 +34,9 @@ type WebsiteFacilityArticleOptions struct {
 	// Star, if non-empty, is the facility slug for a star toggle button next
 	// to the facility name (hidden until starred.js reveals it).
 	Star string
+	// Region shows the facility's region and sector under its name (the map
+	// popups omit it since the location is already visible on the map).
+	Region bool
 }
 
 // facilityDirectionsURL returns a Google Maps directions link for the
@@ -47,6 +51,16 @@ func facilityDirectionsURL(fac ottrecidx.FacilityRef) string {
 			strconv.FormatFloat(float64(lng), 'f', -1, 32)
 	}
 	return ""
+}
+
+// facilityRegionLabel returns the facility's region and sector for display
+// (e.g. "Barrhaven · South"), or an empty string if it has no known region.
+func facilityRegionLabel(fac ottrecidx.FacilityRef) string {
+	r := fac.Region()
+	if r == ottregions.RegionUnknown {
+		return ""
+	}
+	return r.Name() + " · " + fac.Sector().String()
 }
 
 // indexedSeq numbers a sequence, for stable anchor ids.

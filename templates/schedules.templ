@@ -124,9 +124,9 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 							for _, f := range params.TOC {
 								<section class="schedules-facility" id={ f.Slug }>
 									if params.Single {
-										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true, List: params.List, Star: f.Slug})
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true, List: params.List, Star: f.Slug, Region: true})
 									} else {
-										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: schedulesNavHref("/schedules/facility/"+f.Slug, params.List), HeaderLinks: true, List: params.List, Star: f.Slug})
+										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: schedulesNavHref("/schedules/facility/"+f.Slug, params.List), HeaderLinks: true, List: params.List, Star: f.Slug, Region: true})
 									}
 								</section>
 							}
