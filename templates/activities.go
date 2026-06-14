@@ -33,6 +33,8 @@ var (
 // offering a category of activities, grouped by sector.
 type activityCategoryCard struct {
 	Name   string
+	Slug   string   // schedules category slug for the "All Schedules" link ("" for Other)
+	Terms  []string // activity-name terms this category matches ("" for Other)
 	Groups []activitySectorGroup
 }
 
@@ -75,6 +77,12 @@ func buildActivityCards(data ottrecidx.DataRef) []activityCategoryCard {
 	cards := make([]activityCategoryCard, len(mapCategories)+1)
 	for c, cat := range mapCategories {
 		cards[c].Name = cat.Name
+		// ScheduleCategories mirrors mapCategories 1:1; reuse its slug and the
+		// activity terms it matches for the "All Schedules" link and the note
+		if c < len(ScheduleCategories) {
+			cards[c].Slug = ScheduleCategories[c].Slug
+			cards[c].Terms = ScheduleCategories[c].Activities
+		}
 	}
 	cards[len(mapCategories)].Name = mapCategoryOther
 

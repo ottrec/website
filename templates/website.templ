@@ -97,13 +97,6 @@ templ WebsiteHomePage(params WebsiteParams) {
 					<h1>Find drop-in recreation in Ottawa</h1>
 					<p>Find drop-in swimming, skating, and more across all City of Ottawa recreation facilities.</p>
 					<p class="home-updated">Schedules updated <time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>{ params.Data.Index().Updated().In(ottrecidx.TZ).Format("January 2, 2006") }</time>.</p>
-					<nav class="home-cats" aria-label="Categories">
-						<ul>
-							for _, cat := range ScheduleCategories {
-								<li><a href={ templ.URL("/schedules/" + cat.Slug) } data-icon={ cat.Icon }>{ cat.Name }</a></li>
-							}
-						</ul>
-					</nav>
 				</header>
 				<nav class="home-tiles" aria-label="Sections">
 					<a href="/map" data-icon="map">
@@ -116,7 +109,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 					</a>
 					<a href="/activities" data-icon="overview">
 						<h2>Activities</h2>
-						<p>Which facilities offer each activity, by weekday and time of day.</p>
+						<p>Find facilities offering each activity, by area, weekday, and time of day.</p>
 					</a>
 				</nav>
 				<section class="home-news" aria-labelledby="home-news-heading">

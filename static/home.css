@@ -102,42 +102,6 @@ body.home-page {
 	color: var(--fxki-ui-2);
 }
 
-/* category pills (in the hero, under the search box) */
-
-.home-cats {
-	margin: 1rem auto 0;
-	max-width: 38rem;
-}
-.home-cats ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: .4rem;
-}
-.home-cats a {
-	display: inline-flex;
-	align-items: center;
-	gap: .4em;
-	padding: .3em .85em;
-	border: 1px solid var(--fxki-ui-2);
-	border-radius: 2em;
-	background: var(--fxki-bg-2);
-	color: inherit;
-	font-size: .85rem;
-	text-decoration: none;
-}
-.home-cats a:hover {
-	background: var(--fxki-bg-3);
-	border-color: var(--fxki-ui-3);
-}
-.home-cats a::before {
-	font-size: 1.15em;
-	color: var(--fxki-tx-2);
-}
-
 /* what's new */
 
 .home-news {

@@ -16,10 +16,12 @@ templ dataTopNav(updated time.Time) {
 	<nav class="map-topnav">
 		<a class="brand" href="https://ottrec.ca/">ottrec.ca</a>
 		<a class="nav active" href="/">Data</a>
-		if !updated.IsZero() {
-			<time datetime={ updated.In(ottrecdata.TZ).Format(time.RFC3339) }>updated { updated.In(ottrecdata.TZ).Format("2006-01-02") }</time>
-		}
-		<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+		<div class="topnav-end">
+			<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+			if !updated.IsZero() {
+				<time datetime={ updated.In(ottrecdata.TZ).Format(time.RFC3339) }>updated { updated.In(ottrecdata.TZ).Format("2006-01-02") }</time>
+			}
+		</div>
 	</nav>
 }
 

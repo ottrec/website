@@ -30,10 +30,38 @@
 	background: var(--fxki-bg-2);
 	padding: .75rem 1rem 1rem;
 }
+.activity-card-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 0 0 .5rem;
+}
 .activity-card h2 {
 	font-family: 'Source Serif 4', serif;
 	font-size: 1.05rem;
-	margin: 0 0 .5rem;
+	margin: 0;
+}
+/* small note under the title listing the activity terms this category matches */
+.activity-card-title .activity-terms {
+	margin: .1rem 0 0;
+	font-size: .7rem;
+	color: var(--fxki-tx-3);
+}
+.activity-card-title .activity-terms code {
+	font-family: ui-monospace, monospace;
+	color: var(--fxki-tx-2);
+}
+/* "All Schedules" link for the category */
+.activity-all {
+	flex: none;
+	font-size: .78rem;
+	color: var(--fxki-bl);
+	text-decoration: none;
+	white-space: nowrap;
+}
+.activity-all:hover {
+	text-decoration: underline;
 }
 
 /* availability tables */

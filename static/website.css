@@ -290,6 +290,12 @@ main.error-page a:hover {
     position: relative;
     z-index: 1300;
 }
+/* the homepages open with a hero rather than content, so the nav divider reads
+ * as heavy there */
+body.home-page .map-topnav,
+body.data-page .map-topnav {
+    border-bottom: none;
+}
 .map-topnav .brand {
     font-family: 'Source Serif 4', serif;
     font-weight: 700;
