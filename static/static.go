@@ -1,65 +1,152 @@
-// Package static contains static content and functions to serve it.
+// Package static embeds the website's static assets, configures how each is
+// compiled (CSS via lightningcss, TypeScript via esbuild), and groups them for
+// serving. The asset pipeline and HTTP serving live in internal/asset.
 package static
 
 import (
 	"bytes"
-	"crypto/sha1"
 	"embed"
-	"encoding/base32"
-	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
-	"path"
 	"regexp"
-	"slices"
 	"strconv"
-	"strings"
-	"sync"
 
-	"github.com/klauspost/compress/gzip"
-	"github.com/klauspost/compress/zstd"
 	"github.com/pgaskin/go-lightningcss"
+	"github.com/pgaskin/ottrec-website/internal/asset"
 	"github.com/pgaskin/ottrec-website/internal/esbuild"
-	"github.com/pgaskin/ottrec-website/internal/httpx"
 )
-
-// TODO: refactor, compress assets in the background, support renaming assets per group
 
 //go:generate go run fonts.go
 //go:generate go run fetch.go https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js lib/leaflet.js
 //go:generate go run fetch.go https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css lib/leaflet.css
 
+// Base is the path prefix under which assets are served.
 const Base = "/static/"
 
+//go:embed *
+var res embed.FS
+
+// assets holds every embedded static asset.
+var assets = asset.NewSet(res, mimeType)
+
+// Path returns the public, content-addressed path at which a is served.
+func Path(a *asset.Asset) string {
+	b, err := a.Built()
+	if err != nil {
+		panic(err)
+	}
+	return Base + b.Name
+}
+
+// Handler builds and warms g, then returns it as an [http.Handler]. Compile
+// failures are fatal: they are deterministic build bugs that should surface at
+// startup.
+func Handler(g *asset.Group) http.Handler {
+	if err := g.Warm(); err != nil {
+		panic(err)
+	}
+	return g
+}
+
+func mimeType(ext string) string {
+	switch ext {
+	case ".woff2":
+		return "font/woff2"
+	case ".css":
+		return "text/css; charset=utf-8"
+	case ".js":
+		return "application/javascript; charset=utf-8"
+	case ".svg":
+		return "image/svg+xml"
+	case ".ico":
+		return "image/x-icon"
+	case ".png":
+		return "image/png"
+	}
+	return ""
+}
+
+var cssURL = regexp.MustCompile(`url\([^)]+\)`)
+
+// compileCSS minifies a stylesheet with lightningcss and rewrites its url()
+// references to the content-addressed names of the assets they point at.
+func compileCSS(name string, data []byte, resolve func(string) (string, error)) ([]byte, string, error) {
+	if noop, _ := strconv.ParseBool(os.Getenv("DEBUG_POSTCSS_NOOP")); !noop {
+		res, err := lightningcss.Transform(data, &lightningcss.Options{
+			Filename: name,
+			Minify:   true,
+			Nesting:  true,
+			Targets: lightningcss.Targets{
+				Chrome:  lightningcss.Version(110, 0, 0),
+				Safari:  lightningcss.Version(15, 0, 0),
+				Firefox: lightningcss.Version(110, 0, 0),
+			},
+		})
+		if err != nil {
+			return nil, "", err
+		}
+		data = res.Code
+	}
+	var rerr error
+	out := cssURL.ReplaceAllFunc(data, func(m []byte) []byte {
+		ref := string(m[bytes.IndexByte(m, '(')+1 : len(m)-1])
+		hashed, err := resolve(ref)
+		if err != nil {
+			rerr = err
+			return m
+		}
+		return []byte("url(" + hashed + ")")
+	})
+	if rerr != nil {
+		return nil, "", rerr
+	}
+	return out, ".css", nil
+}
+
+// compileTS compiles a TypeScript module to minified JavaScript.
+func compileTS(name string, data []byte, _ func(string) (string, error)) ([]byte, string, error) {
+	js, err := esbuild.Transform(name, string(data))
+	if err != nil {
+		return nil, "", err
+	}
+	return []byte(js), ".js", nil
+}
+
+// Assets and the groups they are served in. Top-level stylesheets and scripts
+// are compiled; vendored files under a subdirectory are served as-is.
 var (
-	AsapWOFF2         = newFile("fonts/asap.woff2")
-	SourceSans3WOFF2  = newFile("fonts/source_sans_3.woff2")
-	SourceSerif4WOFF2 = newFile("fonts/source_serif_4.woff2")
-	SymbolsWOFF2      = newFile("fonts/symbols.woff2")
+	css = asset.Compile(compileCSS)
+	ts  = asset.Compile(compileTS)
 
-	LeafletCSS = newFile("lib/leaflet.css")
-	LeafletJS  = newFile("lib/leaflet.js")
+	AsapWOFF2         = assets.Register("fonts/asap.woff2")
+	SourceSans3WOFF2  = assets.Register("fonts/source_sans_3.woff2")
+	SourceSerif4WOFF2 = assets.Register("fonts/source_serif_4.woff2")
+	SymbolsWOFF2      = assets.Register("fonts/symbols.woff2")
 
-	FaviconSVG        = newFile("favicon.svg")
-	FaviconICO        = newFile("favicon.ico")
-	AppleTouchIconPNG = newFile("apple-touch-icon.png")
+	LeafletCSS = assets.Register("lib/leaflet.css")
+	LeafletJS  = assets.Register("lib/leaflet.js")
 
-	DataCSS       = newFile("data.css")
-	WebsiteCSS    = newFile("website.css")
-	FacilityCSS   = newFile("facility.css")
-	MapCSS        = newFile("map.css")
-	MapJS         = newFile("map.ts")
-	ActivitiesCSS = newFile("activities.css")
-	ActivitiesJS  = newFile("activities.ts")
-	SchedulesCSS  = newFile("schedules.css")
-	SchedulesJS   = newFile("schedules.ts")
-	AboutCSS      = newFile("about.css")
-	HomeCSS       = newFile("home.css")
-	ThemeJS       = newFile("theme.ts")
-	StarredJS     = newFile("starred.ts")
+	FaviconSVG        = assets.Register("favicon.svg")
+	FaviconICO        = assets.Register("favicon.ico")
+	AppleTouchIconPNG = assets.Register("apple-touch-icon.png")
 
-	Website = newGroup("website",
+	DataCSS       = assets.Register("data.css", css)
+	WebsiteCSS    = assets.Register("website.css", css)
+	FacilityCSS   = assets.Register("facility.css", css)
+	MapCSS        = assets.Register("map.css", css)
+	MapJS         = assets.Register("map.ts", ts)
+	ActivitiesCSS = assets.Register("activities.css", css)
+	ActivitiesJS  = assets.Register("activities.ts", ts)
+	SchedulesCSS  = assets.Register("schedules.css", css)
+	SchedulesJS   = assets.Register("schedules.ts", ts)
+	AboutCSS      = assets.Register("about.css", css)
+	HomeCSS       = assets.Register("home.css", css)
+	ThemeJS       = assets.Register("theme.ts", ts)
+	StarredJS     = assets.Register("starred.ts", ts)
+)
+
+var Website = assets.
+	NewGroup(Base,
 		WebsiteCSS,
 		FacilityCSS,
 		MapCSS,
@@ -81,277 +168,14 @@ var (
 		FaviconSVG,
 		FaviconICO,
 		AppleTouchIconPNG,
-	)
+	).
+	Cache("public, max-age=86400").
+	Alias("/favicon.ico", FaviconICO)
 
-	Data = newGroup("data",
+var Data = assets.
+	NewGroup(Base,
 		DataCSS,
 		SourceSans3WOFF2,
 		SourceSerif4WOFF2,
-	)
-)
-
-// Handler compresses all files not already compressed and returns a handler to
-// be served under [Base].
-func Handler(g *group) http.Handler {
-	g.compress()
-	return http.HandlerFunc(g.serveHTTP)
-}
-
-// Path returns the path to a file.
-func Path(f *file) string {
-	return Base + f.HashName
-}
-
-//go:embed *
-var res embed.FS
-
-type file struct {
-	Name         string
-	HashName     string
-	ContentType  string
-	Hash         string
-	Encodings    []string
-	Raw          [][]byte
-	prepare      func() ([]byte, error)
-	compressOnce sync.Once
-}
-
-func (f *file) compress() {
-	f.compressOnce.Do(func() {
-		slog.Info("static: compressing asset", "name", f.Name, "hash_name", f.HashName)
-		gzipped, err := gzipBytes(f.Raw[0])
-		if err != nil {
-			panic(fmt.Errorf("gzip %q: %w", f.Name, err))
-		}
-		zstdded, err := zstdBytes(f.Raw[0])
-		if err != nil {
-			panic(fmt.Errorf("zstd %q: %w", f.Name, err))
-		}
-		f.Encodings = append(f.Encodings, "gzip", "zstd")
-		f.Raw = append(f.Raw, gzipped, zstdded)
-	})
-}
-
-var cache = map[string]*file{}
-
-func newFile(name string) *file {
-	if v, ok := cache[name]; ok {
-		return v
-	}
-	v, err := func() (*file, error) {
-		ext := path.Ext(name)
-
-		buf, err := res.ReadFile(name)
-		if err != nil {
-			return nil, err
-		}
-
-		if !strings.Contains(name, "/") {
-			switch ext {
-			case ".css":
-				if noop, _ := strconv.ParseBool(os.Getenv("DEBUG_POSTCSS_NOOP")); !noop {
-					res, err := lightningcss.Transform(buf, &lightningcss.Options{
-						Filename: name,
-						Minify:   true,
-						Nesting:  true,
-						Targets: lightningcss.Targets{
-							Chrome:  lightningcss.Version(110, 0, 0),
-							Safari:  lightningcss.Version(15, 0, 0),
-							Firefox: lightningcss.Version(110, 0, 0),
-						},
-					})
-					if err != nil {
-						return nil, fmt.Errorf("compile css: %w", err)
-					}
-					buf = res.Code
-				}
-				buf = []byte(regexp.MustCompile(`url\([^)]+\)`).ReplaceAllStringFunc(string(buf), func(css string) string {
-					return "url(" + getFile(string(css[strings.IndexByte(css, '(')+1:len(css)-1])).HashName + ")"
-				}))
-			case ".ts":
-				js, err := esbuild.Transform(name, string(buf))
-				if err != nil {
-					return nil, fmt.Errorf("compile ts: %w", err)
-				}
-				buf = []byte(js)
-				ext = ".js" // served as plain js
-			}
-		}
-
-		var mimetype string
-		switch ext {
-		case ".woff2":
-			mimetype = "font/woff2"
-		case ".css":
-			mimetype = "text/css; charset=utf-8"
-		case ".js":
-			mimetype = "application/javascript; charset=utf-8"
-		case ".svg":
-			mimetype = "image/svg+xml"
-		case ".ico":
-			mimetype = "image/x-icon"
-		case ".png":
-			mimetype = "image/png"
-		default:
-			return nil, fmt.Errorf("no mimetype for %q", ext)
-		}
-
-		sum := sha1.Sum(buf)
-		hash := base32.StdEncoding.EncodeToString(sum[:])
-		hashName := strings.TrimSuffix(name, path.Ext(name)) + "-" + hash[:10] + ext
-
-		return &file{
-			Name:        name,
-			HashName:    hashName,
-			ContentType: mimetype,
-			Hash:        hash,
-			Encodings:   []string{""},
-			Raw:         [][]byte{buf},
-		}, nil
-	}()
-	if err != nil {
-		panic(fmt.Errorf("static: load %q: %w", name, err))
-	}
-	cache[name] = v
-	return v
-}
-
-func getFile(name string) *file {
-	f, ok := cache[name]
-	if !ok {
-		panic("static: file " + strconv.Quote(name) + " not found in cache")
-	}
-	return f
-}
-
-type group struct {
-	name  string
-	load  sync.Once
-	files map[string]*file
-}
-
-func newGroup(name string, f ...*file) *group {
-	g := &group{
-		name:  name,
-		files: make(map[string]*file),
-	}
-	for _, f := range f {
-		g.files[f.Name] = f
-		g.files[f.HashName] = f
-	}
-	return g
-}
-
-// Compress compresses all files not already compressed.
-func (g *group) compress() {
-	g.load.Do(func() {
-		for _, f := range g.files {
-			f.compress()
-		}
-	})
-}
-
-func (g *group) serveHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet && r.Method != http.MethodHead {
-		w.Header().Set("Allow", "GET, HEAD")
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// we support negotiating the content encoding
-	w.Header().Add("Vary", "Accept-Encoding")
-
-	// match the filename
-	name, ok := strings.CutPrefix(r.URL.Path, Base)
-	if !ok && name == "/favicon.ico" {
-		name, ok = "favicon.ico", true
-	}
-	if !ok {
-		http.Error(w, "not found", http.StatusNotFound)
-		return
-	}
-	file, ok := g.files[name]
-	if !ok {
-		http.Error(w, "not found", http.StatusNotFound)
-		return
-	}
-
-	// redirect to the hashed filename without caching
-	if name != file.HashName {
-		w.Header().Set("Cache-Control", "no-store")
-		w.Header().Set("Location", Base+file.HashName)
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
-	}
-
-	// negotiate the content encoding
-	encoding := httpx.NegotiateContent(r.Header.Values("Accept-Encoding"), file.Encodings)
-	if encoding != "" {
-		w.Header().Set("Content-Encoding", encoding)
-	}
-	buf := file.Raw[slices.Index(file.Encodings, encoding)]
-
-	// set the mimetype
-	if file.ContentType != "" {
-		w.Header().Set("Content-Type", file.ContentType)
-	}
-
-	// cache hashed files (but don't say immutable just in case we have bugs
-	// somewhere)
-	w.Header().Set("Cache-Control", "public, max-age=86400")
-
-	// compute the etag from the file hash and encoding
-	var etag strings.Builder
-	etag.WriteString(`W/"`)
-	etag.WriteString(file.Hash)
-	if encoding != "" {
-		etag.WriteByte('-')
-		etag.WriteString(encoding)
-	}
-	etag.WriteString(`"`)
-	w.Header().Set("ETag", etag.String())
-
-	// check etag match
-	if slices.Contains(r.Header.Values("If-None-Match"), etag.String()) {
-		w.WriteHeader(http.StatusNotModified)
-		return
-	}
-
-	// no body for head request
-	if r.Method == http.MethodHead {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	// serve the content
-	w.Header().Set("Content-Length", strconv.Itoa(len(buf)))
-	w.WriteHeader(http.StatusOK)
-	w.Write(buf)
-}
-
-func gzipBytes(b []byte) ([]byte, error) {
-	var buf bytes.Buffer
-	w := gzip.NewWriter(&buf)
-	if _, err := w.Write(b); err != nil {
-		return nil, err
-	}
-	if err := w.Close(); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-func zstdBytes(b []byte) ([]byte, error) {
-	var buf bytes.Buffer
-	w, err := zstd.NewWriter(&buf)
-	if err != nil {
-		return nil, err
-	}
-	if _, err := w.Write(b); err != nil {
-		return nil, err
-	}
-	if err := w.Close(); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
+	).
+	Cache("public, max-age=86400")
