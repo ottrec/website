@@ -116,6 +116,45 @@ go generate ./ottrec/schema
 
 ### Website
 
+#### Some notes
+
+Be careful with the packages in pkg/* (data export, simplified schema, query language, indexer, heuristics, storage). Never use Claude on them, and don't touch them carelessly or do unnecessary refactoring either. They were very carefully designed to handle the schedule data correctly and efficiently, and to preserve backwards/forwards compatibility. Certain packages (e.g., ottrecql and ottrecidx) are also somewhat fragile and easy to break in subtle ways.
+
+However, as a result of this careful backend work, Claude tends to do a good job with the frontend templates/scripts/styles as long as you have a clear vision.
+
+CSS should be written for compatibility, but you can safely use most modern features since it's transpiled at startup using LightningCSS.
+
+Scripts should be written in TypeScript. Prefer to write modern JS instead of importing libraries. All pages should also fall back gracefully without scripting. If you must import a dependency, choose a well-designed modern one without a crazy tree of dependencies.
+
+Fonts are subsetted from Google Fonts and committed. See fonts.go.
+
+You may wonder why I don't use a "proper" frontend framework or at least a separate build step, and it's because:
+
+- I want server-rendered progressively-enhanced pages because SPAs suck (and SEO is also easier this way).
+- I hate "modern" frontend framework-driven development.
+- I can use templ for JSX-like syntax in Go (which also ties in really well with my custom indexer).
+- Go already has a very nice and mature JS bundler/transpiler, esbuild.
+- I ported LightningCSS (a nice CSS transpiler written in Rust) to Go using wasm2go.
+- NPM is a security nightmare. Vendoring the deps and building them with esbuild sidesteps this entirely.
+- Since LightningCSS and esbuild are very fast, I can build stuff at startup.
+- As a result, I can build and run with just the Go toolchain, and also get a tight feedback loop during development.
+
+And if you're wondering why I rolled my own indexer instead of using a separate database:
+
+- Again, I control the entire stack, so I can have nice things.
+- The custom indexer also allows heuristics to be computed efficiently and without needing to keep logic in sync with an external datastore.
+- Since everything is in Go, I can do fancy stuff with iterators so the API feels natural.
+- I can do interning to amortize the memory cost of loading many versions at the same time.
+- Almost every page render needs to read almost an entire version of the data and filter it in some way. This design lets me do filtering with zero copies and very little overhead.
+- Without this, a lot of cycles would be wasted normalizing and denormalizing the data in/out of the heirarchical form needed for rendering.
+- It was very fun to design and write.
+
+When doing URL parameters, handle them such that errors are obvious, yet still have them tolerant to unknown params, and also design them carefully for forwards/backwards compatibility.
+
+All pages should have sensible caching, making use of ETags where possible.
+
+Pages should also have canonical URLs set, pointing at the main page of that category to avoid being penalized by Google for the many generated pages.
+
 #### Running it locally with automatic restart
 
 ```bash
