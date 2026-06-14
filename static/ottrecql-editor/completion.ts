@@ -175,7 +175,18 @@ export function ottrecqlCompletion(doc: DocNode): Extension {
         if (!word && !context.explicit && !context.matchBefore(/[\s!()/]/)) return null
         return { from, options, validFor: /^[a-zA-Z0-9]*$/ }
     }
-    return autocompletion({ override: [source] })
+    return [
+        autocompletion({ override: [source] }),
+        // opening completions on focus surfaces the options for the current
+        // position (the source returns null when none apply). Deferred a frame
+        // so a click-to-focus has placed the cursor before we compute them.
+        EditorView.domEventHandlers({
+            focus: (_e, view) => {
+                requestAnimationFrame(() => { if (view.hasFocus) startCompletion(view) })
+                return false
+            },
+        }),
+    ]
 }
 
 // setFocused carries the editor's focus state into editor state, so the
