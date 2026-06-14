@@ -389,12 +389,19 @@ body.error-page .map-topnav {
 
 .site-footer {
     width: 100%;
-    max-width: 60rem;
-    margin: 0 auto;
     padding: 1rem 1.5rem 2rem;
     border-top: 1px solid var(--fxki-ui-2);
     font-size: .8rem;
     color: var(--fxki-tx-2);
+}
+/* full-width by default; constrained to the content column on the centered pages */
+body.home-page .site-footer {
+    max-width: 60rem;
+    margin-inline: auto;
+}
+body.about-page .site-footer {
+    max-width: 44rem;
+    margin-inline: auto;
 }
 .site-footer p {
     margin: .25rem 0;

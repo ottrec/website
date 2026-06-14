@@ -29,7 +29,7 @@ var ScheduleCategories = []ScheduleCategory{
 	{"lane-swim", "Lane Swim", "Lane swims.", "pool", []string{"lane swim"}},
 	{"aquafit", "Aquafit", "Aquafit and aqua lite.", "water", []string{"aqua"}},
 	{"skating", "Skating", "Public, adult, family, senior, and figure skating.", "ice_skating", []string{"skat"}},
-	{"hockey", "Hockey", "Hockey, shinny, stick and puck, and ringette.", "sports_hockey", []string{"hockey", "shinny", "stick and puck", "ringette"}},
+	{"hockey", "Hockey", "Hockey, shinny, stick and puck, and ringette.", "sports_hockey", []string{"hockey", "shinny", "puck", "ringette"}},
 	{"badminton", "Badminton", "Badminton.", "badminton", []string{"badminton"}},
 	{"basketball", "Basketball", "Basketball.", "sports_basketball", []string{"basketball"}},
 	{"volleyball", "Volleyball", "Volleyball.", "sports_volleyball", []string{"volleyball"}},
@@ -218,12 +218,12 @@ type WebsiteSchedulesParams struct {
 	Title           string
 	Description     string // page subtitle, and the meta description unless MetaDescription is set
 	MetaDescription string
-	Search        bool                   // show the search box
-	Advanced      bool                   // advanced (ottrecql) search mode
-	Query         string                 // current search box contents
-	QueryError    string                 // query parse/limit error to show instead of results
-	Single        bool                   // single-facility page: hide the page header and facility page links
-	List          bool                   // compact list view (?mode=list) instead of the schedule tables
-	CategoryTerms []string               // category pages: the activity names used for filtering, for the incompleteness note
-	TOC           []SchedulesTOCFacility // facilities to render, with their sidebar anchors
+	Search          bool                   // show the search box
+	Advanced        bool                   // advanced (ottrecql) search mode
+	Query           string                 // current search box contents
+	QueryError      string                 // query parse/limit error to show instead of results
+	Single          bool                   // single-facility page: hide the page header and facility page links
+	List            bool                   // compact list view (?mode=list) instead of the schedule tables
+	CategoryTerms   []string               // category pages: the activity names used for filtering, for the incompleteness note
+	TOC             []SchedulesTOCFacility // facilities to render, with their sidebar anchors
 }

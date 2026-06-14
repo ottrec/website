@@ -73,6 +73,21 @@ templ websiteTopNav(active string, updated time.Time) {
 	</nav>
 }
 
+// websiteFooter renders the shared site footer.
+templ websiteFooter() {
+	<footer class="site-footer">
+		<p>© 2025–2026 Patrick Gaskin.</p>
+		<nav>
+			<ul>
+				<li><a href="/about">About</a></li>
+				<li><a href="/about#terms">Terms</a></li>
+				<li><a href="/about#data">Data Sources</a></li>
+				<li><a href="https://data.ottrec.ca">Dataset</a></li>
+			</ul>
+		</nav>
+	</footer>
+}
+
 templ WebsiteHomePage(params WebsiteParams) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -154,17 +169,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 				</section>
 				@websiteHomeExtra()
 			</main>
-			<footer class="site-footer">
-				<p>© 2025–2026 Patrick Gaskin.</p>
-				<nav>
-					<ul>
-						<li><a href="/about">About</a></li>
-						<li><a href="/about#terms">Terms</a></li>
-						<li><a href="/about#data">Data Sources</a></li>
-						<li><a href="https://data.ottrec.ca">Developers</a></li>
-					</ul>
-				</nav>
-			</footer>
+			@websiteFooter()
 		</body>
 	</html>
 }

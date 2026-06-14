@@ -77,7 +77,7 @@ templ WebsiteAboutPage(params WebsiteParams) {
 							{ line }
 							<br/>
 						}
-						Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>
+						Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
 						<br/>
 						Map tiles © <a href="https://carto.com/attributions">CARTO</a>
 						<br/>
@@ -85,6 +85,7 @@ templ WebsiteAboutPage(params WebsiteParams) {
 					</p>
 				</section>
 			</main>
+			@websiteFooter()
 			<script src={ static.Path(static.StarredJS) }></script>
 		</body>
 	</html>
