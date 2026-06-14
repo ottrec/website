@@ -22,6 +22,13 @@ var (
 	activityPeriodTitle = []string{"morning (until 11:00)", "afternoon (11:00 to 17:00)", "evening (from 17:00)"}
 )
 
+// activityDayShort/Name are the two-letter weekday headers (kept narrow so the
+// checkbox columns stay tight) and their titles, starting at Sunday.
+var (
+	activityDayShort = []string{"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"}
+	activityDayName  = []string{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
+)
+
 // activityCategoryCard is a card on the activities page listing the facilities
 // offering a category of activities, grouped by sector.
 type activityCategoryCard struct {

@@ -41,4 +41,32 @@ function groupStarred() {
 	}
 }
 
+// highlightNow tints the column for the current weekday and time of day (in
+// Ottawa time, where the schedules are), so "right now" stands out. Done
+// client-side (not server) so cached pages are correct, and refreshed each
+// minute so a long-open tab keeps up as the period/day rolls over.
+function highlightNow() {
+	const tz = 'America/Toronto'
+	const now = new Date()
+	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+	const day = days.indexOf(new Intl.DateTimeFormat('en-US', {timeZone: tz, weekday: 'short'}).format(now))
+	const [hh, mm] = new Intl.DateTimeFormat('en-GB', {timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false}).format(now).split(':')
+	const mins = Number(hh) * 60 + Number(mm)
+	const period = mins < 11 * 60 ? 0 : mins < 17 * 60 ? 1 : 2
+	const col = period * 7 + day // index into the period-major columns (0..20)
+
+	for (const el of document.querySelectorAll('.activity-table .now')) el.classList.remove('now')
+	if (day < 0) return
+	for (const table of document.querySelectorAll<HTMLTableElement>('.activity-table table')) {
+		table.tHead?.rows[1]?.cells[col]?.classList.add('now')
+		for (const body of table.tBodies)
+			for (const row of body.rows) {
+				const tds = row.querySelectorAll<HTMLTableCellElement>('td')
+				if (tds.length) tds[col]?.classList.add('now')
+			}
+	}
+}
+
 groupStarred()
+highlightNow()
+setInterval(highlightNow, 60_000)

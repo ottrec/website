@@ -14,7 +14,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 				<link rel="canonical" href={ params.Base + "activities" }/>
 			}
 			<title>Activities - Ottawa Recreation Schedules</title>
-			<meta name="description" content="Which City of Ottawa recreation facilities offer each category of activities, by weekday and time of day."/>
+			<meta name="description" content="Which City of Ottawa recreation facilities offer each category of activities, by weekday, time of day, and area."/>
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.ActivitiesCSS) }/>
 			@websiteHeadExtra()
@@ -24,7 +24,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 			<main>
 				<header class="activities-header">
 					<h1>Activities</h1>
-					<p>Facilities offering each category of activities, by time of day and weekday: <b class="per-m">morning</b> (until 11:00), <b class="per-a">afternoon</b> (11:00 to 17:00), <b class="per-e">evening</b> (from 17:00).</p>
+					<p>Facilities offering each category of activities, by area, time of day, and weekday: <b class="per-m">morning</b> (until 11:00), <b class="per-a">afternoon</b> (11:00 to 17:00), <b class="per-e">evening</b> (from 17:00).</p>
 				</header>
 				<div class="activity-cards">
 					for _, card := range buildActivityCards(params.Data) {
@@ -44,8 +44,8 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 											</tr>
 											<tr>
 												for range activityPeriodLong {
-													for _, day := range mapDays {
-														<th scope="col">{ day }</th>
+													for d := range mapDays {
+														<th scope="col"><abbr title={ activityDayName[d] }>{ activityDayShort[d] }</abbr></th>
 													}
 												}
 											</tr>
