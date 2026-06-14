@@ -282,9 +282,13 @@
 }
 .schedules-query-help {
 	margin: .5rem 0 1rem;
+	padding: .65rem .85rem;
 	font-size: .8rem;
 	line-height: 1.55;
 	color: var(--fxki-tx-2);
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .4rem;
 	overflow-wrap: break-word;
 }
 .schedules-query-help summary {
@@ -300,32 +304,89 @@
 	margin-bottom: .5rem;
 }
 .schedules-query-help h3 {
-	margin: 1.1rem 0 .4rem;
-	font-size: .8rem;
+	margin: 1.4rem 0 .6rem;
+	font-size: .7rem;
 	font-weight: 700;
-	color: var(--fxki-tx);
+	letter-spacing: .07em;
+	text-transform: uppercase;
+	color: var(--fxki-tx-2);
 }
 .schedules-query-help p {
 	margin: .5rem 0;
 }
-.schedules-query-help dl {
+.schedules-query-tip {
+	margin-top: 1.1rem;
+	color: var(--fxki-tx-3);
+}
+
+.schedules-query-examples,
+.schedules-query-reference {
+	margin: .5rem 0 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: .6rem;
+}
+/* examples are a touch narrower and all the same height: grid-auto-rows:1fr
+   equalises the cards and the editor body flex-grows so they line up */
+.schedules-query-examples {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+	grid-auto-rows: 1fr;
+}
+.schedules-query-reference {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+}
+
+/* shared card chrome: a header strip over a body, both framed */
+.schedules-query-examples li,
+.schedules-query-reference > div {
+	display: flex;
+	flex-direction: column;
 	margin: 0;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	overflow: hidden;
+	background: var(--fxki-bg);
 }
-.schedules-query-help dt {
-	margin: .7rem 0 .25rem;
+/* header: the example's title / the function signature */
+.schedules-query-examples li > span,
+.schedules-query-reference dt {
+	margin: 0;
+	padding: .35rem .6rem;
+	background: var(--fxki-bg-3);
+	border-bottom: 1px solid var(--fxki-ui-2);
+	color: var(--fxki-tx-2);
 }
-/* a guide line ties each description to its function signature */
-.schedules-query-help dd {
-	margin: 0 0 .5rem;
-	padding-left: .85rem;
-	border-left: 2px solid var(--fxki-ui-2);
+.schedules-query-reference dt code {
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--fxki-bl);
+	font-weight: 600;
 }
-.schedules-query-help ul {
-	margin: .5rem 0;
-	padding-left: 1.15rem;
+/* body: the query editor / the description */
+.schedules-query-examples li > code,
+.schedules-query-examples li > ottrecql-editor,
+.schedules-query-reference dd {
+	flex: 1;
+	margin: 0;
+	padding: .5rem .6rem;
 }
-.schedules-query-help li {
-	margin: .35rem 0;
+/* the editor brings its own padding and shouldn't double the card border */
+.schedules-query-examples li > ottrecql-editor {
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	font-size: .92em;
+}
+/* the plain-code fallback shown before the editor is swapped in */
+.schedules-query-examples li > code {
+	overflow-x: auto;
+	white-space: pre;
+	background: none;
+	border: none;
+	border-radius: 0;
+	font-size: .92em;
 }
 .schedules-query-help code {
 	font-family: ui-monospace, monospace;

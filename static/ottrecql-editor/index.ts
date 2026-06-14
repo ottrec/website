@@ -23,6 +23,16 @@ for (const ta of document.querySelectorAll<HTMLTextAreaElement>('textarea[data-o
     editors.push(ed)
 }
 
+// upgrade static example snippets into read-only, syntax-highlighted editors
+for (const code of document.querySelectorAll<HTMLElement>('[data-ottrecql-example]')) {
+    const ed = document.createElement('ottrecql-editor')
+    ed.setAttribute('value', code.textContent ?? '')
+    ed.setAttribute('readonly', '')
+    ed.setAttribute('theme', siteTheme())
+    code.replaceWith(ed)
+    editors.push(ed)
+}
+
 if (editors.length) {
     const applyTheme = () => {
         const theme = siteTheme()

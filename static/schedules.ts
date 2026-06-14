@@ -67,7 +67,7 @@ function liveValidation() {
 
 	textarea.addEventListener('input', () => {
 		clearTimeout(timer)
-		timer = setTimeout(validate, 350)
+		timer = setTimeout(validate, 500)
 	})
 }
 

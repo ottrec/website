@@ -80,6 +80,9 @@ class OttrecqlEditor extends HTMLElement {
             opacity: 0.5;
             pointer-events: none;
           }
+          :host([readonly]) {
+            cursor: default;
+          }
           .cm-editor {
             max-height: 240px;
           }
@@ -209,7 +212,7 @@ class OttrecqlEditor extends HTMLElement {
             if (from >= to) from = Math.max(0, to - 1) // keep a visible range at end-of-input
             return [{ from, to, severity: 'error', message: data.error }]
         }
-        return linter(source)
+        return linter(source, { delay: 500 })
     }
 
     #setDoc(value: string) {
