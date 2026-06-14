@@ -437,13 +437,22 @@ async function renderFacility(f: Facility, setContent: (html: string) => void, i
 
 // ensurePopupInView shifts an open popup by the minimum needed to bring it fully
 // into the map viewport, without moving the map (autoPan is disabled and only
-// focusFacility pans). The popup is nudged via margins on its container, so its
-// tip detaches from the marker when shifted; it does nothing when the popup
-// already fits, so opening a marker that's comfortably on screen doesn't move it.
+// focusFacility pans). It does nothing when the popup already fits, so opening a
+// marker that's comfortably on screen doesn't move it.
+//
+// Leaflet anchors the container with inline `left`/`bottom`, so we shift it with
+// margins (which Leaflet never touches, so they survive map moves): margin-left
+// moves it horizontally, and margin-bottom vertically — but since `bottom`
+// offsets the margin edge, a *larger* margin-bottom moves the box *up*. A
+// margin-top would do nothing here (the auto `top` absorbs it). When shifted the
+// tip no longer points at the marker, so it's hidden.
 function ensurePopupInView(popup: L.Popup) {
 	const el = popup.getElement()
 	if (!el) return
-	el.style.marginLeft = el.style.marginTop = '0' // measure unshifted
+	const tip = el.querySelector<HTMLElement>('.leaflet-popup-tip-container')
+	el.style.marginLeft = el.style.marginBottom = '' // measure at the unshifted baseline
+	if (tip) tip.style.display = ''
+	const baseBottom = parseFloat(getComputedStyle(el).marginBottom) || 0
 	const m = map.getContainer().getBoundingClientRect()
 	const p = el.getBoundingClientRect()
 	const pad = 12
@@ -452,12 +461,8 @@ function ensurePopupInView(popup: L.Popup) {
 	else if (p.right > m.right - pad) dx = p.right - (m.right - pad)
 	if (p.top < m.top + pad) dy = p.top - (m.top + pad)
 	else if (p.bottom > m.bottom - pad) dy = p.bottom - (m.bottom - pad)
-	// margins shift the absolutely-positioned container on top of the transform
-	// Leaflet uses to anchor it, so they survive map repositioning
 	if (dx) el.style.marginLeft = -dx + 'px'
-	if (dy) el.style.marginTop = -dy + 'px'
-	// the tip points at the marker, so hide it once the popup is moved off it
-	const tip = el.querySelector<HTMLElement>('.leaflet-popup-tip-container')
+	if (dy) el.style.marginBottom = baseBottom + dy + 'px' // dy<0 (top cut) shrinks it → moves down
 	if (tip) tip.style.display = dx || dy ? 'none' : ''
 }
 
