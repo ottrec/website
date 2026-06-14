@@ -347,7 +347,7 @@ const effectiveDark = () => {
 	if (cs === 'light') return false
 	return darkQuery.matches
 }
-const tileURL = (dark: boolean) => 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png'
+const tileURL = (dark: boolean) => 'https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'rastertiles/voyager') + '/{z}/{x}/{y}{r}.png'
 const tiles = L.tileLayer(tileURL(effectiveDark()), {
 	subdomains: 'abcd',
 	maxZoom: 20,
