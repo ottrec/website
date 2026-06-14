@@ -3,7 +3,7 @@ import { EditorView, keymap, placeholder } from "@codemirror/view"
 import { bracketMatching } from "@codemirror/language"
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
 import { linter, Diagnostic } from "@codemirror/lint"
-import { acceptCompletion } from "@codemirror/autocomplete"
+import { acceptCompletion, closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete"
 import { tokyoNight } from "@uiw/codemirror-theme-tokyo-night"
 import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day"
 import ottrecql from "./language"
@@ -108,8 +108,9 @@ class OttrecqlEditor extends HTMLElement {
                 doc: initialValue,
                 extensions: [
                     history(),
-                    keymap.of([{ key: 'Tab', run: acceptCompletion }, ...defaultKeymap, ...historyKeymap]),
+                    keymap.of([{ key: 'Tab', run: acceptCompletion }, ...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap]),
                     bracketMatching(),
+                    closeBrackets(),
                     ottrecql,
                     ottrecqlCompletion(makeDocNode),
                     ottrecqlBadBrackets(),

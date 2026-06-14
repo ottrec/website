@@ -88,7 +88,13 @@ export const parser: StreamParser<void> = {
     },
 } as const
 
-export default new LanguageSupport(StreamLanguage.define(parser))
+const language = StreamLanguage.define(parser)
+
+export default new LanguageSupport(language, [
+    // only ottrecql's own delimiters get auto-closed (not the closeBrackets
+    // defaults like [] {} '' ``, which aren't valid syntax here)
+    language.data.of({ closeBrackets: { brackets: ['(', '"'] } }),
+])
 
 function createMatcher(...values: string[]) {
     const set = new Set(values.map(v => v.toLowerCase()))
