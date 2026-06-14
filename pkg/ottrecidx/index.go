@@ -11,6 +11,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/pgaskin/ottrec-website/pkg/ottregions"
 	"github.com/pgaskin/ottrec/schema"
 	"google.golang.org/protobuf/proto"
 )
@@ -90,6 +91,11 @@ type Index struct {
 	// precomputed: TimeRef.SingleDate
 	cached_TimeRef_SingleDate   bool
 	cached_TimeRef_SingleDate_t []schema.Date
+
+	// precomputed: FacilityRef.Region / FacilityRef.Sector
+	cached_FacilityRef_RegionSector   bool
+	cached_FacilityRef_RegionSector_r []ottregions.Region
+	cached_FacilityRef_RegionSector_s []ottregions.Sector
 
 	// precomputed: Index.Updated
 	updated time.Time
@@ -205,6 +211,9 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 		cached_ScheduleRef_ComputeEffectiveDateRange_er: arenaMakeSlice[schema.DateRange](dxr.ia, nSch, nSch),
 
 		cached_TimeRef_SingleDate_t: arenaMakeSlice[schema.Date](dxr.ia, nTm, nTm),
+
+		cached_FacilityRef_RegionSector_r: arenaMakeSlice[ottregions.Region](dxr.ia, nFac, nFac),
+		cached_FacilityRef_RegionSector_s: arenaMakeSlice[ottregions.Sector](dxr.ia, nFac, nFac),
 	}
 
 	idx.durScan, now = time.Since(now), time.Now()
@@ -272,6 +281,13 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 		}
 	}
 	idx.cached_TimeRef_SingleDate = true
+
+	for fac := range idx.Data().Facilities() {
+		i := fac.nthOfType()
+		idx.cached_FacilityRef_RegionSector_r[i] = fac.Region()
+		idx.cached_FacilityRef_RegionSector_s[i] = fac.Sector()
+	}
+	idx.cached_FacilityRef_RegionSector = true
 
 	for fac := range idx.Data().Facilities() {
 		if d := fac.GetSourceDate(); !d.IsZero() && d.After(idx.updated) {

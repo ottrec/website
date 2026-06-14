@@ -3,10 +3,37 @@ package ottrecidx
 import (
 	"time"
 
+	"github.com/pgaskin/ottrec-website/pkg/ottregions"
 	"github.com/pgaskin/ottrec/schema"
 )
 
 // this file contains additional helpers to perform computations on refs, possibly with optimizations
+
+// Region returns the region facility is in, from its coordinates, or
+// [ottregions.RegionUnknown] if it has none.
+func (ref FacilityRef) Region() ottregions.Region {
+	if idx := ref.index(); idx.cached_FacilityRef_RegionSector {
+		return idx.cached_FacilityRef_RegionSector_r[ref.nthOfType()]
+	}
+	lng, lat, ok := ref.GetLngLat()
+	if !ok {
+		return ottregions.RegionUnknown
+	}
+	return ottregions.RegionAt(float64(lat), float64(lng))
+}
+
+// Sector returns the sector the city the facility is in, from its coordinates,
+// or [ottregions.SectorUnknown] if it has none.
+func (ref FacilityRef) Sector() ottregions.Sector {
+	if idx := ref.index(); idx.cached_FacilityRef_RegionSector {
+		return idx.cached_FacilityRef_RegionSector_s[ref.nthOfType()]
+	}
+	lng, lat, ok := ref.GetLngLat()
+	if !ok {
+		return ottregions.SectorUnknown
+	}
+	return ottregions.SectorAt(float64(lat), float64(lng))
+}
 
 // GuessReservationRequirement attempts to guess if reservations are required:
 func (ref ActivityRef) GuessReservationRequirement() (required bool, definite bool) {
