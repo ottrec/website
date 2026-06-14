@@ -27,6 +27,16 @@ templ websiteAboutExtra() {
 	}
 }
 
+// websiteHomeExtra renders the raw HTML set by [SetHomeExtra], at the bottom of
+// the homepage's main content.
+templ websiteHomeExtra() {
+	if homeExtra != nil {
+		<div class="home-extra">
+			@homeExtra
+		</div>
+	}
+}
+
 // websiteThemeHead applies the color scheme override saved by the navbar
 // toggle. The inline script (the compiled theme-apply.ts, shared with the
 // navbar toggle in theme.ts) must run before first paint to avoid flashing the
@@ -136,6 +146,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 						</li>
 					</ul>
 				</section>
+				@websiteHomeExtra()
 			</main>
 			<footer class="site-footer">
 				<p>© 2025–2026 Patrick Gaskin.</p>

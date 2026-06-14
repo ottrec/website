@@ -28,6 +28,7 @@ var (
 	DataInterval = pflag.DurationP("data-interval", "i", time.Minute*15, "poll interval for data")
 	HeadHTML     = pflag.String("head-html", "", "raw html to inject at the bottom of <head> on every page")
 	AboutHTML    = pflag.String("about-html", "", "raw html to inject in the about page")
+	HomeHTML     = pflag.String("home-html", "", "raw html to inject at the bottom of the homepage main content")
 	LogLevel     = pflagx.LevelP("log-level", "L", slog.LevelInfo, "log level")
 	LogJSON      = pflag.Bool("log-json", false, "use json logs")
 	Help         = pflag.BoolP("help", "h", false, "show this help text")
@@ -129,6 +130,7 @@ func run() error {
 		Data:      getData,
 		HeadHTML:  *HeadHTML,
 		AboutHTML: *AboutHTML,
+		HomeHTML:  *HomeHTML,
 	})
 	if err != nil {
 		return fmt.Errorf("initialize routes: %w", err)

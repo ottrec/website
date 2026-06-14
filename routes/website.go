@@ -21,8 +21,11 @@ import (
 type WebsiteConfig struct {
 	Data func() (ottrecidx.DataRef, bool)
 	// HeadHTML is raw HTML injected at the bottom of <head> on every page.
-	HeadHTML  string
+	HeadHTML string
+	// AboutHTML is raw HTML injected at the bottom of the /about page.
 	AboutHTML string
+	// HomeHTML is raw HTML injected at the bottom of the homepage's <main>.
+	HomeHTML string
 }
 
 func Website(cfg WebsiteConfig) (http.Handler, error) {
@@ -31,6 +34,7 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	}
 	templates.SetHeadExtra(cfg.HeadHTML)
 	templates.SetAboutExtra(cfg.AboutHTML)
+	templates.SetHomeExtra(cfg.HomeHTML)
 
 	base := websiteHandlerBase{
 		Data: cfg.Data,

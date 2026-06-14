@@ -189,3 +189,29 @@ body.home-page {
 		width: auto;
 	}
 }
+
+/* injected home extra (templates.SetHomeExtra): give an injected <section>'s
+ * <h2> the same serif heading as the news, with a divider border */
+.home-extra section {
+	margin: 2.5rem 0 0;
+}
+.home-extra h2 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.15rem;
+	margin: 0 0 .5rem;
+	padding-bottom: .3rem;
+	border-bottom: 1px solid var(--fxki-ui-2);
+}
+.home-extra p {
+	margin: .5rem 0;
+	font-size: .9rem;
+	line-height: 1.45;
+	color: var(--fxki-tx-2);
+}
+.home-extra a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.home-extra a:hover {
+	text-decoration: underline;
+}

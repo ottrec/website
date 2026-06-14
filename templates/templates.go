@@ -231,6 +231,22 @@ func SetAboutExtra(html string) {
 	exehash += base32.StdEncoding.EncodeToString(sum[:])
 }
 
+// homeExtra is raw HTML injected at the bottom of the homepage's main content.
+var homeExtra templ.Component
+
+// SetHomeExtra sets raw HTML to inject at the bottom of the homepage's <main>,
+// after the news section. It must be called at most once, before anything is
+// rendered. The HTML is mixed into the etags so cached pages revalidate when it
+// changes. An injected <section> with an <h2> is styled to match the news.
+func SetHomeExtra(html string) {
+	if html == "" {
+		return
+	}
+	homeExtra = templ.Raw(html)
+	sum := sha1.Sum([]byte(html))
+	exehash += base32.StdEncoding.EncodeToString(sum[:])
+}
+
 // exehash is a hash of the current binary for use in etags.
 var exehash = func() string {
 	exe, err := os.Executable()
