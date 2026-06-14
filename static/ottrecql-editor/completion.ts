@@ -1,6 +1,6 @@
-import { StateField, RangeSetBuilder, EditorState } from "@codemirror/state"
-import { EditorView, Decoration, DecorationSet } from "@codemirror/view"
-import { autocompletion, startCompletion, Completion, CompletionSource } from "@codemirror/autocomplete"
+import { StateField, StateEffect, RangeSetBuilder, EditorState } from "@codemirror/state"
+import { EditorView, Decoration, DecorationSet, showTooltip, Tooltip } from "@codemirror/view"
+import { autocompletion, startCompletion, completionStatus, Completion, CompletionSource } from "@codemirror/autocomplete"
 import { Extension } from "@codemirror/state"
 import { isFunction, WEEKDAYS } from "./language"
 
@@ -24,12 +24,17 @@ function applyOperator(op: string) {
     }
 }
 
-// getEnclosingFunction returns the name of the ottrecql function call directly
-// containing pos, or null if pos is at the top level (not inside any call).
-function getEnclosingFunction(state: EditorState, pos: number): string | null {
+// EnclosingCall describes the parenthesised call directly containing a position:
+// the function name (lowercased, or null for a non-function grouping) and the
+// document offset where that name starts (the tooltip's anchor).
+type EnclosingCall = { name: string | null, from: number }
+
+// getEnclosingFunction returns the call directly containing pos, or null if pos
+// is at the top level (not inside any parentheses).
+function getEnclosingFunction(state: EditorState, pos: number): EnclosingCall | null {
     const text = state.doc.sliceString(0, pos)
     let i = 0
-    const stack: (string | null)[] = []
+    const stack: EnclosingCall[] = []
     while (i < text.length) {
         if (text[i] === '"') {
             i++
@@ -46,7 +51,7 @@ function getEnclosingFunction(state: EditorState, pos: number): string | null {
             let k = j
             while (k >= 0 && /[a-zA-Z0-9]/.test(text[k]!)) k--
             const name = text.slice(k + 1, j + 1)
-            stack.push(isFunction(name) ? name.toLowerCase() : null)
+            stack.push({ name: isFunction(name) ? name.toLowerCase() : null, from: k + 1 })
             i++; continue
         }
         if (text[i] === ')') { stack.pop(); i++; continue }
@@ -74,31 +79,46 @@ function atExpressionStart(state: EditorState, pos: number): boolean {
     return false
 }
 
+// FUNCTION_DOCS is the single source of documentation for each match function,
+// shared by the completion popup (signature + doc + examples) and the
+// signature-help tooltip (signature + doc only). Ordered as shown in the popup.
+const FUNCTION_DOCS: Record<string, { signature: string, doc: string, examples: string[] }> = {
+    schdate: {
+        signature: 'schdate(date)',
+        doc: 'Matches schedule groups applicable on the given date. Groups without a date range are not filtered.',
+        examples: ['schdate(today)', 'schdate(2025-12-24)'],
+    },
+    time: {
+        signature: 'time([weekday|date …] @ [time|range …])',
+        doc: 'Matches activity weekdays, dates, and/or times. The @ separator can be omitted when specifying only weekdays or only times. Activities with unparseable times are not filtered.',
+        examples: ['time(today @ now)', 'time(mo tu we th fr)', 'time(sa su @ 18:00-01:00)', 'time(mo @ 6:00a-10:00a 6:00p-9:00p)'],
+    },
+    facility: {
+        signature: 'facility("name" [, "name" …])',
+        doc: 'Fuzzy-matches facility names. Each word of the query must prefix a word in the name, in order.',
+        examples: ['facility("splash")', 'facility("st laurent")', 'facility("tom brown", "jim durrell")'],
+    },
+    activity: {
+        signature: 'activity("name" [, "name" …])',
+        doc: 'Like facility(), but matches activity names. Generally uses the infinitive form (e.g. "skate" not "skating").',
+        examples: ['activity("lane swim")', 'activity("figure skate")', 'activity("lane swim", "public swim")'],
+    },
+    latlng: {
+        signature: 'latlng(lat, lng, km)',
+        doc: 'Matches facilities within a radius (km) of the given coordinates.',
+        examples: ['latlng(45.42620, -75.69205, 2)'],
+    },
+}
+
 // createCompletions builds the context-keyed completion lists, rendering each
 // option's documentation with the supplied DocNode.
 function createCompletions(doc: DocNode): Record<string, Completion[]> {
     return {
         expr_start: [
-            {
-                label: 'schdate', type: 'function', apply: 'schdate(',
-                info: () => doc('schdate(date)', 'Matches schedule groups applicable on the given date. Groups without a date range are not filtered.', 'schdate(today)', 'schdate(2025-12-24)')
-            },
-            {
-                label: 'time', type: 'function', apply: 'time(',
-                info: () => doc('time([weekday|date …] @ [time|range …])', 'Matches activity weekdays, dates, and/or times. The @ separator can be omitted when specifying only weekdays or only times. Activities with unparseable times are not filtered.', 'time(today @ now)', 'time(mo tu we th fr)', 'time(sa su @ 18:00-01:00)', 'time(mo @ 6:00a-10:00a 6:00p-9:00p)')
-            },
-            {
-                label: 'facility', type: 'function', apply: 'facility(',
-                info: () => doc('facility("name" [, "name" …])', 'Fuzzy-matches facility names. Each word of the query must prefix a word in the name, in order.', 'facility("splash")', 'facility("st laurent")', 'facility("tom brown", "jim durrell")')
-            },
-            {
-                label: 'activity', type: 'function', apply: 'activity(',
-                info: () => doc('activity("name" [, "name" …])', 'Like facility(), but matches activity names. Generally uses the infinitive form (e.g. "skate" not "skating").', 'activity("lane swim")', 'activity("figure skate")', 'activity("lane swim", "public swim")')
-            },
-            {
-                label: 'latlng', type: 'function', apply: 'latlng(',
-                info: () => doc('latlng(lat, lng, km)', 'Matches facilities within a radius (km) of the given coordinates.', 'latlng(45.42620, -75.69205, 2)')
-            },
+            ...Object.entries(FUNCTION_DOCS).map(([name, d]): Completion => ({
+                label: name, type: 'function', apply: name + '(',
+                info: () => doc(d.signature, d.doc, ...d.examples),
+            })),
             {
                 label: 'not', type: 'keyword', apply: applyOperator('not'),
                 info: () => doc('not expr  |  !expr', 'Logical NOT. Excludes results that match the expression.', 'not activity("adult")', '!facility("plant")')
@@ -148,16 +168,63 @@ export function ottrecqlCompletion(doc: DocNode): Extension {
     const source: CompletionSource = context => {
         const word = context.matchBefore(/[a-zA-Z][a-zA-Z0-9]*/)
         const from = word ? word.from : context.pos
-        const ctx = getEnclosingFunction(context.state, from)
-        const key = ctx === null
-            ? (atExpressionStart(context.state, from) ? 'expr_start' : 'expr_continue')
-            : ctx
+        const enc = getEnclosingFunction(context.state, from)
+        const key = enc?.name ?? (atExpressionStart(context.state, from) ? 'expr_start' : 'expr_continue')
         const options = completions[key] ?? []
         if (!options.length) return null
         if (!word && !context.explicit && !context.matchBefore(/[\s!()/]/)) return null
         return { from, options, validFor: /^[a-zA-Z0-9]*$/ }
     }
     return autocompletion({ override: [source] })
+}
+
+// setFocused carries the editor's focus state into editor state, so the
+// signature-help field (which is computed from state) can gate on it.
+const setFocused = StateEffect.define<boolean>()
+
+// signatureFor returns the tooltip(s) for the function enclosing the cursor,
+// plus a key identifying them so the field can reuse a stable tooltip object
+// (avoiding flicker/repositioning while typing within the same call). Nothing
+// shows unless the editor is focused, and it yields to the completion popup
+// (which already renders the same docs beside the active option).
+function signatureFor(state: EditorState, focused: boolean, doc: DocNode): { key: string, tooltips: readonly Tooltip[] } {
+    if (focused && completionStatus(state) !== 'active') {
+        const enc = getEnclosingFunction(state, state.selection.main.head)
+        const d = enc?.name ? FUNCTION_DOCS[enc.name] : undefined
+        if (enc && d) {
+            return {
+                key: `${enc.name}@${enc.from}`,
+                tooltips: [{ pos: enc.from, above: true, create: () => ({ dom: doc(d.signature, d.doc) }) }],
+            }
+        }
+    }
+    return { key: '', tooltips: [] }
+}
+
+// ottrecqlSignatureHelp shows the enclosing function's signature and description
+// in a tooltip above the call while the editor is focused, so the docs stay
+// visible as you fill in arguments (not just when a completion is highlighted).
+export function ottrecqlSignatureHelp(doc: DocNode): Extension {
+    const field = StateField.define<{ focused: boolean, key: string, tooltips: readonly Tooltip[] }>({
+        create: () => ({ focused: false, key: '', tooltips: [] }),
+        update(value, tr) {
+            let focused = value.focused
+            for (const e of tr.effects) if (e.is(setFocused)) focused = e.value
+            const next = signatureFor(tr.state, focused, doc)
+            if (next.key === value.key) {
+                return focused === value.focused ? value : { ...value, focused }
+            }
+            return { focused, key: next.key, tooltips: next.tooltips }
+        },
+        provide: f => showTooltip.computeN([f], state => state.field(f).tooltips),
+    })
+    return [
+        field,
+        EditorView.domEventHandlers({
+            focus: (_e, view) => { view.dispatch({ effects: setFocused.of(true) }); return false },
+            blur: (_e, view) => { view.dispatch({ effects: setFocused.of(false) }); return false },
+        }),
+    ]
 }
 
 const badBracketMark = Decoration.mark({ class: 'cm-bad-bracket' })

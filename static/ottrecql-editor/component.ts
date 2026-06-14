@@ -7,7 +7,7 @@ import { acceptCompletion, closeBrackets, closeBracketsKeymap } from "@codemirro
 import { tokyoNight } from "@uiw/codemirror-theme-tokyo-night"
 import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day"
 import ottrecql from "./language"
-import { ottrecqlCompletion, ottrecqlBadBrackets } from "./completion"
+import { ottrecqlCompletion, ottrecqlSignatureHelp, ottrecqlBadBrackets } from "./completion"
 
 // makeDocNode renders the documentation popup shown beside a completion. The
 // styling lives here with the rest of the component's presentation.
@@ -113,6 +113,7 @@ class OttrecqlEditor extends HTMLElement {
                     closeBrackets(),
                     ottrecql,
                     ottrecqlCompletion(makeDocNode),
+                    ottrecqlSignatureHelp(makeDocNode),
                     ottrecqlBadBrackets(),
                     this.#placeholderCompartment.of(placeholder(this.getAttribute('placeholder') ?? '')),
                     this.#themeCompartment.of(resolveTheme(this.getAttribute('theme'))),
