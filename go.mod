@@ -2,10 +2,7 @@ module github.com/pgaskin/ottrec-website
 
 go 1.26.2
 
-tool (
-	github.com/a-h/templ/cmd/templ
-	github.com/evanw/esbuild/cmd/esbuild
-)
+tool github.com/a-h/templ/cmd/templ
 
 require (
 	github.com/a-h/templ v0.3.1020
