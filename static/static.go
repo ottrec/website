@@ -173,6 +173,9 @@ var (
 	ThemeJS       = assets.Register("theme.ts", ts)
 	StarredJS     = assets.Register("starred.ts", ts)
 
+	// advanced search editor component
+	OttrecqlEditorJS = assets.Register("ottrecql-editor/index.ts", ts)
+
 	// compiled and inlined into the head (see InlineJS), not served on its own
 	ThemeApplyJS = assets.Register("theme-apply.ts", ts)
 )
@@ -187,6 +190,7 @@ var Website = assets.
 		ActivitiesJS,
 		SchedulesCSS,
 		SchedulesJS,
+		OttrecqlEditorJS,
 		AboutCSS,
 		HomeCSS,
 		ThemeJS,

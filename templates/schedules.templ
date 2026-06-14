@@ -97,7 +97,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 											if params.List {
 												<input type="hidden" name="mode" value="list"/>
 											}
-											<textarea name="q" rows="3" placeholder={ `activity("swim") and time(sa su @ 9:00a-12:00p)` } aria-label="Search query">{ params.Query }</textarea>
+											<textarea name="q" rows="3" placeholder={ `activity("swim") and time(sa su @ 9:00a-12:00p)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate">{ params.Query }</textarea>
 											<div class="row">
 												<button type="submit">Search</button>
 												<a class="schedules-search-mode" href={ templ.URL(schedulesNavHref("/schedules", params.List)) }>Simple search</a>
@@ -140,6 +140,11 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 			</main>
 			@websiteFooter()
 			<script src={ static.Path(static.StarredJS) }></script>
+			if params.Search && params.Advanced {
+				// enhances the query textarea into the CodeMirror editor before
+				// schedules.js runs (so its live-validation no-ops; the editor lints)
+				<script src={ static.Path(static.OttrecqlEditorJS) }></script>
+			}
 			<script src={ static.Path(static.SchedulesJS) }></script>
 		</body>
 	</html>

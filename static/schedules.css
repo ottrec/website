@@ -216,6 +216,11 @@
 	color: inherit;
 	resize: vertical;
 }
+/* the textarea is progressively enhanced into this editor (ottrecql-editor) */
+.schedules-search-advanced ottrecql-editor {
+	align-self: stretch;
+	font-size: .85rem;
+}
 .schedules-search-advanced .row {
 	display: flex;
 	align-items: baseline;

@@ -565,14 +565,14 @@ func WebsiteSchedulesPage(params WebsiteSchedulesParams) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "\" aria-label=\"Search query\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "\" aria-label=\"Search query\" data-ottrecql data-lint=\"/api/ottrecql/validate\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var33 string
 					templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(params.Query)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 100, Col: 145}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 100, Col: 194}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 					if templ_7745c5c3_Err != nil {
@@ -733,20 +733,43 @@ func WebsiteSchedulesPage(params WebsiteSchedulesParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "\"></script><script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "\"></script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var40 string
-		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.ResolveAttributeValue(static.Path(static.SchedulesJS))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 143, Col: 48}
+		if params.Search && params.Advanced {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "  <script src=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var40 string
+			templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.ResolveAttributeValue(static.Path(static.OttrecqlEditorJS))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 146, Col: 54}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var40)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "\"></script>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var40)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "<script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "\"></script></body></html>")
+		var templ_7745c5c3_Var41 string
+		templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.ResolveAttributeValue(static.Path(static.SchedulesJS))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 148, Col: 48}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var41)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -772,220 +795,220 @@ func schedulesQueryHelp() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var41 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var41 == nil {
-			templ_7745c5c3_Var41 = templ.NopComponent
+		templ_7745c5c3_Var42 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var42 == nil {
+			templ_7745c5c3_Var42 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "<details class=\"schedules-query-help\"><summary>Query language reference</summary><p>Queries consist of match functions combined with logical operators, evaluated against every activity time and keeping only the matching ones (empty activities, schedules, and facilities are hidden). From highest to lowest precedence: <code>(...)</code> grouping, <code>not</code>/<code>!</code> negation, <code>and</code>/<code>&amp;&amp;</code> conjunction, <code>or</code>/<code>||</code> disjunction. Whitespace is insignificant. The schedule timezone (America/Toronto) is implied.</p><h3>Functions</h3><dl><dt><code>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var42 string
-		templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("name", ...)`)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 156, Col: 38}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "</code></dt><dd>Matches facility names against any of the quoted strings. Matching is fuzzy: each case-insensitive word of the query must be a prefix of a word in the facility name, in the same order, ignoring punctuation. For example, <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 79, "<details class=\"schedules-query-help\"><summary>Query language reference</summary><p>Queries consist of match functions combined with logical operators, evaluated against every activity time and keeping only the matching ones (empty activities, schedules, and facilities are hidden). From highest to lowest precedence: <code>(...)</code> grouping, <code>not</code>/<code>!</code> negation, <code>and</code>/<code>&amp;&amp;</code> conjunction, <code>or</code>/<code>||</code> disjunction. Whitespace is insignificant. The schedule timezone (America/Toronto) is implied.</p><h3>Functions</h3><dl><dt><code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var43 string
-		templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("st laurent")`)
+		templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("name", ...)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 157, Col: 259}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 161, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "</code> matches \"St. Laurent Complex\", and <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "</code></dt><dd>Matches facility names against any of the quoted strings. Matching is fuzzy: each case-insensitive word of the query must be a prefix of a word in the facility name, in the same order, ignoring punctuation. For example, <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var44 string
-		templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("rj kennedy")`)
+		templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("st laurent")`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 157, Col: 336}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 162, Col: 259}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 79, "</code> matches \"R.J. Kennedy Community Centre and Arena\".</dd><dt><code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 81, "</code> matches \"St. Laurent Complex\", and <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var45 string
-		templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("name", ...)`)
+		templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("rj kennedy")`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 158, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 162, Col: 336}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "</code></dt><dd>Like <code>facility()</code>, but matches activity names (both normalized and as written in the schedule). Names are normalized to the infinitive form, e.g., \"skate\" rather than \"skating\", so prefer prefixes like <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "</code> matches \"R.J. Kennedy Community Centre and Arena\".</dd><dt><code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var46 string
-		templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("skat")`)
+		templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("name", ...)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 159, Col: 246}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 163, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 81, "</code> or <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "</code></dt><dd>Like <code>facility()</code>, but matches activity names (both normalized and as written in the schedule). Names are normalized to the infinitive form, e.g., \"skate\" rather than \"skating\", so prefer prefixes like <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var47 string
-		templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("lane sw")`)
+		templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("skat")`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 159, Col: 288}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 164, Col: 246}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "</code>.</dd><dt><code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 84, "</code> or <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var48 string
-		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(`time([weekday...|date...] @ [time...|timerange...])`)
+		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("lane sw")`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 160, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 164, Col: 288}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "</code></dt><dd>Matches activity weekdays and times. Days and times are each OR'd, and either side can be omitted (along with the <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "</code>.</dd><dt><code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var49 string
-		templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs("@")
+		templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(`time([weekday...|date...] @ [time...|timerange...])`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 162, Col: 129}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 165, Col: 68}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 84, "</code>). Activities with unparseable times are not filtered out. Weekdays are two-letter, three-letter, or full names (<code>mo</code>, <code>mon</code>, <code>monday</code>). Dates are <code>YYYY-MM-DD</code> or <code>today</code>. Times are 24-hour <code>HH:MM</code>, 12-hour <code>HH:MMam</code>/<code>HH:MMpm</code> (or <code>a</code>/<code>p</code>), or <code>now</code>. Time ranges are two dash-separated times; an end time earlier than the start extends into the next day. For example: <code>time(now)</code>, <code>time(mo tu we th fr)</code>, <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</code></dt><dd>Matches activity weekdays and times. Days and times are each OR'd, and either side can be omitted (along with the <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var50 string
-		templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(`time(sa su @ 12:00)`)
+		templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs("@")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 164, Col: 105}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 167, Col: 129}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "</code>, <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "</code>). Activities with unparseable times are not filtered out. Weekdays are two-letter, three-letter, or full names (<code>mo</code>, <code>mon</code>, <code>monday</code>). Dates are <code>YYYY-MM-DD</code> or <code>today</code>. Times are 24-hour <code>HH:MM</code>, 12-hour <code>HH:MMam</code>/<code>HH:MMpm</code> (or <code>a</code>/<code>p</code>), or <code>now</code>. Time ranges are two dash-separated times; an end time earlier than the start extends into the next day. For example: <code>time(now)</code>, <code>time(mo tu we th fr)</code>, <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var51 string
-		templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(`time(mo @ 6:00a-10:00a 6:00p-9:00p)`)
+		templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(`time(sa su @ 12:00)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 164, Col: 161}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 169, Col: 105}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</code>.</dd><dt><code>schdate(date)</code></dt><dd>Matches schedule groups applicable on the date (<code>YYYY-MM-DD</code> or <code>today</code>), e.g., <code>schdate(today)</code> to show current schedules. Groups without a valid date range are not filtered out.</dd><dt><code>latlng(lat, lng, km)</code></dt><dd>Matches facilities within the radius (kilometers) of the coordinates, e.g., <code>latlng(45.42620, -75.69205, 2)</code> matches within 2km of Rideau station.</dd></dl><h3>Examples</h3><ul><li><code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 88, "</code>, <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var52 string
-		templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("lane sw") and schdate(today) and time(today @ now)`)
+		templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(`time(mo @ 6:00a-10:00a 6:00p-9:00p)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 173, Col: 77}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 169, Col: 161}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "</code> — lane swims happening right now</li><li><code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 89, "</code>.</dd><dt><code>schdate(date)</code></dt><dd>Matches schedule groups applicable on the date (<code>YYYY-MM-DD</code> or <code>today</code>), e.g., <code>schdate(today)</code> to show current schedules. Groups without a valid date range are not filtered out.</dd><dt><code>latlng(lat, lng, km)</code></dt><dd>Matches facilities within the radius (kilometers) of the coordinates, e.g., <code>latlng(45.42620, -75.69205, 2)</code> matches within 2km of Rideau station.</dd></dl><h3>Examples</h3><ul><li><code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var53 string
-		templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("skat") and not activity("figure") and time(sa su)`)
+		templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("lane sw") and schdate(today) and time(today @ now)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 174, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 178, Col: 77}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 88, "</code> — weekend skating, excluding figure skating</li><li><code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 90, "</code> — lane swims happening right now</li><li><code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var54 string
-		templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(`(activity("pickleball") or activity("badminton")) and time(mo we fr @ 18:00-21:00)`)
+		templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(`activity("skat") and not activity("figure") and time(sa su)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 175, Col: 99}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 179, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 89, "</code> — racquet sports on weekday evenings</li><li><code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 91, "</code> — weekend skating, excluding figure skating</li><li><code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var55 string
-		templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("splash", "wave") or latlng(45.42620, -75.69205, 5)`)
+		templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(`(activity("pickleball") or activity("badminton")) and time(mo we fr @ 18:00-21:00)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 176, Col: 77}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 180, Col: 99}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 90, "</code> — specific or nearby facilities</li></ul><p>For best results, keep name queries as minimal as possible (e.g., <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 92, "</code> — racquet sports on weekday evenings</li><li><code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var56 string
-		templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(`"lane sw"`)
+		templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(`facility("splash", "wave") or latlng(45.42620, -75.69205, 5)`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 178, Col: 90}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 181, Col: 77}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 91, "</code> instead of <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 93, "</code> — specific or nearby facilities</li></ul><p>For best results, keep name queries as minimal as possible (e.g., <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var57 string
-		templ_7745c5c3_Var57, templ_7745c5c3_Err = templ.JoinStringErrs(`"lane swim"`)
+		templ_7745c5c3_Var57, templ_7745c5c3_Err = templ.JoinStringErrs(`"lane sw"`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 178, Col: 132}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 183, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var57))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 92, "</code>) so renamed activities aren't missed.</p></details>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 94, "</code> instead of <code>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var58 string
+		templ_7745c5c3_Var58, templ_7745c5c3_Err = templ.JoinStringErrs(`"lane swim"`)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `schedules.templ`, Line: 183, Col: 132}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var58))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 95, "</code>) so renamed activities aren't missed.</p></details>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
