@@ -1,16 +1,7 @@
 'use strict'
 import * as L from 'leaflet'
 
-// the shared starred facility store (starred.js)
-declare const ottrecStarred: {
-	has(slug: string): boolean
-	all(): string[]
-	count(): number
-	toggle(slug: string): void
-	set(slugs: string[]): void
-	sync(): void
-	onchange(fn: () => void): void
-}
+// the shared starred facility store (starred.ts) is a global; see ottrecstarred.d.ts
 
 // error banner shown at the bottom of the page if a js error occurs
 

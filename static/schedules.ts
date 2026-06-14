@@ -1,16 +1,7 @@
 'use strict'
 export {}
 
-// the shared starred facility store (starred.js)
-declare const ottrecStarred: {
-	has(slug: string): boolean
-	all(): string[]
-	count(): number
-	toggle(slug: string): void
-	set(slugs: string[]): void
-	sync(): void
-	onchange(fn: () => void): void
-}
+// the shared starred facility store (starred.ts) is a global; see ottrecstarred.d.ts
 
 // move starred facilities to the front of the page and the sidebar toc,
 // keeping the alphabetical order within each group; on load only, so the page

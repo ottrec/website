@@ -53,7 +53,7 @@ function sync() {
 		el.classList.toggle('starred', starred.has(el.dataset['facStarred']!))
 }
 
-const api = {
+const api: OttrecStarred = {
 	has: (slug: string) => starred.has(slug),
 	all: () => [...starred],
 	count: () => starred.size,
@@ -72,8 +72,7 @@ const api = {
 		listeners.push(fn)
 	},
 }
-const w = window as any
-w.ottrecStarred = api
+window.ottrecStarred = api
 
 // cross-tab sync
 window.addEventListener('storage', (ev) => {
