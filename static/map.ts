@@ -430,8 +430,70 @@ function openDetail(f: Facility) {
 	const token = ++detailToken
 	detailContentEl.innerHTML = '<div class="fac-popup-loading">Loading…</div>'
 	document.body.classList.add('detail-open')
+	scheduleOverlaySync()
 	renderFacility(f, (html) => detailContentEl.innerHTML = html, () => token !== detailToken)
 }
+
+function closeDetail() {
+	document.body.classList.remove('detail-open')
+	scheduleOverlaySync()
+}
+
+// closing the facility overlay (popup or mobile detail panel) with Back
+//
+// While a popup or the detail panel is open we keep one extra history entry on
+// the stack, so pressing Back closes the overlay instead of navigating away (or
+// undoing a filter change). The entry is added/removed only on the real edges
+// of "is any overlay open", coalesced across a frame so switching markers
+// (close-then-open) and the mobile popup→panel handoff don't churn the history.
+// Open/close is tracked with plain flags rather than history.state, since
+// syncURL's replaceState clobbers the state object.
+let popupVisible = false       // a leaflet popup is currently open
+let overlayPushed = false      // we have a history entry for the overlay
+let overlaySyncRAF = 0
+let overlayBackPending = false // our own history.back() is in flight
+
+// scheduleOverlaySync reconciles the history entry with whether an overlay is
+// open, at most once per frame.
+function scheduleOverlaySync() {
+	if (overlaySyncRAF) return
+	overlaySyncRAF = requestAnimationFrame(() => {
+		overlaySyncRAF = 0
+		const open = popupVisible || document.body.classList.contains('detail-open')
+		if (open === overlayPushed) return
+		if (open) {
+			overlayPushed = true
+			history.pushState(null, '', location.href)
+		} else {
+			// closed via the UI (popup ×, map click, or panel close button):
+			// unwind our entry; the resulting popstate restores the filter URL
+			overlayPushed = false
+			overlayBackPending = true
+			history.back()
+		}
+	})
+}
+
+map.on('popupopen', () => { popupVisible = true; scheduleOverlaySync() })
+map.on('popupclose', () => { popupVisible = false; scheduleOverlaySync() })
+
+window.addEventListener('popstate', () => {
+	if (overlayBackPending) {
+		// our own history.back() from a UI-driven close; the overlay is already gone
+		overlayBackPending = false
+	} else if (overlayPushed) {
+		// a real Back press while an overlay is open: close it instead of leaving
+		overlayPushed = false
+		popupVisible = false
+		map.closePopup()
+		document.body.classList.remove('detail-open')
+	}
+	// Filters live in the JS filter state and are only read from the URL at load,
+	// so back/forward never change them; keep the URL matching the live filters
+	// wherever we land. Without this, forward onto the entry pushed when the
+	// overlay opened would show that entry's stale (pre-filter-change) URL.
+	writeFilterURL()
+})
 
 function setHighlight(i: number, on: boolean) {
 	const marker = markers.get(i)
@@ -551,44 +613,56 @@ function syncActivityVisibility() {
 
 // url filter state
 
-// syncURL reflects the filter state in the query parameters, all prefixed
-// with "f-" (the page's canonical URL keeps them out of indexing). f-v
-// versions the format and f-t records the data date the filters were applied
-// against, in case they're needed to interpret old links later. Debounced
-// since Safari rate-limits history.replaceState.
+// filterURL builds the page URL reflecting the current filter state in the
+// query parameters, all prefixed with "f-" (the page's canonical URL keeps them
+// out of indexing). f-v versions the format and f-t records the data date the
+// filters were applied against, in case they're needed to interpret old links
+// later.
+function filterURL(): string {
+	const params = new URLSearchParams()
+	if (filter.days.size)
+		params.set('f-days', [...filter.days].sort((a, b) => a - b).map((d) => data.days[d]!).join(','))
+	if (filter.slots.size)
+		params.set('f-times', [...filter.slots].sort((a, b) => a - b).map((s) => data.slots[s]!).join(','))
+	if (filter.categories.size) {
+		params.set('f-cat', [...filter.categories].sort((a, b) => a - b).map((c) => data.categories[c]!).join(','))
+		// with categories selected, store the activities unchecked from
+		// them instead of the checked ones
+		for (let a = 0; a < data.activities.length; a++)
+			if (data.activityInCategories(a, filter.categories) && !filter.activities.has(a))
+				params.append('f-xact', data.activities[a]!)
+	} else {
+		for (const a of [...filter.activities].sort((x, y) => x - y))
+			params.append('f-act', data.activities[a]!)
+	}
+	if (filter.name)
+		params.set('f-q', filter.name)
+	if (filter.starredOnly)
+		params.set('f-starred', '1')
+	if (!params.keys().next().done) {
+		params.set('f-v', '1')
+		params.set('f-t', data.updated)
+	}
+	const qs = params.toString().replace(/%3A/gi, ':').replace(/%2C/gi, ',')
+	return location.pathname + (qs ? '?' + qs : '') + location.hash
+}
+
+// writeFilterURL replaces the current history entry's URL with the filter URL,
+// without touching the entry's state or adding to the history. It deliberately
+// passes null state so it never resurrects an overlay's pushed marker state
+// (see the overlay history handling below).
+function writeFilterURL() {
+	const url = filterURL()
+	if (url !== location.pathname + location.search + location.hash)
+		history.replaceState(null, '', url)
+}
+
+// syncURL reflects the filter state in the URL. Debounced since Safari
+// rate-limits history.replaceState.
 let urlTimer: number | undefined
 function syncURL() {
 	clearTimeout(urlTimer)
-	urlTimer = setTimeout(() => {
-		const params = new URLSearchParams()
-		if (filter.days.size)
-			params.set('f-days', [...filter.days].sort((a, b) => a - b).map((d) => data.days[d]!).join(','))
-		if (filter.slots.size)
-			params.set('f-times', [...filter.slots].sort((a, b) => a - b).map((s) => data.slots[s]!).join(','))
-		if (filter.categories.size) {
-			params.set('f-cat', [...filter.categories].sort((a, b) => a - b).map((c) => data.categories[c]!).join(','))
-			// with categories selected, store the activities unchecked from
-			// them instead of the checked ones
-			for (let a = 0; a < data.activities.length; a++)
-				if (data.activityInCategories(a, filter.categories) && !filter.activities.has(a))
-					params.append('f-xact', data.activities[a]!)
-		} else {
-			for (const a of [...filter.activities].sort((x, y) => x - y))
-				params.append('f-act', data.activities[a]!)
-		}
-		if (filter.name)
-			params.set('f-q', filter.name)
-		if (filter.starredOnly)
-			params.set('f-starred', '1')
-		if (!params.keys().next().done) {
-			params.set('f-v', '1')
-			params.set('f-t', data.updated)
-		}
-		const qs = params.toString().replace(/%3A/gi, ':').replace(/%2C/gi, ',')
-		const url = location.pathname + (qs ? '?' + qs : '') + location.hash
-		if (url !== location.pathname + location.search + location.hash)
-			history.replaceState(null, '', url)
-	}, 300)
+	urlTimer = setTimeout(writeFilterURL, 300)
 }
 
 // loadURLState restores the filter state from the query parameters. If any
@@ -825,7 +899,7 @@ document.getElementById('filter-slots-none')!.addEventListener('click', () => {
 })
 document.getElementById('btn-filters')!.addEventListener('click', () => document.body.classList.add('filters-open'))
 document.getElementById('btn-filters-done')!.addEventListener('click', () => document.body.classList.remove('filters-open'))
-document.getElementById('fac-detail-close')!.addEventListener('click', () => document.body.classList.remove('detail-open'))
+document.getElementById('fac-detail-close')!.addEventListener('click', closeDetail)
 activitiesFilteredEl.addEventListener('click', () => {
 	// clear the category filters, but leave the checked activities alone
 	filter.categories.clear()
