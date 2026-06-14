@@ -661,3 +661,20 @@ ul#fac-list {
 		padding: .2em 0;
 	}
 }
+
+/* print: the interactive map can't print usefully, so show just the list */
+@media print {
+	html, body { height: auto; overflow: visible; }
+	body.map-page, .map-main { display: block; }
+	.map-filterbar, .map-filters, .map-map { display: none; }
+	.map-facilities {
+		position: static;
+		width: auto;
+		max-height: none;
+		border: none;
+	}
+	.map-facilities .sheet-toggle,
+	#fac-order,
+	#fac-search { display: none; }
+	ul#fac-list { display: block; }
+}

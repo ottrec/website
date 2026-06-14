@@ -305,3 +305,10 @@ article.facility .resv-maybe {
 article.facility .resv-maybe::after {
 	content: 'R?';
 }
+
+/* print: avoid splitting schedule tables/rows across pages */
+@media print {
+	article.facility table,
+	article.facility tr,
+	article.facility .schedule-list-activity { break-inside: avoid; }
+}

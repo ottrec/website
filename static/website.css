@@ -458,3 +458,41 @@ button.fac-star.on::before {
         margin: .25rem 0;
     }
 }
+
+/* print: drop the interactive chrome and force the light palette (dark-mode
+ * text is light-colored and would vanish on paper). The lightningcss light-dark
+ * polyfill is keyed on these custom props (set inline by theme.js for an
+ * explicit theme), so !important is needed to win over that. */
+@media print {
+    :root {
+        color-scheme: light !important;
+        --lightningcss-light: initial !important;
+        --lightningcss-dark: !important;
+        /* pure black on pure white, not flexoki's paper/ink tones */
+        --fxki-bg: #fff !important;
+        --fxki-bg-2: #fff !important;
+        --fxki-bg-3: #fff !important;
+        --fxki-tx: #000 !important;
+        --fxki-tx-2: #000 !important;
+        --fxki-tx-3: #000 !important;
+    }
+    html, body {
+        height: auto;
+        overflow: visible;
+        background: #fff;
+        color: #000;
+    }
+    .map-topnav,
+    .site-footer,
+    #js-error-banner,
+    #map-toast,
+    .fac-star {
+        display: none !important;
+    }
+    a {
+        color: inherit;
+    }
+    * {
+        box-shadow: none !important;
+    }
+}

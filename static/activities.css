@@ -171,3 +171,9 @@
 	font-weight: 400;
 	color: var(--fxki-tx-3);
 }
+
+/* print: use the full page width and keep each category card together */
+@media print {
+	.activities-page main { max-width: none; }
+	.activity-card { break-inside: avoid; }
+}

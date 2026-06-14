@@ -286,3 +286,17 @@
 	border-top: none;
 	padding-top: 0;
 }
+
+/* print: drop the navigation and search, print the schedules full width */
+@media print {
+	.schedules-toc,
+	.schedules-search,
+	.schedules-catnav { display: none; }
+	.schedules-layout { display: block; }
+	.schedules-content { max-width: none; }
+	/* start every facility on its own page, including the first. The general-
+	 * sibling combinator scopes this to the list view (whose facilities all follow
+	 * the header); the single-facility page has no header, so its one facility
+	 * doesn't get a leading blank page. */
+	.schedules-header ~ .schedules-facility { break-before: page; }
+}
