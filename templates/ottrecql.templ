@@ -1,0 +1,122 @@
+package templates
+
+import "github.com/pgaskin/ottrec-website/static"
+
+// ottrecqlReference renders the ottrecql query-language documentation: an intro,
+// worked examples, and the function/operator reference. It's shared between the
+// schedules advanced-search help and the standalone /about/ottrecql page, so it
+// emits only the inner content — the caller supplies the .ottrecql-help
+// container (a collapsible <details> on schedules, a plain block on the page).
+templ ottrecqlReference() {
+	<p class="ottrecql-intro">Combine match functions with logical operators, evaluated against every activity time. Whitespace is insignificant and the schedule timezone (America/Toronto) is implied.</p>
+	<h3>Examples</h3>
+	<ul class="ottrecql-examples">
+		<li>
+			<span>Lane swims happening right now.</span>
+			<code data-ottrecql-example>{ `activity("lane sw") and schdate(today) and time(today @ now)` }</code>
+		</li>
+		<li>
+			<span>Weekend skating, excluding figure skating.</span>
+			<code data-ottrecql-example>{ `activity("skat") and not activity("figure") and time(sa su)` }</code>
+		</li>
+		<li>
+			<span>Racquet sports on weekday evenings.</span>
+			<code data-ottrecql-example>{ `(activity("pickleball") or activity("badminton")) and time(mo we fr @ 18:00-21:00)` }</code>
+		</li>
+		<li>
+			<span>Specific or nearby facilities.</span>
+			<code data-ottrecql-example>{ `facility("splash", "wave") or latlng(45.42620, -75.69205, 5)` }</code>
+		</li>
+		<li>
+			<span>Weekday evening skating, excluding adult sessions.</span>
+			<code data-ottrecql-example>{ `schdate(today) and time(mo tu we th fr @ 16:00-22:00) and activity("skat") and not activity("adult")` }</code>
+		</li>
+		<li>
+			<span>Swims on a holiday's schedule.</span>
+			<code data-ottrecql-example>{ `activity("swim") and schdate(2025-12-25)` }</code>
+		</li>
+		<li>
+			<span>Weekend activities starting at any of several times.</span>
+			<code data-ottrecql-example>{ `time(sa su @ 8:00 9:00 10:00)` }</code>
+		</li>
+	</ul>
+	<h3>Reference</h3>
+	<dl class="ottrecql-reference">
+		<div>
+			<dt><code>{ `facility("name", ...)` }</code></dt>
+			<dd>Matches facility names against any of the quoted strings. Matching is fuzzy: each case-insensitive word of the query must be a prefix of a word in the facility name, in the same order, ignoring punctuation. For example, <code>{ `facility("st laurent")` }</code> matches "St. Laurent Complex", and <code>{ `facility("rj kennedy")` }</code> matches "R.J. Kennedy Community Centre and Arena".</dd>
+		</div>
+		<div>
+			<dt><code>{ `activity("name", ...)` }</code></dt>
+			<dd>Like <code>facility()</code>, but matches activity names (both normalized and as written in the schedule). Names are normalized to the infinitive form, e.g., "skate" rather than "skating", so prefer prefixes like <code>{ `activity("skat")` }</code> or <code>{ `activity("lane sw")` }</code>.</dd>
+		</div>
+		<div>
+			<dt><code>{ `time([weekday...|date...] @ [time...|timerange...])` }</code></dt>
+			<dd>
+				Matches activity weekdays and times. Days and times are each OR'd, and either side can be omitted (along with the <code>{ "@" }</code>). Activities with unparseable times are not filtered out.
+				Weekdays are two-letter, three-letter, or full names (<code>mo</code>, <code>mon</code>, <code>monday</code>). Dates are <code>YYYY-MM-DD</code> or <code>today</code>. Times are 24-hour <code>HH:MM</code>, 12-hour <code>HH:MMam</code>/<code>HH:MMpm</code> (or <code>a</code>/<code>p</code>), or <code>now</code>. Time ranges are two dash-separated times; an end time earlier than the start extends into the next day.
+				For example: <code>time(now)</code>, <code>time(mo tu we th fr)</code>, <code>{ `time(sa su @ 12:00)` }</code>, <code>{ `time(mo @ 6:00a-10:00a 6:00p-9:00p)` }</code>.
+			</dd>
+		</div>
+		<div>
+			<dt><code>schdate(date)</code></dt>
+			<dd>Matches schedule groups applicable on the date (<code>YYYY-MM-DD</code> or <code>today</code>), e.g., <code>schdate(today)</code> to show current schedules. Groups without a valid date range are not filtered out.</dd>
+		</div>
+		<div>
+			<dt><code>latlng(lat, lng, km)</code></dt>
+			<dd>Matches facilities within the radius (kilometers) of the coordinates, e.g., <code>latlng(45.42620, -75.69205, 2)</code> matches within 2km of Rideau station.</dd>
+		</div>
+		<div>
+			<dt><code>not</code> · <code>and</code> · <code>or</code> · <code>(&nbsp;)</code></dt>
+			<dd>Logical operators, highest to lowest precedence: <code>(...)</code> grouping, <code>not</code>/<code>!</code> negation, <code>and</code>/<code>&amp;&amp;</code> conjunction, <code>or</code>/<code>||</code> disjunction.</dd>
+		</div>
+	</dl>
+	<p class="ottrecql-tip">Keep name queries as minimal as possible (e.g., <code>{ `"lane sw"` }</code> instead of <code>{ `"lane swim"` }</code>) so renamed activities aren't missed.</p>
+}
+
+// WebsiteOttrecqlPage is the standalone /about/ottrecql page. Unlike the
+// schedules advanced-search help (a small utility tucked under the search box),
+// here the query box is the prominent focus, with an SEO blurb above it and the
+// full reference below — so the query language is documented and indexable on
+// its own URL. The box submits to /schedules with ?advanced=1.
+templ WebsiteOttrecqlPage(params WebsiteParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
+			@websiteIconsHead()
+			if params.Base != "" {
+				<link rel="canonical" href={ params.Base + "about/ottrecql" }/>
+			}
+			<title>Query Language - Ottawa Recreation Schedules</title>
+			<meta name="description" content="ottrecql is the query language behind ottrec.ca's advanced schedule search — filter Ottawa drop-in recreation by activity, facility, weekday, time, date, and location."/>
+			@websiteSocialHead(params.Base, params.Base+"about/ottrecql", "Query Language - Ottawa Recreation Schedules", "ottrecql is the query language behind ottrec.ca's advanced schedule search — filter Ottawa drop-in recreation by activity, facility, weekday, time, date, and location.")
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.OttrecqlCSS) }/>
+			@websiteHeadExtra()
+		</head>
+		<body class="ottrecql-page">
+			@websiteTopNav("about", params.Data.Index().Updated())
+			<main>
+				<h1>The ottrecql query language</h1>
+				<p class="ottrecql-lede">
+					ottrecql is the small query language behind the <a href="/schedules?advanced=1">advanced search</a> on ottrec.ca. It allows you to create custom schedule pages by filtering every City of Ottawa drop-in recreation activity by name, facility, weekday, time, date, and location, combining conditions with <code>and</code>, <code>or</code>, and <code>not</code>. Type a query to search across all schedules.
+				</p>
+				<form class="ottrecql-search" action="/schedules" method="get">
+					<input type="hidden" name="advanced" value="1"/>
+					<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate"></textarea>
+					<button type="submit">Search schedules</button>
+				</form>
+				<section class="ottrecql-help">
+					@ottrecqlReference()
+				</section>
+			</main>
+			@websiteFooter()
+			// progressively enhances the query box and the example snippets into
+			// syntax-highlighted CodeMirror editors (the box also lints as you type)
+			<script src={ static.Path(static.OttrecqlEditorJS) }></script>
+		</body>
+	</html>
+}

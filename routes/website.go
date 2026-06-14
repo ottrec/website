@@ -75,6 +75,9 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /about", &websiteAboutHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /about/ottrecql", &websiteOttrecqlHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("/static/", static.Handler(static.Website))
 	mux.Handle("GET /favicon.ico", static.Handler(static.Website))
 
@@ -284,6 +287,30 @@ func (h *websiteAboutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+// websiteOttrecqlHandler serves the standalone /about/ottrecql page documenting
+// the query language, with a prominent search box submitting to /schedules.
+type websiteOttrecqlHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteOttrecqlHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		return templates.WebsiteOttrecqlPage(templates.WebsiteParams{
+			Base: h.base(r),
+			Data: data,
+		}), http.StatusOK, nil
+	})
+}
+
 // websiteOttrecqlValidateHandler validates an ottrecql query (with the same
 // limits as the schedules advanced search), for live validation as the user
 // types.
@@ -432,7 +459,7 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	paths := []string{"", "map", "schedules", "activities", "about"}
+	paths := []string{"", "map", "schedules", "activities", "about", "about/ottrecql"}
 	for _, cat := range templates.ScheduleCategories {
 		paths = append(paths, "schedules/"+cat.Slug)
 	}

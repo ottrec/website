@@ -168,6 +168,7 @@ var (
 	ActivitiesJS  = assets.Register("activities.ts", ts)
 	SchedulesCSS  = assets.Register("schedules.css", css)
 	SchedulesJS   = assets.Register("schedules.ts", ts)
+	OttrecqlCSS   = assets.Register("ottrecql.css", css)
 	AboutCSS      = assets.Register("about.css", css)
 	HomeCSS       = assets.Register("home.css", css)
 	ThemeJS       = assets.Register("theme.ts", ts)
@@ -190,6 +191,7 @@ var Website = assets.
 		ActivitiesJS,
 		SchedulesCSS,
 		SchedulesJS,
+		OttrecqlCSS,
 		OttrecqlEditorJS,
 		AboutCSS,
 		HomeCSS,

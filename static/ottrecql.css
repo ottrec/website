@@ -1,0 +1,212 @@
+/* ottrecql query-language reference, shared by the schedules advanced-search
+ * help (.ottrecql-help as a <details>) and the standalone /about/ottrecql page
+ * (.ottrecql-help as a plain block, plus the page-only rules at the bottom). */
+
+.ottrecql-help {
+	margin: .5rem 0 1rem;
+	padding: .65rem .85rem;
+	font-size: .8rem;
+	line-height: 1.55;
+	color: var(--fxki-tx-2);
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .4rem;
+	overflow-wrap: break-word;
+}
+.ottrecql-help summary {
+	width: fit-content;
+	cursor: pointer;
+	color: var(--fxki-bl);
+	font-weight: 600;
+}
+.ottrecql-help summary:hover {
+	text-decoration: underline;
+}
+.ottrecql-help[open] summary {
+	margin-bottom: .5rem;
+}
+.ottrecql-help h3 {
+	margin: 1.4rem 0 .6rem;
+	font-size: .7rem;
+	font-weight: 700;
+	letter-spacing: .07em;
+	text-transform: uppercase;
+	color: var(--fxki-tx-2);
+}
+.ottrecql-help p {
+	margin: .5rem 0;
+}
+.ottrecql-tip {
+	margin-top: 1.1rem;
+	color: var(--fxki-tx-3);
+}
+/* link from the schedules help out to the full /about/ottrecql page */
+.ottrecql-more {
+	margin-top: 1.1rem;
+}
+.ottrecql-more a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.ottrecql-more a:hover {
+	text-decoration: underline;
+}
+
+.ottrecql-examples,
+.ottrecql-reference {
+	margin: .5rem 0 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: .6rem;
+}
+/* examples are a touch narrower and all the same height: grid-auto-rows:1fr
+   equalises the cards and the editor body flex-grows so they line up */
+.ottrecql-examples {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+	grid-auto-rows: 1fr;
+}
+.ottrecql-reference {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+}
+
+/* shared card chrome: a header strip over a body, both framed */
+.ottrecql-examples li,
+.ottrecql-reference > div {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	overflow: hidden;
+	background: var(--fxki-bg);
+}
+/* header: the example's title / the function signature */
+.ottrecql-examples li > span,
+.ottrecql-reference dt {
+	margin: 0;
+	padding: .35rem .6rem;
+	background: var(--fxki-bg-3);
+	border-bottom: 1px solid var(--fxki-ui-2);
+	color: var(--fxki-tx-2);
+}
+.ottrecql-reference dt code {
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--fxki-bl);
+	font-weight: 600;
+}
+/* body: the query editor / the description */
+.ottrecql-examples li > code,
+.ottrecql-examples li > ottrecql-editor,
+.ottrecql-reference dd {
+	flex: 1;
+	margin: 0;
+	padding: .5rem .6rem;
+}
+/* the editor brings its own padding and shouldn't double the card border */
+.ottrecql-examples li > ottrecql-editor {
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	font-size: .92em;
+}
+/* the plain-code fallback shown before the editor is swapped in */
+.ottrecql-examples li > code {
+	overflow-x: auto;
+	white-space: pre;
+	background: none;
+	border: none;
+	border-radius: 0;
+	font-size: .92em;
+}
+.ottrecql-help code,
+.ottrecql-lede code {
+	font-family: ui-monospace, monospace;
+	font-size: .92em;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .25em;
+	padding: .05em .3em;
+}
+
+/* ---- standalone /about/ottrecql page ---- */
+
+.ottrecql-page main {
+	max-width: 56rem;
+	margin: 0 auto;
+	padding: 1.5rem 1rem 3rem;
+}
+.ottrecql-page h1 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.4rem;
+	margin: 0 0 .75rem;
+}
+.ottrecql-lede {
+	margin: 0;
+	font-size: 1rem;
+	line-height: 1.6;
+	color: var(--fxki-tx);
+}
+.ottrecql-lede code {
+	font-size: .85em;
+}
+.ottrecql-lede a {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.ottrecql-lede a:hover {
+	text-decoration: underline;
+}
+
+/* the query box is the focus of this page, so it's larger and bolder than the
+ * small utility version on the schedules page */
+.ottrecql-search {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: .75rem;
+	margin: 1.5rem 0 2.25rem;
+}
+.ottrecql-search textarea,
+.ottrecql-search ottrecql-editor {
+	min-height: 5rem;
+	font-family: ui-monospace, monospace;
+	font-size: 1rem;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .5rem;
+	background: var(--fxki-bg);
+	color: inherit;
+}
+.ottrecql-search textarea {
+	padding: .65em .8em;
+	resize: vertical;
+}
+.ottrecql-search button {
+	align-self: flex-start;
+	font: inherit;
+	font-size: .9rem;
+	font-weight: 600;
+	padding: .4em 1.1em;
+	border: none;
+	border-radius: .4rem;
+	background: var(--fxki-bg-3);
+	color: var(--fxki-bl);
+	cursor: pointer;
+}
+.ottrecql-search button:hover {
+	background: var(--fxki-bl);
+	color: var(--fxki-paper);
+}
+/* on the page the reference is always-open documentation, so it sits flush
+ * rather than reading as a collapsible utility box */
+.ottrecql-page .ottrecql-help {
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: none;
+}
+.ottrecql-page .ottrecql-help h3:first-of-type {
+	margin-top: 0;
+}
