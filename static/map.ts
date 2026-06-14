@@ -392,6 +392,10 @@ for (const f of data.facilities) {
 			// on mobile, the details are shown in a panel over the map instead
 			// of an anchored popup, so they can't get cut off
 			map.closePopup(popup)
+			// a tap synthesizes a hover that never gets a mouseout, so close the
+			// tooltip and clear the highlight here or they'd stick behind the panel
+			marker.closeTooltip()
+			setHighlight(f.index, false)
 			openDetail(f)
 		} else {
 			// let the popup grow to fit the schedule tables if there's room
@@ -878,7 +882,13 @@ function updateMarkers() {
 	for (const [i, marker] of markers) {
 		const want = visibleSet.has(i)
 		if (want && !map.hasLayer(marker)) marker.addTo(map)
-		else if (!want && map.hasLayer(marker)) marker.remove()
+		else if (!want && map.hasLayer(marker)) {
+			// if the marker is removed while hovered, its mouseout never fires, so
+			// close the tooltip and clear the highlight here or they'd stick
+			marker.closeTooltip()
+			setHighlight(i, false)
+			marker.remove()
+		}
 	}
 }
 
