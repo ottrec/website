@@ -315,7 +315,17 @@ function placeChips() {
 	if (mobileQuery.matches) document.querySelector('.map-filterbar')!.append(filterChipsEl)
 	else document.getElementById('map-chips')!.append(filterChipsEl)
 }
-mobileQuery.addEventListener('change', placeChips)
+mobileQuery.addEventListener('change', () => {
+	placeChips()
+	// the detail and filter panels are mobile-only overlays; when growing to a
+	// wide layout they no longer apply (filters become a sidebar), so dismiss
+	// them and let scheduleOverlaySync unwind any history entry we pushed for them
+	if (!mobileQuery.matches) {
+		document.body.classList.remove('detail-open')
+		document.body.classList.remove('filters-open')
+	}
+	scheduleOverlaySync()
+})
 placeChips()
 const activitiesFilteredEl = document.getElementById('filter-activities-filtered')!
 const starredSectionEl = document.getElementById('filter-starred')!
@@ -330,7 +340,14 @@ function syncStarredFilter() {
 
 // map
 
-const map = L.map('map').setView([45.4215, -75.6972], 11)
+// keep the view within the greater Ottawa area (all facilities are here);
+// hardcoded SW/NE corners, generous enough not to clip outlying facilities
+const MAX_BOUNDS: L.LatLngBoundsExpression = [[44.8, -76.6], [45.7, -75.0]]
+const map = L.map('map', {
+	maxBounds: MAX_BOUNDS,
+	maxBoundsViscosity: 1, // solid edges; can't drag past them
+	minZoom: 10,
+}).setView([45.4215, -75.6972], 11)
 
 // light/dark tiles following the effective color scheme (the navbar toggle
 // override from theme.js, else the browser preference)
@@ -367,6 +384,7 @@ for (const f of data.facilities) {
 		minWidth: 400,
 		maxWidth: 600,
 		maxHeight: 520,
+		autoPan: false, // don't move the map on open; only list clicks pan (focusFacility)
 	})
 	marker.on('popupopen', (ev: L.PopupEvent) => {
 		const popup = ev.popup
@@ -417,8 +435,38 @@ async function renderFacility(f: Facility, setContent: (html: string) => void, i
 	ottrecStarred.sync() // wire up the star button in the inserted content
 }
 
+// ensurePopupInView shifts an open popup by the minimum needed to bring it fully
+// into the map viewport, without moving the map (autoPan is disabled and only
+// focusFacility pans). The popup is nudged via margins on its container, so its
+// tip detaches from the marker when shifted; it does nothing when the popup
+// already fits, so opening a marker that's comfortably on screen doesn't move it.
+function ensurePopupInView(popup: L.Popup) {
+	const el = popup.getElement()
+	if (!el) return
+	el.style.marginLeft = el.style.marginTop = '0' // measure unshifted
+	const m = map.getContainer().getBoundingClientRect()
+	const p = el.getBoundingClientRect()
+	const pad = 12
+	let dx = 0, dy = 0
+	if (p.left < m.left + pad) dx = p.left - (m.left + pad)
+	else if (p.right > m.right - pad) dx = p.right - (m.right - pad)
+	if (p.top < m.top + pad) dy = p.top - (m.top + pad)
+	else if (p.bottom > m.bottom - pad) dy = p.bottom - (m.bottom - pad)
+	// margins shift the absolutely-positioned container on top of the transform
+	// Leaflet uses to anchor it, so they survive map repositioning
+	if (dx) el.style.marginLeft = -dx + 'px'
+	if (dy) el.style.marginTop = -dy + 'px'
+	// the tip points at the marker, so hide it once the popup is moved off it
+	const tip = el.querySelector<HTMLElement>('.leaflet-popup-tip-container')
+	if (tip) tip.style.display = dx || dy ? 'none' : ''
+}
+
 function loadPopup(f: Facility, popup: L.Popup) {
-	renderFacility(f, (html) => popup.setContent(html), () => !popup.isOpen())
+	renderFacility(f, (html) => {
+		popup.setContent(html)
+		// the popup grows to fit the loaded content; bring it on screen after layout
+		requestAnimationFrame(() => { if (popup.isOpen()) ensurePopupInView(popup) })
+	}, () => !popup.isOpen())
 }
 
 // facility details panel over the map for mobile
@@ -439,19 +487,38 @@ function closeDetail() {
 	scheduleOverlaySync()
 }
 
-// closing the facility overlay (popup or mobile detail panel) with Back
+// closing an overlay (a facility popup, the mobile detail panel, or the mobile
+// filter panel) with Back
 //
-// While a popup or the detail panel is open we keep one extra history entry on
-// the stack, so pressing Back closes the overlay instead of navigating away (or
-// undoing a filter change). The entry is added/removed only on the real edges
-// of "is any overlay open", coalesced across a frame so switching markers
-// (close-then-open) and the mobile popup→panel handoff don't churn the history.
-// Open/close is tracked with plain flags rather than history.state, since
-// syncURL's replaceState clobbers the state object.
+// While any overlay is open we keep one extra history entry on the stack, so
+// pressing Back closes the overlay instead of navigating away (or undoing a
+// filter change). The entry is added/removed only on the real edges of "is any
+// overlay open", coalesced across a frame so switching markers (close-then-open)
+// and the mobile popup→panel handoff don't churn the history. Open/close is
+// tracked with plain flags rather than history.state, since syncURL's
+// replaceState clobbers the state object.
 let popupVisible = false       // a leaflet popup is currently open
 let overlayPushed = false      // we have a history entry for the overlay
 let overlaySyncRAF = 0
 let overlayBackPending = false // our own history.back() is in flight
+
+// overlayOpen reports whether any back-closable overlay is showing. The filter
+// panel is a full-screen overlay only on mobile; on wider screens the filters
+// are a permanent sidebar (and #btn-filters is hidden), so it doesn't count.
+function overlayOpen(): boolean {
+	return popupVisible
+		|| document.body.classList.contains('detail-open')
+		|| (mobileQuery.matches && document.body.classList.contains('filters-open'))
+}
+
+// closeOverlays dismisses every overlay; used when a real Back press lands while
+// an overlay is open.
+function closeOverlays() {
+	popupVisible = false
+	map.closePopup()
+	document.body.classList.remove('detail-open')
+	document.body.classList.remove('filters-open')
+}
 
 // scheduleOverlaySync reconciles the history entry with whether an overlay is
 // open, at most once per frame.
@@ -459,14 +526,14 @@ function scheduleOverlaySync() {
 	if (overlaySyncRAF) return
 	overlaySyncRAF = requestAnimationFrame(() => {
 		overlaySyncRAF = 0
-		const open = popupVisible || document.body.classList.contains('detail-open')
+		const open = overlayOpen()
 		if (open === overlayPushed) return
 		if (open) {
 			overlayPushed = true
 			history.pushState(null, '', location.href)
 		} else {
-			// closed via the UI (popup ×, map click, or panel close button):
-			// unwind our entry; the resulting popstate restores the filter URL
+			// closed via the UI (popup ×, map click, panel close/done button) or a
+			// resize: unwind our entry; the resulting popstate restores the filter URL
 			overlayPushed = false
 			overlayBackPending = true
 			history.back()
@@ -484,9 +551,7 @@ window.addEventListener('popstate', () => {
 	} else if (overlayPushed) {
 		// a real Back press while an overlay is open: close it instead of leaving
 		overlayPushed = false
-		popupVisible = false
-		map.closePopup()
-		document.body.classList.remove('detail-open')
+		closeOverlays()
 	}
 	// Filters live in the JS filter state and are only read from the URL at load,
 	// so back/forward never change them; keep the URL matching the live filters
@@ -897,8 +962,17 @@ document.getElementById('filter-slots-none')!.addEventListener('click', () => {
 	syncControls()
 	update()
 })
-document.getElementById('btn-filters')!.addEventListener('click', () => document.body.classList.add('filters-open'))
-document.getElementById('btn-filters-done')!.addEventListener('click', () => document.body.classList.remove('filters-open'))
+document.getElementById('btn-filters')!.addEventListener('click', () => {
+	// the filter panel covers the map, so close any open facility popup/detail
+	map.closePopup()
+	document.body.classList.remove('detail-open')
+	document.body.classList.add('filters-open')
+	scheduleOverlaySync()
+})
+document.getElementById('btn-filters-done')!.addEventListener('click', () => {
+	document.body.classList.remove('filters-open')
+	scheduleOverlaySync()
+})
 document.getElementById('fac-detail-close')!.addEventListener('click', closeDetail)
 activitiesFilteredEl.addEventListener('click', () => {
 	// clear the category filters, but leave the checked activities alone
