@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/pkg/ottregions"
 )
 
 type Table[T Row] []*T
@@ -34,6 +35,8 @@ type Facility struct {
 	Address           string  `sjson:"address" scsv:"facility_address" doc:"the address of the facility"`
 	Longitude         float32 `sjson:"longitude,nullzero" scsv:"facility_longitude,emptyzero" doc:"facility longitude (may not be set if geocoding failed)"`
 	Latitude          float32 `sjson:"latitude,nullzero" scsv:"facility_latitude,emptyzero" doc:"facility latitude (may not be set if geocoding failed)"`
+	Region            string  `sjson:"region,nullzero" scsv:"facility_region,emptyzero" doc:"facility location region (may not be set if geocoding failed)"`
+	Sector            string  `sjson:"sector,nullzero" scsv:"facility_sector,emptyzero" doc:"facility location sector (may not be set if geocoding failed)"`
 	SpecialHoursHTML  int     `sjson:"specialHoursHtmlId" scsv:"facility_special_hours_html_id" doc:"html for special hours"`
 	NotificationsHTML int     `sjson:"notificationsHtmlId" scsv:"facility_notifications_html_id" doc:"html for notifications"`
 }
@@ -101,6 +104,12 @@ func New(data ottrecidx.DataRef) (*Data, error) {
 		if lng, lat, ok := fac.GetLngLat(); ok {
 			rf.Longitude = lng
 			rf.Latitude = lat
+		}
+		if r := fac.Region(); r != ottregions.RegionUnknown {
+			rf.Region = r.Name()
+		}
+		if s := fac.Sector(); s != ottregions.SectorUnknown {
+			rf.Sector = s.String()
 		}
 		if s := fac.GetSpecialHoursHTML(); s != "" {
 			rf.SpecialHoursHTML = addHTML(strings.ReplaceAll(s, "\n", ""))
