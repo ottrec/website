@@ -431,6 +431,9 @@ ul#fac-list {
 .leaflet-popup-tip-container {
 	animation: fac-popup-in .2s ease-out;
 }
+.leaflet-control-attribution {
+    font-size: 80%;
+}
 .leaflet-tooltip {
 	font: inherit;
 	font-size: .75rem;
