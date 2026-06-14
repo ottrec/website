@@ -1,0 +1,11 @@
+{
+	"name": "ottrec-website",
+	"private": true,
+	"dependencies": {
+		"leaflet": "1.9.4"
+	},
+	"devDependencies": {
+		"@types/leaflet": "^1.9.21",
+		"typescript": "^6.0.3"
+	}
+}

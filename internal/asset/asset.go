@@ -65,6 +65,12 @@ type Asset struct {
 	blob   func() (Blob, error)  // sync.OnceValues: built + compress
 }
 
+// origin is where an asset's bytes are read from: a file at path within fsys.
+type origin struct {
+	fsys fs.FS
+	path string
+}
+
 // Source returns the asset's path within its set's filesystem.
 func (a *Asset) Source() string { return a.source }
 
@@ -86,9 +92,16 @@ func Compile(c Compiler) Option {
 	return func(cfg *config) { cfg.compile = c }
 }
 
-// Register adds an asset loaded from source, or returns the one already
-// registered for it. Compilation is configured by opts.
+// Register adds an asset loaded from source within the Set's filesystem, or
+// returns the one already registered for it. Compilation is configured by opts.
 func (s *Set) Register(source string, opts ...Option) *Asset {
+	return s.RegisterFS(source, s.fsys, source, opts...)
+}
+
+// RegisterFS is like [Set.Register] but reads the asset's bytes from path
+// within fsys (e.g. a file inside a vendored package) while still serving it
+// under, and content-addressing it from, source.
+func (s *Set) RegisterFS(source string, fsys fs.FS, path string, opts ...Option) *Asset {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if a, ok := s.assets[source]; ok {
@@ -100,7 +113,7 @@ func (s *Set) Register(source string, opts ...Option) *Asset {
 	}
 	a := &Asset{source: source}
 	a.built = sync.OnceValues(func() (Built, error) {
-		return s.build(source, cfg)
+		return s.build(source, origin{fsys, path}, cfg)
 	})
 	a.blob = sync.OnceValues(func() (Blob, error) {
 		b, err := a.built()
@@ -113,12 +126,12 @@ func (s *Set) Register(source string, opts ...Option) *Asset {
 	return a
 }
 
-func (s *Set) build(source string, cfg config) (Built, error) {
-	data, err := fs.ReadFile(s.fsys, source)
+func (s *Set) build(source string, from origin, cfg config) (Built, error) {
+	data, err := fs.ReadFile(from.fsys, from.path)
 	if err != nil {
 		return Built{}, err
 	}
-	ext := path.Ext(source)
+	ext := path.Ext(from.path)
 	if cfg.compile != nil {
 		out, outExt, err := cfg.compile(source, data, s.resolve)
 		if err != nil {

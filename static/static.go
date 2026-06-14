@@ -6,6 +6,7 @@ package static
 import (
 	"bytes"
 	"embed"
+	"io/fs"
 	"net/http"
 	"os"
 	"regexp"
@@ -14,11 +15,11 @@ import (
 	"github.com/pgaskin/go-lightningcss"
 	"github.com/pgaskin/ottrec-website/internal/asset"
 	"github.com/pgaskin/ottrec-website/internal/esbuild"
+	"github.com/pgaskin/ottrec-website/internal/npm"
 )
 
 //go:generate go run fonts.go
-//go:generate go run fetch.go https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js lib/leaflet.js
-//go:generate go run fetch.go https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css lib/leaflet.css
+//go:generate go run vendor.go
 
 // Base is the path prefix under which assets are served.
 const Base = "/static/"
@@ -28,6 +29,21 @@ var res embed.FS
 
 // assets holds every embedded static asset.
 var assets = asset.NewSet(res, mimeType)
+
+// vendored exposes the npm packages vendored into lib/ (as tar archives) as
+// filesystems, and provides the esbuild plugin that bundles them.
+var vendored = npm.NewStore(must(fs.Sub(res, "lib"))).
+	Entry("leaflet", "dist/leaflet-src.esm.js") // force leaflet to use ESM instead of CJS
+
+// pkgFS returns the filesystem of a vendored npm package.
+func pkgFS(name string) fs.FS { return must(vendored.FS(name)) }
+
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
 
 // Path returns the public, content-addressed path at which a is served.
 func Path(a *asset.Asset) string {
@@ -103,9 +119,10 @@ func compileCSS(name string, data []byte, resolve func(string) (string, error)) 
 	return out, ".css", nil
 }
 
-// compileTS compiles a TypeScript module to minified JavaScript.
+// compileTS bundles a TypeScript module to minified JavaScript, resolving
+// imports of vendored npm packages.
 func compileTS(name string, data []byte, _ func(string) (string, error)) ([]byte, string, error) {
-	js, err := esbuild.Transform(name, string(data))
+	js, err := esbuild.Transform(name, string(data), vendored.Plugin())
 	if err != nil {
 		return nil, "", err
 	}
@@ -123,8 +140,9 @@ var (
 	SourceSerif4WOFF2 = assets.Register("fonts/source_serif_4.woff2")
 	SymbolsWOFF2      = assets.Register("fonts/symbols.woff2")
 
-	LeafletCSS = assets.Register("lib/leaflet.css")
-	LeafletJS  = assets.Register("lib/leaflet.js")
+	// leaflet's JS is imported and bundled by map.ts; only its stylesheet is
+	// served, read straight from the vendored package
+	LeafletCSS = assets.RegisterFS("lib/leaflet.css", pkgFS("leaflet"), "dist/leaflet.css")
 
 	FaviconSVG        = assets.Register("favicon.svg")
 	FaviconICO        = assets.Register("favicon.ico")
@@ -164,7 +182,6 @@ var Website = assets.
 		SymbolsWOFF2,
 		AsapWOFF2,
 		LeafletCSS,
-		LeafletJS,
 		FaviconSVG,
 		FaviconICO,
 		AppleTouchIconPNG,

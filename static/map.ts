@@ -1,7 +1,5 @@
 'use strict'
-export {}
-
-declare const L: any // leaflet (lib/leaflet.js)
+import * as L from 'leaflet'
 
 // the shared starred facility store (starred.js)
 declare const ottrecStarred: {
