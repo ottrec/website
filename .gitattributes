@@ -1,3 +1,4 @@
 static/fonts/* linguist-vendored
 static/lib/* linguist-vendored
 templates/*_templ.go linguist-generated
+pkg/ottregions/regions.go linguist-generated
