@@ -18,6 +18,7 @@ var activityPeriods = [][2]int{
 
 var (
 	activityPeriodShort = []string{"m", "a", "e"}
+	activityPeriodLong  = []string{"Morning", "Afternoon", "Evening"}
 	activityPeriodTitle = []string{"morning (until 11:00)", "afternoon (11:00 to 17:00)", "evening (from 17:00)"}
 )
 

@@ -1,7 +1,7 @@
 /* page layout */
 
 .activities-page main {
-	max-width: 50rem;
+	max-width: 64rem;
 	margin: 0 auto;
 	padding: 1rem;
 }
@@ -94,12 +94,13 @@
 .activities-header .per-m { color: var(--per-m); }
 .activities-header .per-a { color: var(--per-a); }
 .activities-header .per-e { color: var(--per-e); }
-.activity-table thead tr + tr th:nth-of-type(3n+1) { color: var(--per-m); }
-.activity-table thead tr + tr th:nth-of-type(3n+2) { color: var(--per-a); }
-.activity-table thead tr + tr th:nth-of-type(3n) { color: var(--per-e); }
-.activity-table td:nth-of-type(3n+1) { --per-check: var(--per-m-check); --per-faint: var(--per-m-faint); }
-.activity-table td:nth-of-type(3n+2) { --per-check: var(--per-a-check); --per-faint: var(--per-a-faint); }
-.activity-table td:nth-of-type(3n) { --per-check: var(--per-e-check); --per-faint: var(--per-e-faint); }
+/* time-of-day color coding, keyed by class (columns are grouped by period) */
+.activity-table thead th.per-m { color: var(--per-m); }
+.activity-table thead th.per-a { color: var(--per-a); }
+.activity-table thead th.per-e { color: var(--per-e); }
+.activity-table td.per-m { --per-check: var(--per-m-check); --per-faint: var(--per-m-faint); }
+.activity-table td.per-a { --per-check: var(--per-a-check); --per-faint: var(--per-a-faint); }
+.activity-table td.per-e { --per-check: var(--per-e-check); --per-faint: var(--per-e-faint); }
 .activity-table thead abbr {
 	text-decoration: none;
 	cursor: help;
@@ -125,10 +126,10 @@
 	color: var(--fxki-bl);
 	text-decoration: underline;
 }
-/* separators between the weekday column groups */
-.activity-table td:nth-of-type(3n+1),
+/* separators between the time-of-day column groups (each spans 7 weekdays) */
+.activity-table td:nth-of-type(7n+1),
 .activity-table thead tr:first-child th:not(.fac),
-.activity-table thead tr + tr th:nth-of-type(3n+1) {
+.activity-table thead tr + tr th:nth-of-type(7n+1) {
 	border-left: 1px solid var(--fxki-ui-2);
 }
 .activity-table input[type="checkbox"] {
