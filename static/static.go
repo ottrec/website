@@ -157,6 +157,7 @@ var (
 	FaviconSVG        = assets.Register("favicon.svg")
 	FaviconICO        = assets.Register("favicon.ico")
 	AppleTouchIconPNG = assets.Register("apple-touch-icon.png")
+	SocialCardPNG     = assets.Register("social-card.png") // og:image / twitter:image; see social-card.py
 
 	DataCSS       = assets.Register("data.css", css)
 	WebsiteCSS    = assets.Register("website.css", css)
@@ -198,6 +199,7 @@ var Website = assets.
 		FaviconSVG,
 		FaviconICO,
 		AppleTouchIconPNG,
+		SocialCardPNG,
 	).
 	Cache("public, max-age=86400").
 	Alias("/favicon.ico", FaviconICO)

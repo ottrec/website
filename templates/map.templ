@@ -18,6 +18,7 @@ templ WebsiteMapPage(params WebsiteParams) {
 			}
 			<title>Facility Map - Ottawa Recreation Schedules</title>
 			<meta name="description" content="Interactive map of City of Ottawa recreation facilities, filterable by activity, weekday, and time."/>
+			@websiteSocialHead(params.Base, params.Base+"map", "Facility Map - Ottawa Recreation Schedules", "Interactive map of City of Ottawa recreation facilities, filterable by activity, weekday, and time.")
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.LeafletCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>

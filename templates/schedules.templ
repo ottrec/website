@@ -18,6 +18,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 			}
 			<title>{ params.Title } - Ottawa Recreation Schedules</title>
 			<meta name="description" content={ cmp.Or(params.MetaDescription, params.Description) }/>
+			@websiteSocialHead(params.Base, params.Base+params.Canonical, params.Title+" - Ottawa Recreation Schedules", cmp.Or(params.MetaDescription, params.Description))
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.SchedulesCSS) }/>

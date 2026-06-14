@@ -15,6 +15,7 @@ templ WebsiteAboutPage(params WebsiteParams) {
 			}
 			<title>About - Ottawa Recreation Schedules</title>
 			<meta name="description" content="About ottrec.ca, data sources, dataset download, and contact information."/>
+			@websiteSocialHead(params.Base, params.Base+"about", "About - Ottawa Recreation Schedules", "About ottrec.ca, data sources, dataset download, and contact information.")
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.AboutCSS) }/>
 			@websiteHeadExtra()

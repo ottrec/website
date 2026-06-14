@@ -61,33 +61,41 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<title>About - Ottawa Recreation Schedules</title><meta name=\"description\" content=\"About ottrec.ca, data sources, dataset download, and contact information.\"><link rel=\"stylesheet\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<title>About - Ottawa Recreation Schedules</title><meta name=\"description\" content=\"About ottrec.ca, data sources, dataset download, and contact information.\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = websiteSocialHead(params.Base, params.Base+"about", "About - Ottawa Recreation Schedules", "About ottrec.ca, data sources, dataset download, and contact information.").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<link rel=\"stylesheet\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 templ.SafeURL
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.WebsiteCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 18, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 19, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><link rel=\"stylesheet\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><link rel=\"stylesheet\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 templ.SafeURL
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.AboutCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 19, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 20, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -95,7 +103,7 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</head><body class=\"about-page\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</head><body class=\"about-page\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -103,7 +111,7 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<main><h1>About</h1><section id=\"about\"><p>ottrec.ca is an unofficial website created by <a href=\"https://github.com/pgaskin\">Patrick Gaskin</a> that makes it easier to find City of Ottawa drop-in recreation activities and facilities.</p></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<main><h1>About</h1><section id=\"about\"><p>ottrec.ca is an unofficial website created by <a href=\"https://github.com/pgaskin\">Patrick Gaskin</a> that makes it easier to find City of Ottawa drop-in recreation activities and facilities.</p></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -111,7 +119,7 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<section id=\"starred\"><h2>Starred Facilities</h2><p>Facilities starred on the map and schedules pages are stored locally in this browser.</p><p class=\"starred-actions\" id=\"starred-actions\" hidden><button type=\"button\" id=\"starred-save\">Save</button> <button type=\"button\" id=\"starred-restore\">Restore</button> <button type=\"button\" id=\"starred-clear\">Clear</button></p></section><section id=\"data-ottrec-ca\"><h2>Dataset</h2><p>The dataset powering this website is available at <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> and updated daily. There's also an API for getting historical versions.</p><p>Data is available as simplified CSV/JSON, or raw Protobuf/Textpb/JSON. A detailed schema is included for both formats.</p></section><section id=\"terms\"><h2>Terms</h2><p>This site is provided as-is, without warranty of any kind. Although I have tried my best to ensure the data is complete, there may occasionally be missing errors or outdated information.</p><p>Nevertheless, this site will be more accurate than pretty much other one since I parse the data in a much more reliable way and have many more verification passes on the data. Most importantly, unrecognized data will result in an error being shown rather than silently leaving out times or schedules.</p><p>If you need to confirm information, check the links to the official schedule page (and keep in mind the even these have been outdated in the past, so call the facility if you really want to know for sure).</p></section><section id=\"data\"><h2>Data Sources</h2><p>All schedule information is automatically collected from the individual facility pages on <a href=\"https://ottawa.ca/en/recreation-and-parks\">ottawa.ca</a> every evening. The date of the data in use is shown at the top of every page, and each facility links back to its source page.</p><p>Dates, times, and activity names are parsed and normalized automatically, and categories are matched by activity name, so entries can occasionally be missing, miscategorized, or out of date. When something on a source page fails to parse, an error is displayed on the facility's schedules.</p></section><section id=\"attribution\"><h2>Attribution</h2><p style=\"font-size: 0.75em\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<section id=\"starred\"><h2>Starred Facilities</h2><p>Facilities starred on the map and schedules pages are stored locally in this browser.</p><p class=\"starred-actions\" id=\"starred-actions\" hidden><button type=\"button\" id=\"starred-save\">Save</button> <button type=\"button\" id=\"starred-restore\">Restore</button> <button type=\"button\" id=\"starred-clear\">Clear</button></p></section><section id=\"data-ottrec-ca\"><h2>Dataset</h2><p>The dataset powering this website is available at <a href=\"https://data.ottrec.ca\">data.ottrec.ca</a> and updated daily. There's also an API for getting historical versions.</p><p>Data is available as simplified CSV/JSON, or raw Protobuf/Textpb/JSON. A detailed schema is included for both formats.</p></section><section id=\"terms\"><h2>Terms</h2><p>This site is provided as-is, without warranty of any kind. Although I have tried my best to ensure the data is complete, there may occasionally be missing errors or outdated information.</p><p>Nevertheless, this site will be more accurate than pretty much other one since I parse the data in a much more reliable way and have many more verification passes on the data. Most importantly, unrecognized data will result in an error being shown rather than silently leaving out times or schedules.</p><p>If you need to confirm information, check the links to the official schedule page (and keep in mind the even these have been outdated in the past, so call the facility if you really want to know for sure).</p></section><section id=\"data\"><h2>Data Sources</h2><p>All schedule information is automatically collected from the individual facility pages on <a href=\"https://ottawa.ca/en/recreation-and-parks\">ottawa.ca</a> every evening. The date of the data in use is shown at the top of every page, and each facility links back to its source page.</p><p>Dates, times, and activity names are parsed and normalized automatically, and categories are matched by activity name, so entries can occasionally be missing, miscategorized, or out of date. When something on a source page fails to parse, an error is displayed on the facility's schedules.</p></section><section id=\"attribution\"><h2>Attribution</h2><p style=\"font-size: 0.75em\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -119,18 +127,18 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(line)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 77, Col: 13}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 78, Col: 13}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<br>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<br>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "Map data © <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors<br>Map tiles © <a href=\"https://carto.com/attributions\">CARTO</a><br>Website © <a href=\"https://github.com/pgaskin\">Patrick Gaskin</a></p></section></main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "Map data © <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors<br>Map tiles © <a href=\"https://carto.com/attributions\">CARTO</a><br>Website © <a href=\"https://github.com/pgaskin\">Patrick Gaskin</a></p></section></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -138,20 +146,20 @@ func WebsiteAboutPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(static.Path(static.StarredJS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 89, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `about.templ`, Line: 90, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

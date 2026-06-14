@@ -15,6 +15,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 			}
 			<title>Activities - Ottawa Recreation Schedules</title>
 			<meta name="description" content="Which City of Ottawa recreation facilities offer each category of activities, by weekday, time of day, and area."/>
+			@websiteSocialHead(params.Base, params.Base+"activities", "Activities - Ottawa Recreation Schedules", "Which City of Ottawa recreation facilities offer each category of activities, by weekday, time of day, and area.")
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.ActivitiesCSS) }/>
 			@websiteHeadExtra()
