@@ -27,10 +27,12 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 		<body class="schedules-page">
 			@websiteTopNav("schedules", params.Data.Index().Updated())
 			<nav class="schedules-catnav">
-				<a href={ templ.URL(schedulesNavHref("/schedules", params.List)) } class={ templ.KV("active", params.Active == "all") }>All</a>
-				for _, cat := range ScheduleCategories {
-					<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
-				}
+				<div class="schedules-cats">
+					<a href={ templ.URL(schedulesNavHref("/schedules", params.List)) } class={ templ.KV("active", params.Active == "all") }>All</a>
+					for _, cat := range ScheduleCategories {
+						<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
+					}
+				</div>
 				<div class="schedules-view" role="group" aria-label="Schedule view">
 					<a
 						href={ templ.URL(schedulesViewHref(params, false)) }
