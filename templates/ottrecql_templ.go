@@ -410,7 +410,7 @@ func WebsiteOttrecqlPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" aria-label=\"Search query\" data-ottrecql data-lint=\"/api/ottrecql/validate\"></textarea> <button type=\"submit\">Search schedules</button></form><section class=\"ottrecql-help\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" aria-label=\"Search query\" data-ottrecql data-lint=\"/api/ottrecql/validate\" data-facilities=\"/api/ottrecql/facilities\" data-activities=\"/api/ottrecql/activities\"></textarea> <button type=\"submit\">Search schedules</button></form><section class=\"ottrecql-help\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

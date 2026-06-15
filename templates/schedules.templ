@@ -102,7 +102,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 											if params.List {
 												<input type="hidden" name="mode" value="list"/>
 											}
-											<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate">{ params.Query }</textarea>
+											<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities">{ params.Query }</textarea>
 											<div class="row">
 												<button type="submit">Search</button>
 												<a class="schedules-search-mode" href={ templ.URL(schedulesNavHref("/schedules", params.List)) }>Simple search</a>

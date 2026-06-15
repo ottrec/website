@@ -106,7 +106,7 @@ templ WebsiteOttrecqlPage(params WebsiteParams) {
 				</p>
 				<form class="ottrecql-search" action="/schedules" method="get">
 					<input type="hidden" name="advanced" value="1"/>
-					<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate"></textarea>
+					<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities"></textarea>
 					<button type="submit">Search schedules</button>
 				</form>
 				<section class="ottrecql-help">

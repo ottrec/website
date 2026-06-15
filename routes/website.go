@@ -72,6 +72,13 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 		websiteHandlerBase: base,
 	})
 	mux.Handle("GET /api/ottrecql/validate", &websiteOttrecqlValidateHandler{})
+	mux.Handle("GET /api/ottrecql/facilities", &websiteOttrecqlNamesHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /api/ottrecql/activities", &websiteOttrecqlNamesHandler{
+		websiteHandlerBase: base,
+		activities:         true,
+	})
 	mux.Handle("GET /about", &websiteAboutHandler{
 		websiteHandlerBase: base,
 	})
@@ -333,6 +340,62 @@ func (h *websiteOttrecqlValidateHandler) ServeHTTP(w http.ResponseWriter, r *htt
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	json.NewEncoder(w).Encode(resp)
+}
+
+// websiteOttrecqlNamesHandler serves the distinct facility or activity names as
+// a JSON array, fetched once by the editor to autocomplete facility()/activity()
+// string arguments. Cached by data hash like the sitemap.
+type websiteOttrecqlNamesHandler struct {
+	websiteHandlerBase
+	activities bool
+}
+
+func (h *websiteOttrecqlNamesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	data, ok := h.Data()
+	if !ok {
+		http.Error(w, "data not available, try again later", http.StatusServiceUnavailable)
+		return
+	}
+
+	seen := map[string]struct{}{}
+	names := []string{}
+	add := func(n string) {
+		if n == "" {
+			return
+		}
+		if _, dup := seen[n]; dup {
+			return
+		}
+		seen[n] = struct{}{}
+		names = append(names, n)
+	}
+	if h.activities {
+		for a := range data.Activities() {
+			add(a.GetName())
+		}
+	} else {
+		for f := range data.Facilities() {
+			add(f.GetName())
+		}
+	}
+	slices.Sort(names)
+
+	buf, err := json.Marshal(names)
+	if err != nil {
+		slog.Error("website: failed to marshal ottrecql names", "error", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	etag := etagWeak(data.Index().Hash())
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, no-cache")
+	w.Header().Set("ETag", etag)
+	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+	w.Write(buf)
 }
 
 // websiteSchedulesKeyHandler serves the category schedule pages under

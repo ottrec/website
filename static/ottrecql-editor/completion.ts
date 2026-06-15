@@ -3,10 +3,15 @@ import { EditorView, Decoration, DecorationSet, showTooltip, Tooltip } from "@co
 import { autocompletion, startCompletion, completionStatus, Completion, CompletionSource } from "@codemirror/autocomplete"
 import { Extension } from "@codemirror/state"
 import { isFunction, WEEKDAYS } from "./language"
+import { suggestNames, NormalizedName } from "./fuzzy"
+
+// NameLists supplies the candidate names for facility()/activity() string
+// completion; the component fills these in once fetched (see component.ts).
+export type NameLists = { facility: readonly NormalizedName[], activity: readonly NormalizedName[] }
 
 // DocNode renders the documentation shown beside a completion. It is provided
 // by the caller so the styling can live with the component (see component.ts).
-export type DocNode = (signature: string, doc: string, ...examples: string[]) => Node
+export type DocNode = (signature: string, doc: string, ...examples: string[]) => HTMLElement
 
 // applyOperator completes an operator (and/or/not) with surrounding spaces,
 // adding the leading space only when one isn't already there, then reopens the
@@ -58,6 +63,24 @@ function getEnclosingFunction(state: EditorState, pos: number): EnclosingCall | 
         i++
     }
     return stack.length > 0 ? stack[stack.length - 1]! : null
+}
+
+// stringContentStart returns the document offset just after the opening quote of
+// the string containing pos, or null if pos is not inside a string.
+function stringContentStart(state: EditorState, pos: number): number | null {
+    const text = state.doc.sliceString(0, pos)
+    let i = 0, start = -1, inString = false
+    while (i < text.length) {
+        if (inString) {
+            if (text[i] === '\\') { i += 2; continue }
+            if (text[i] === '"') { inString = false; i++; continue }
+            i++
+        } else {
+            if (text[i] === '"') { inString = true; start = i + 1; i++; continue }
+            i++
+        }
+    }
+    return inString ? start : null
 }
 
 // atExpressionStart reports whether pos is where a new sub-expression may begin
@@ -161,14 +184,52 @@ function createCompletions(doc: DocNode): Record<string, Completion[]> {
     }
 }
 
-// ottrecqlCompletion provides context-aware autocompletion: function names and
+// ottrecqlCompletion provides context-aware autocompletion: facility/activity
+// name words inside string arguments (from getNames), function names and
 // operators at the top level, and the keywords valid inside each function.
-export function ottrecqlCompletion(doc: DocNode): Extension {
+export function ottrecqlCompletion(doc: DocNode, getNames: () => NameLists): Extension {
     const completions = createCompletions(doc)
     const source: CompletionSource = context => {
+        // inside a facility()/activity() string, complete from the name list
+        const enc = getEnclosingFunction(context.state, context.pos)
+        if (enc && (enc.name === 'facility' || enc.name === 'activity')) {
+            const contentStart = stringContentStart(context.state, context.pos)
+            if (contentStart === null) return null
+            const names = enc.name === 'facility' ? getNames().facility : getNames().activity
+            if (!names.length) return null
+            const content = context.state.doc.sliceString(contentStart, context.pos)
+            const suggestions = suggestNames(content, names)
+            if (!suggestions.length) return null
+            const options: Completion[] = suggestions.map(s => ({
+                label: s.label,
+                type: 'text',
+                apply: (view, _c, from, to) => {
+                    if (s.complete) {
+                        // finish the string; step over an auto-closed quote if
+                        // one already follows, otherwise add the closing quote
+                        const hasQuote = view.state.sliceDoc(to, to + 1) === '"'
+                        const insert = hasQuote ? s.insert : s.insert + '"'
+                        view.dispatch({
+                            changes: { from, to, insert },
+                            selection: { anchor: from + insert.length + (hasQuote ? 1 : 0) },
+                        })
+                    } else {
+                        // insert just the word, no trailing space: the user
+                        // decides whether to stop at this prefix or type a space
+                        // to continue (which nudges toward minimal queries). The
+                        // next word is suggested once they type that space.
+                        view.dispatch({
+                            changes: { from, to, insert: s.insert },
+                            selection: { anchor: from + s.insert.length },
+                        })
+                    }
+                },
+            }))
+            return { from: contentStart + suggestions[0]!.fromOffset, options }
+        }
+
         const word = context.matchBefore(/[a-zA-Z][a-zA-Z0-9]*/)
         const from = word ? word.from : context.pos
-        const enc = getEnclosingFunction(context.state, from)
         const key = enc?.name ?? (atExpressionStart(context.state, from) ? 'expr_start' : 'expr_continue')
         const options = completions[key] ?? []
         if (!options.length) return null
@@ -185,6 +246,20 @@ export function ottrecqlCompletion(doc: DocNode): Extension {
                 requestAnimationFrame(() => { if (view.hasFocus) startCompletion(view) })
                 return false
             },
+        }),
+        // after the user types a space inside a facility()/activity() string,
+        // suggest the next word (completions don't auto-advance there, so the
+        // user can stop at a minimal prefix)
+        EditorView.updateListener.of(update => {
+            if (!update.docChanged) return
+            if (!update.transactions.some(tr => tr.isUserEvent('input.type'))) return
+            const pos = update.state.selection.main.head
+            if (update.state.sliceDoc(pos - 1, pos) !== ' ') return
+            const enc = getEnclosingFunction(update.state, pos)
+            if (enc && (enc.name === 'facility' || enc.name === 'activity') && stringContentStart(update.state, pos) !== null) {
+                const view = update.view
+                requestAnimationFrame(() => { if (view.hasFocus) startCompletion(view) })
+            }
         }),
     ]
 }

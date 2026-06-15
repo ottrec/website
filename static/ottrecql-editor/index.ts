@@ -20,6 +20,8 @@ for (const ta of document.querySelectorAll<HTMLTextAreaElement>('textarea[data-o
     ed.setAttribute('theme', siteTheme())
     ta.replaceWith(ed)
     ed.lint = ta.dataset['lint'] ?? null // ottrec.ca query-validation endpoint
+    ed.facilities = ta.dataset['facilities'] ?? null // facility-name list endpoint
+    ed.activities = ta.dataset['activities'] ?? null // activity-name list endpoint
     editors.push(ed)
 }
 

@@ -7,7 +7,8 @@ import { acceptCompletion, closeBrackets, closeBracketsKeymap } from "@codemirro
 import { tokyoNight } from "@uiw/codemirror-theme-tokyo-night"
 import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day"
 import ottrecql from "./language"
-import { ottrecqlCompletion, ottrecqlSignatureHelp, ottrecqlBadBrackets } from "./completion"
+import { ottrecqlCompletion, ottrecqlSignatureHelp, ottrecqlBadBrackets, NameLists } from "./completion"
+import { toNormalizedName, NormalizedName } from "./fuzzy"
 
 // makeDocNode renders the documentation popup shown beside a completion. The
 // styling lives here with the rest of the component's presentation.
@@ -59,6 +60,9 @@ class OttrecqlEditor extends HTMLElement {
     #placeholderCompartment = new Compartment()
     #dirty = false
     #lintUrl: string | null = null
+    // facility/activity names for string-argument completion, fetched once from
+    // the configured URLs (see the facilities/activities setters)
+    #names: { facility: NormalizedName[], activity: NormalizedName[] } = { facility: [], activity: [] }
 
     constructor() {
         super()
@@ -112,7 +116,7 @@ class OttrecqlEditor extends HTMLElement {
                     bracketMatching(),
                     closeBrackets(),
                     ottrecql,
-                    ottrecqlCompletion(makeDocNode),
+                    ottrecqlCompletion(makeDocNode, () => this.#names),
                     ottrecqlSignatureHelp(makeDocNode),
                     ottrecqlBadBrackets(),
                     this.#placeholderCompartment.of(placeholder(this.getAttribute('placeholder') ?? '')),
@@ -255,6 +259,25 @@ class OttrecqlEditor extends HTMLElement {
     set lint(v: string | null) {
         this.#lintUrl = v ? String(v) : null
         this.#view?.dispatch({ effects: this.#lintCompartment.reconfigure(this.#lintExtension()) })
+    }
+
+    // facilities/activities are URLs returning a JSON array of names, fetched
+    // once (like lint, set as properties so the page wires its own endpoints) to
+    // populate facility()/activity() string completion. The completion source
+    // reads #names live, so a late-arriving response just starts working.
+    set facilities(url: string | null) { this.#fetchNames('facility', url) }
+    set activities(url: string | null) { this.#fetchNames('activity', url) }
+
+    #fetchNames(kind: 'facility' | 'activity', url: string | null) {
+        if (!url) return
+        fetch(String(url))
+            .then(resp => resp.ok ? resp.json() : [])
+            .then((list: unknown) => {
+                if (Array.isArray(list)) {
+                    this.#names[kind] = list.filter((s): s is string => typeof s === 'string').map(toNormalizedName)
+                }
+            })
+            .catch(() => {}) // names are a nicety; don't disrupt the editor if they fail to load
     }
 
     get theme(): string { return this.getAttribute('theme') ?? 'auto' }
