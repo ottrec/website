@@ -1,6 +1,6 @@
 import { StateField, StateEffect, RangeSetBuilder, EditorState } from "@codemirror/state"
 import { EditorView, Decoration, DecorationSet, showTooltip, Tooltip } from "@codemirror/view"
-import { autocompletion, startCompletion, completionStatus, Completion, CompletionSource } from "@codemirror/autocomplete"
+import { autocompletion, startCompletion, closeCompletion, completionStatus, Completion, CompletionSource } from "@codemirror/autocomplete"
 import { Extension } from "@codemirror/state"
 import { isFunction, WEEKDAYS } from "./language"
 import { suggestNames, NormalizedName } from "./fuzzy"
@@ -200,6 +200,7 @@ export function ottrecqlCompletion(doc: DocNode, getNames: () => NameLists): Ext
             const content = context.state.doc.sliceString(contentStart, context.pos)
             const suggestions = suggestNames(content, names)
             if (!suggestions.length) return null
+            const from = contentStart + suggestions[0]!.fromOffset
             const options: Completion[] = suggestions.map(s => ({
                 label: s.label,
                 type: 'text',
@@ -225,7 +226,24 @@ export function ottrecqlCompletion(doc: DocNode, getNames: () => NameLists): Ext
                     }
                 },
             }))
-            return { from: contentStart + suggestions[0]!.fromOffset, options }
+            // default to keeping exactly what's typed (a no-op, ranked first):
+            // accepting then never makes the query more specific than intended,
+            // and the real completions sit below it
+            const typed = context.state.sliceDoc(from, context.pos)
+            if (typed) options.unshift({
+                label: typed, type: 'text', boost: 1,
+                // keep the typed text and finish the string: step over the
+                // auto-closed quote (or add one), moving the cursor past it
+                apply: (view, _c, _from, to) => {
+                    const hasQuote = view.state.sliceDoc(to, to + 1) === '"'
+                    view.dispatch({
+                        changes: hasQuote ? undefined : { from: to, insert: '"' },
+                        selection: { anchor: to + 1 },
+                    })
+                    closeCompletion(view)
+                },
+            })
+            return { from, options }
         }
 
         const word = context.matchBefore(/[a-zA-Z][a-zA-Z0-9]*/)
