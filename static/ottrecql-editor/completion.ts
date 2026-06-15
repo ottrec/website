@@ -139,7 +139,19 @@ function createCompletions(doc: DocNode): Record<string, Completion[]> {
     return {
         expr_start: [
             ...Object.entries(FUNCTION_DOCS).map(([name, d]): Completion => ({
-                label: name, type: 'function', apply: name + '(',
+                label: name, type: 'function',
+                // facility()/activity() take quoted names, so open the string
+                // straight away and show the name completions
+                apply: name === 'facility' || name === 'activity'
+                    ? (view, _c, from, to) => {
+                        const insert = name + '("'
+                        view.dispatch({
+                            changes: { from, to, insert },
+                            selection: { anchor: from + insert.length },
+                        })
+                        startCompletion(view)
+                    }
+                    : name + '(',
                 info: () => doc(d.signature, d.doc, ...d.examples),
             })),
             {
