@@ -4,20 +4,19 @@ import { bracketMatching } from "@codemirror/language"
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
 import { linter, Diagnostic } from "@codemirror/lint"
 import { acceptCompletion, closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete"
-import { tokyoNight } from "@uiw/codemirror-theme-tokyo-night"
-import { tokyoNightDay } from "@uiw/codemirror-theme-tokyo-night-day"
+import { flexokiDark, flexokiLight } from "./flexoki"
 import ottrecql from "./language"
 import { ottrecqlCompletion, ottrecqlSignatureHelp, ottrecqlBadBrackets, NameLists } from "./completion"
 import { toNormalizedName, NormalizedName } from "./fuzzy"
 
 // makeDocNode renders the documentation popup shown beside a completion. The
 // styling lives here with the rest of the component's presentation.
-function makeDocNode(signature: string, doc: string, ...examples: string[]): Node {
+function makeDocNode(signature: string, doc: string, ...examples: string[]): HTMLElement {
     const el = document.createElement('div')
     el.style.cssText = 'padding:8px 12px;max-width:360px;font-size:13px;line-height:1.5'
 
     const sig = document.createElement('code')
-    sig.style.cssText = 'display:block;font-size:12px;font-weight:600;margin-bottom:6px;white-space:pre-wrap;color:#4ec9b0'
+    sig.style.cssText = 'display:block;font-size:12px;font-weight:600;margin-bottom:6px;white-space:pre-wrap;color:#3AA99F' /* flexoki cyan */
     sig.textContent = signature
     el.appendChild(sig)
 
@@ -33,7 +32,7 @@ function makeDocNode(signature: string, doc: string, ...examples: string[]): Nod
         el.appendChild(lbl)
         for (const ex of examples) {
             const c = document.createElement('code')
-            c.style.cssText = 'display:block;font-size:12px;color:#ce9178'
+            c.style.cssText = 'display:block;font-size:12px;color:#DA702C' /* flexoki orange */
             c.textContent = ex
             el.appendChild(c)
         }
@@ -43,9 +42,9 @@ function makeDocNode(signature: string, doc: string, ...examples: string[]): Nod
 
 // resolveTheme maps the theme attribute to a CodeMirror theme. Switching with
 // the page colour scheme is left to whatever sets up the editor (it just sets
-// the theme attribute); the component only knows the two Tokyo Night variants.
+// the theme attribute); the component only knows the two Flexoki variants.
 function resolveTheme(name: string | null): Extension {
-    return name === 'tokyo-night' ? tokyoNight : tokyoNightDay
+    return name === 'flexoki-dark' ? flexokiDark : flexokiLight
 }
 
 class OttrecqlEditor extends HTMLElement {
@@ -74,11 +73,17 @@ class OttrecqlEditor extends HTMLElement {
             display: block;
             overflow: hidden;
             cursor: text;
-            border: 1px solid var(--fxki-ui-3, #888);
+            border: 1px solid #403E3C; /* flexoki dark ui-3 */
             border-radius: .35rem;
           }
+          :host([theme="flexoki-light"]) {
+            border-color: #CECDC3; /* flexoki light ui-3 */
+          }
           :host(:focus-within) {
-            border-color: var(--fxki-bl, #4385be);
+            border-color: #4385BE; /* flexoki dark blue-400 */
+          }
+          :host([theme="flexoki-light"]:focus-within) {
+            border-color: #205EA6; /* flexoki light blue-600 */
           }
           :host([disabled]) {
             opacity: 0.5;
@@ -128,9 +133,8 @@ class OttrecqlEditor extends HTMLElement {
                     this.#editableCompartment.of(EditorView.editable.of(editable)),
                     this.#lintCompartment.of(this.#lintExtension()),
                     // show through to the host's background instead of the
-                    // Tokyo Night theme's own blue-tinted one (the token
-                    // colours still match light/dark since the host picks the
-                    // matching variant)
+                    // Flexoki theme's own base one (the token colours still
+                    // match light/dark since the host picks the matching variant)
                     Prec.highest(EditorView.theme({
                         '&': { backgroundColor: 'transparent' },
                         '.cm-gutters': { backgroundColor: 'transparent', borderRight: 'none' },

@@ -1,10 +1,10 @@
 import './component'
 import type { OttrecqlEditor } from './component'
 
-function siteTheme(): 'tokyo-night' | 'tokyo-night-day' {
+function siteTheme(): 'flexoki-dark' | 'flexoki-light' {
     const cs = document.documentElement.style.colorScheme
     const dark = cs === 'dark' || (cs !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
-    return dark ? 'tokyo-night' : 'tokyo-night-day'
+    return dark ? 'flexoki-dark' : 'flexoki-light'
 }
 
 const editors: OttrecqlEditor[] = []
