@@ -106,6 +106,30 @@ func OpenCache(name string, reset bool) (*Cache, error) {
 	return idx, nil
 }
 
+// OpenCacheReadOnly opens a cache read-only, suitable for sharing a database
+// file with another process which writes to it (e.g. ottrec-data). It never
+// modifies the database. If the schema version does not match, an error matching
+// [ErrUnsupportedSchema] is returned.
+//
+// TODO: how should we handle the schema changing under us... for now, it's okayish since we deploy everything together
+func OpenCacheReadOnly(name string) (*Cache, error) {
+	db, err := driver.Open("file:"+escapeSqlitePath(name)+"?mode=ro&_pragma=query_only(true)", sqliteRegisterGzip)
+	if err != nil {
+		return nil, err
+	}
+	idx := &Cache{db: db}
+	var current int
+	if err := idx.db.QueryRow(`PRAGMA user_version`).Scan(&current); err != nil {
+		idx.db.Close()
+		return nil, fmt.Errorf("get version: %w", err)
+	}
+	if current != SchemaVersion {
+		idx.db.Close()
+		return nil, fmt.Errorf("%w: unsupported version %d (wanted %d)", ErrUnsupportedSchema, current, SchemaVersion)
+	}
+	return idx, nil
+}
+
 // Close closes the cache.
 func (db *Cache) Close() error {
 	return db.db.Close()
