@@ -1,5 +1,5 @@
 import { EditorState, Compartment, Extension, Prec } from "@codemirror/state"
-import { EditorView, keymap, placeholder } from "@codemirror/view"
+import { EditorView, keymap, placeholder, drawSelection } from "@codemirror/view"
 import { bracketMatching } from "@codemirror/language"
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
 import { linter, Diagnostic } from "@codemirror/lint"
@@ -112,6 +112,10 @@ class OttrecqlEditor extends HTMLElement {
                 doc: initialValue,
                 extensions: [
                     history(),
+                    // manage the selection ourselves rather than relying on the
+                    // browser's native one, which (in a shadow DOM) mishandles
+                    // typing over a selection that reaches the document end
+                    drawSelection(),
                     keymap.of([{ key: 'Tab', run: acceptCompletion }, ...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap]),
                     bracketMatching(),
                     closeBrackets(),
