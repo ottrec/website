@@ -32,6 +32,7 @@ templ timemachineNav(active, subtitle string) {
 	<nav class="map-topnav tm-topnav">
 		<a class="brand" href="/">ottrec time machine <span class="tm-beta">beta</span></a>
 		<a class={ "nav", templ.KV("active", active == "datasets") } href="/datasets">Compare</a>
+		<a class={ "nav", templ.KV("active", active == "trends") } href="/trends">Trends</a>
 		<a class={ "nav", templ.KV("active", active == "facilities") } href="/facilities">Facilities</a>
 		<div class="topnav-end">
 			if subtitle != "" {
@@ -78,6 +79,10 @@ templ TimemachineIndexPage(params TimemachineIndexParams) {
 						<h2>Compare snapshots</h2>
 						<p>See everything that changed between any two dates, across all facilities, with an overview of when the biggest changes happened.</p>
 					</a>
+					<a href="/trends" data-icon="trending_up">
+						<h2>Trends</h2>
+						<p>High-level, per-activity views: how many weekly hours of swimming, skating, and more the city offers, and how that shifts across the seasons and the city.</p>
+					</a>
 					<a href="/facilities" data-icon="overview">
 						<h2>Facilities</h2>
 						<p>Pick a facility to see its full timeline of schedule, special-hours, and notification changes.</p>
@@ -86,6 +91,114 @@ templ TimemachineIndexPage(params TimemachineIndexParams) {
 			</main>
 		</body>
 	</html>
+}
+
+// TimemachineTrendsPage shows high-level, per-activity trends across snapshots.
+templ TimemachineTrendsPage(params TimemachineTrendsParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@timemachineHead("Trends - ottrec time machine", true)
+		</head>
+		<body class="tm-page">
+			@timemachineNav("trends", "")
+			<main class="tm-main tm-trends">
+				<header class="tm-header">
+					<h1>Trends</h1>
+					<p>How much drop-in recreation the city offers, and how it has shifted over time. Pick an activity.</p>
+				</header>
+				<nav class="tm-cat-pills" aria-label="Activity">
+					for _, c := range tmTrendCategories(params) {
+						<a
+							class={ "tm-cat-pill", templ.KV("active", c.Active) }
+							href={ templ.URL(tmTrendHref(c.Slug)) }
+							data-icon={ c.Icon }
+							aria-current={ tmAriaCurrent(c.Active) }
+						>{ c.Name }</a>
+					}
+				</nav>
+				<div class="tm-trend-caveat" role="note">
+					<p>
+						<strong>Weekly hours offered</strong>, summed across all facilities from the schedule in effect on each snapshot's date. Counts only what is bookable that week, so totals dip during between-session gaps and holidays.
+					</p>
+					<p>
+						Holiday and special-date schedules are matched on a best-effort basis and may be attributed to the wrong dates. <strong>Cancellations and closures are not taken into account</strong> — a listed time counts even if that occurrence was cancelled. Treat these numbers as rough indicators, not exact figures.
+					</p>
+				</div>
+				if _, ok := params.latest(); ok {
+					@timemachineTrendSummary(params)
+					@timemachineChartCard("Total weekly hours", "Across the city, over time.", tmTotalChart(params))
+					@timemachineChartCard("By part of the city", "Weekly hours, stacked by sector.", tmSectorChart(params))
+					@timemachineChartCard("By time of day", "Weekly hours, stacked into morning (until 11:00), afternoon, and evening (from 17:00).", tmPeriodChart(params))
+					@timemachineChartCard("By weekday", "Weekly hours, stacked by day of the week.", tmWeekdayChart(params))
+				} else {
+					<p class="tm-muted">No data for this activity.</p>
+				}
+			</main>
+		</body>
+	</html>
+}
+
+// timemachineTrendSummary shows the latest snapshot's headline numbers and the
+// year-over-year comparison when the window reaches back far enough.
+templ timemachineTrendSummary(params TimemachineTrendsParams) {
+	{{ cur, _ := params.latest() }}
+	{{ yoy := params.yoy() }}
+	<div class="tm-trend-summary">
+		<div class="tm-stat">
+			<span class="tm-stat-num">{ tmHours(cur.Total) }</span>
+			<span class="tm-stat-lbl">weekly hours of { tmTrendName(params) } now</span>
+		</div>
+		<div class="tm-stat">
+			<span class="tm-stat-num">{ strconv.Itoa(cur.Facilities) }</span>
+			<span class="tm-stat-lbl">facilities offering it</span>
+		</div>
+		if yoy.OK {
+			<div class="tm-stat">
+				<span class="tm-stat-num">
+					<span class={ "tm-badge", tmDeltaClass(yoy.DeltaPct) }>{ tmDelta(yoy.DeltaPct) }</span>
+				</span>
+				<span class="tm-stat-lbl">vs { tmHours(yoy.Then) } h on { yoy.ThenDay }</span>
+			</div>
+		}
+	</div>
+}
+
+// timemachineChartCard renders a titled stacked-area chart with a legend.
+templ timemachineChartCard(title, sub string, c tmChart) {
+	<section class="tm-chart-card">
+		<h2>{ title }</h2>
+		<p class="tm-muted">{ sub }</p>
+		if c.Empty {
+			<p class="tm-muted">Not enough snapshots to chart.</p>
+		} else {
+			<svg class="tm-chart" viewBox={ c.VB() } role="img" aria-label={ title } preserveAspectRatio="xMidYMid meet">
+				for _, t := range c.YTicks {
+					<line class="tm-grid" x1={ c.AxisX1() } x2={ c.AxisX2() } y1={ t.PosStr() } y2={ t.PosStr() }></line>
+					<text class="tm-axis-y" x={ c.YLabelX() } y={ tmFmt(t.Pos + 3) } text-anchor="end">{ t.Label }</text>
+				}
+				for _, b := range c.Bands {
+					if c.Stacked {
+						<path class={ "tm-area", b.Class } d={ b.Area }></path>
+					} else {
+						<path class={ "tm-line", b.Class } d={ b.Area }></path>
+					}
+				}
+				for _, t := range c.XTicks {
+					<text class="tm-axis-x" x={ t.PosStr() } y={ c.XLabelY() } text-anchor="middle">{ t.Label }</text>
+				}
+			</svg>
+			<ul class="tm-legend">
+				for _, b := range c.Bands {
+					<li>
+						<span class={ "tm-swatch", b.Class }></span>
+						{ b.Label }
+						<span class="tm-muted">{ tmHours(b.Value) } h</span>
+					</li>
+				}
+			</ul>
+		}
+	</section>
 }
 
 // TimemachineFacilitiesPage lists every facility, linking to its change timeline.

@@ -63,6 +63,7 @@ func main() {
 			'\ue5d4', // more_vert
 			'\ue5d3', // more_horiz
 			'\ue889', // history
+			'\ue8e5', // trending_up
 			'\uf84d', // code_blocks
 			'\uebcc', // calendar_month
 			'\uea2b', // sports_hockey

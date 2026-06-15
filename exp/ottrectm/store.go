@@ -42,6 +42,7 @@ type Store struct {
 	seq   []string                 // full version-id sequence (newest first, incl. superseded) from the last load
 	mags  []int                    // cached per-snapshot change magnitudes, aligned with sets (see Magnitudes)
 	stats map[string]FacilityStats // cached per-facility change stats (see FacilityChangeStats)
+	cats  [][]CategoryBreakdown    // cached per-snapshot per-category breakdowns, aligned with sets (see CategoryStats)
 }
 
 // Open loads all datasets up to maxAge old from the ottrecdata cache at path
@@ -105,6 +106,18 @@ func (s *Store) FacilityStats() map[string]FacilityStats {
 	return out
 }
 
+// CategoryStats returns a copy of the cached per-snapshot per-category
+// breakdowns, aligned with [Store.Datasets] (see [CategoryStats]).
+func (s *Store) CategoryStats() [][]CategoryBreakdown {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make([][]CategoryBreakdown, len(s.cats))
+	for i, row := range s.cats {
+		out[i] = append([]CategoryBreakdown(nil), row...)
+	}
+	return out
+}
+
 // run polls for new data every 15s, and fully reloads whenever the day rolls
 // over in the schedule timezone. It returns when ctx is cancelled.
 func (s *Store) run(ctx context.Context) {
@@ -157,6 +170,7 @@ func (s *Store) reloadLocked(ctx context.Context) error {
 	s.dxr = nil
 	s.sets = nil
 	s.seq = nil
+	s.cats = nil
 	debug.FreeOSMemory()
 
 	dxr := new(ottrecidx.Indexer)
@@ -174,6 +188,7 @@ func (s *Store) reloadLocked(ctx context.Context) error {
 	s.seq = seq
 	s.mags = Magnitudes(sets)
 	s.stats = FacilityChangeStats(sets)
+	s.cats = CategoryStats(sets)
 	slog.Info("timemachine: loaded data", "datasets", len(sets), "versions", len(seq))
 	return nil
 }
@@ -231,6 +246,7 @@ func (s *Store) update(ctx context.Context) error {
 	s.seq = seq
 	s.mags = Magnitudes(sets)
 	s.stats = FacilityChangeStats(sets)
+	s.cats = CategoryStats(sets)
 	slog.Info("timemachine: updated datasets", "loaded", loaded, "total", len(sets))
 	return nil
 }

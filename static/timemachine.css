@@ -420,6 +420,7 @@ table.tm-grid tbody th {
 }
 .tm-tiles [data-icon="calendar_month"]::before { content: '\ebcc'; }
 .tm-tiles [data-icon="overview"]::before { content: '\e4a7'; }
+.tm-tiles [data-icon="trending_up"]::before { content: '\e8e5'; }
 
 /* index page */
 .tm-section {
@@ -557,3 +558,176 @@ a.tm-fac-card:focus {
 	font-size: .9rem;
 	color: var(--fxki-tx);
 }
+
+/* ===== trends / summary page ===== */
+
+.tm-trends .tm-header {
+	margin-bottom: .75rem;
+}
+
+/* activity selector pills */
+.tm-cat-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .4rem;
+	margin: 0 0 1rem;
+}
+.tm-cat-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: .35rem;
+	padding: .3rem .7rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: 2rem;
+	background: var(--fxki-bg-2);
+	color: var(--fxki-tx);
+	text-decoration: none;
+	font-size: .9rem;
+}
+.tm-cat-pill:hover,
+.tm-cat-pill:focus {
+	border-color: var(--fxki-bl);
+}
+.tm-cat-pill.active {
+	background: var(--fxki-bl);
+	border-color: var(--fxki-bl);
+	color: var(--fxki-bg);
+}
+.tm-cat-pill[data-icon]::before {
+	font-family: 'Material Symbols Outlined';
+	font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+	font-style: normal;
+	line-height: 1;
+	font-size: 1.1rem;
+}
+.tm-cat-pill[data-icon="pool"]::before { content: '\eb48'; }
+.tm-cat-pill[data-icon="water"]::before { content: '\f084'; }
+.tm-cat-pill[data-icon="ice_skating"]::before { content: '\e50b'; }
+.tm-cat-pill[data-icon="sports_hockey"]::before { content: '\ea2b'; }
+.tm-cat-pill[data-icon="badminton"]::before { content: '\f2a8'; }
+.tm-cat-pill[data-icon="sports_basketball"]::before { content: '\ea26'; }
+.tm-cat-pill[data-icon="sports_volleyball"]::before { content: '\ea31'; }
+.tm-cat-pill[data-icon="pickleball"]::before { content: '\f2a6'; }
+
+/* methodology / caveat note */
+.tm-trend-caveat {
+	border: 1px solid var(--fxki-ui-2);
+	border-left: 3px solid var(--fxki-or);
+	border-radius: .4rem;
+	background: color-mix(in srgb, var(--fxki-or) 7%, var(--fxki-bg-2));
+	padding: .6rem .85rem;
+	margin: 0 0 1.5rem;
+	font-size: .85rem;
+	color: var(--fxki-tx-2);
+}
+.tm-trend-caveat p {
+	margin: .25rem 0;
+}
+.tm-trend-caveat strong {
+	color: var(--fxki-tx);
+}
+
+/* headline stats */
+.tm-trend-summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem 2.5rem;
+	margin: 0 0 1.5rem;
+}
+.tm-stat {
+	display: flex;
+	flex-direction: column;
+	gap: .15rem;
+}
+.tm-stat-num {
+	font-family: 'Source Serif 4', Georgia, serif;
+	font-size: 1.8rem;
+	line-height: 1;
+	color: var(--fxki-tx);
+}
+.tm-stat-lbl {
+	font-size: .85rem;
+	color: var(--fxki-tx-2);
+}
+
+/* chart cards */
+.tm-chart-card {
+	margin: 0 0 1.75rem;
+}
+.tm-chart-card h2 {
+	font-family: 'Source Serif 4', Georgia, serif;
+	font-size: 1.1rem;
+	margin: 0 0 .1rem;
+}
+.tm-chart-card > .tm-muted {
+	margin: 0 0 .5rem;
+	font-size: .85rem;
+}
+.tm-chart {
+	display: block;
+	width: 100%;
+	height: auto;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .4rem;
+}
+.tm-grid {
+	stroke: var(--fxki-ui-2);
+	stroke-width: 1;
+}
+.tm-axis-x,
+.tm-axis-y {
+	fill: var(--fxki-tx-2);
+	font-size: 10px;
+	font-family: inherit;
+}
+.tm-area {
+	fill: var(--band, var(--fxki-bl));
+	fill-opacity: .8;
+	stroke: var(--fxki-bg-2);
+	stroke-width: .5;
+}
+.tm-line {
+	fill: none;
+	stroke: var(--band, var(--fxki-bl));
+	stroke-width: 1.5;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+
+/* legend */
+.tm-legend {
+	list-style: none;
+	margin: .5rem 0 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .35rem 1rem;
+	font-size: .85rem;
+}
+.tm-legend li {
+	display: inline-flex;
+	align-items: center;
+	gap: .35rem;
+}
+.tm-legend .tm-muted {
+	font-size: .8rem;
+}
+.tm-swatch {
+	display: inline-block;
+	width: .7rem;
+	height: .7rem;
+	border-radius: .15rem;
+	background: var(--band, var(--fxki-bl));
+	opacity: .8;
+}
+
+/* band palette (shared by chart areas and legend swatches) */
+.tm-band-total { --band: var(--fxki-bl); }
+.tm-band-0 { --band: var(--fxki-bl); }
+.tm-band-1 { --band: var(--fxki-cy); }
+.tm-band-2 { --band: var(--fxki-gr); }
+.tm-band-3 { --band: var(--fxki-or); }
+.tm-band-4 { --band: var(--fxki-pu); }
+.tm-band-5 { --band: var(--fxki-ye); }
+.tm-band-6 { --band: var(--fxki-ma); }

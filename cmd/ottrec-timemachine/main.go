@@ -43,7 +43,7 @@ var (
 	// render-to-file mode: write a single self-contained HTML page (with the
 	// stylesheets inlined) instead of starting the server, for quick inspection
 	// or a headless screenshot.
-	Render   = pflag.StringP("render", "r", "", "render a page to a file instead of serving: one of \"index\", \"facilities\", \"diff\", \"facility\"")
+	Render   = pflag.StringP("render", "r", "", "render a page to a file instead of serving: one of \"index\", \"facilities\", \"trends\", \"diff\", \"facility\"")
 	Out      = pflag.StringP("out", "o", "/tmp/timemachine.html", "output file for --render")
 	From     = pflag.String("from", "", "older snapshot for --render diff (YYYY-MM-DD or index, newest=0)")
 	To       = pflag.String("to", "", "newer snapshot for --render diff (YYYY-MM-DD or index, newest=0)")
@@ -111,6 +111,7 @@ func run() error {
 		Datasets:      st.Datasets,
 		Magnitudes:    st.Magnitudes,
 		FacilityStats: st.FacilityStats,
+		CategoryStats: st.CategoryStats,
 		HeadHTML:      *HeadHTML,
 	})
 	if err != nil {
@@ -162,6 +163,21 @@ func renderFile(st *ottrectm.Store) error {
 			Diff:       ottrectm.Compare(oldDS.Data, newDS.Data),
 			Slugs:      templates.TimemachineSlugs(newDS.Data, oldDS.Data),
 		})
+	case "trends":
+		cat := 0
+		if *Facility != "" {
+			if i := ottrectm.CategoryBySlug(*Facility); i >= 0 {
+				cat = i
+			} else {
+				return fmt.Errorf("unknown activity slug %q for --facility", *Facility)
+			}
+		}
+		slog.Info("rendering trends", "activity", ottrectm.Categories[cat].Slug)
+		c = templates.TimemachineTrendsPage(templates.TimemachineTrendsParams{
+			Datasets: sets,
+			Stats:    st.CategoryStats(),
+			Category: cat,
+		})
 	case "facility":
 		if *Facility == "" {
 			return fmt.Errorf("--facility slug required")
@@ -181,7 +197,7 @@ func renderFile(st *ottrectm.Store) error {
 			Datasets: sets,
 		})
 	default:
-		return fmt.Errorf("unknown --render mode %q (want index, diff, or facility)", *Render)
+		return fmt.Errorf("unknown --render mode %q (want index, facilities, trends, diff, or facility)", *Render)
 	}
 
 	var buf bytes.Buffer

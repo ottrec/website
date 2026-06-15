@@ -22,6 +22,9 @@ type TimemachineConfig struct {
 	// FacilityStats returns the cached per-facility change stats (see
 	// ottrectm.FacilityChangeStats). Optional; computed on demand if nil.
 	FacilityStats func() map[string]ottrectm.FacilityStats
+	// CategoryStats returns the cached per-snapshot per-category breakdowns (see
+	// ottrectm.CategoryStats). Optional; computed on demand if nil.
+	CategoryStats func() [][]ottrectm.CategoryBreakdown
 	// HeadHTML is raw HTML injected at the bottom of <head> on every page.
 	HeadHTML string
 }
@@ -32,12 +35,13 @@ func Timemachine(cfg TimemachineConfig) (http.Handler, error) {
 	}
 	templates.SetHeadExtra(cfg.HeadHTML)
 
-	base := timemachineBase{Datasets: cfg.Datasets, Magnitudes: cfg.Magnitudes, FacilityStats: cfg.FacilityStats}
+	base := timemachineBase{Datasets: cfg.Datasets, Magnitudes: cfg.Magnitudes, FacilityStats: cfg.FacilityStats, CategoryStats: cfg.CategoryStats}
 	mux := http.NewServeMux()
 	mux.Handle("GET /{$}", &timemachineIndexHandler{base})
 	mux.Handle("GET /datasets", &timemachineDiffHandler{base})
 	mux.Handle("GET /facilities", &timemachineFacilitiesHandler{base})
 	mux.Handle("GET /facility/{slug}", &timemachineFacilityHandler{base})
+	mux.Handle("GET /trends", &timemachineTrendsHandler{base})
 	mux.Handle("GET /robots.txt", http.HandlerFunc(timemachineRobots))
 	mux.Handle("/static/", static.Handler(static.Website))
 	mux.Handle("GET /favicon.ico", static.Handler(static.Website))
@@ -49,6 +53,18 @@ type timemachineBase struct {
 	Datasets      func() []ottrectm.Dataset
 	Magnitudes    func() []int
 	FacilityStats func() map[string]ottrectm.FacilityStats
+	CategoryStats func() [][]ottrectm.CategoryBreakdown
+}
+
+// categoryStats returns the per-snapshot per-category breakdowns for sets,
+// using the cached getter when available and falling back to computing them.
+func (b timemachineBase) categoryStats(sets []ottrectm.Dataset) [][]ottrectm.CategoryBreakdown {
+	if b.CategoryStats != nil {
+		if m := b.CategoryStats(); len(m) == len(sets) {
+			return m
+		}
+	}
+	return ottrectm.CategoryStats(sets)
 }
 
 // facilityStats returns the per-facility change stats, using the cached getter
@@ -216,5 +232,29 @@ func (h *timemachineFacilityHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		Current:  current,
 		Entries:  ottrectm.FacilityTimeline(sets, key),
 		Datasets: sets,
+	}), http.StatusOK)
+}
+
+type timemachineTrendsHandler struct{ timemachineBase }
+
+func (h *timemachineTrendsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	sets := h.Datasets()
+	if len(sets) == 0 {
+		http.Error(w, "no datasets loaded", http.StatusServiceUnavailable)
+		return
+	}
+
+	// default to the first category (swimming).
+	cat := 0
+	if slug := r.URL.Query().Get("activity"); slug != "" {
+		if i := ottrectm.CategoryBySlug(slug); i >= 0 {
+			cat = i
+		}
+	}
+
+	timemachineRender(w, r, templates.TimemachineTrendsPage(templates.TimemachineTrendsParams{
+		Datasets: sets,
+		Stats:    h.categoryStats(sets),
+		Category: cat,
 	}), http.StatusOK)
 }
