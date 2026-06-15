@@ -500,9 +500,31 @@ templ timemachineFacilityBody(fd ottrectm.FacilityDiff) {
 	if tmShowText(fd.Notifications) {
 		@timemachineTextDiff("Notifications", fd.Notifications)
 	}
+	if fd.Errors.Change != tmUnchanged {
+		@timemachineErrors(fd.Errors)
+	}
 	for _, g := range fd.Groups {
 		@timemachineGroup(g)
 	}
+}
+
+// timemachineErrors renders the change to a facility's scrape errors (e.g.
+// failed time parsing) as added/removed lines.
+templ timemachineErrors(ed ottrectm.ErrorsDiff) {
+	<div class="tm-text">
+		<span class="tm-label">
+			Scrape errors
+			<span class={ "tm-badge", tmBadgeClass(ed.Change) }>{ ed.Change.String() }</span>
+		</span>
+		<ul class="tm-text-lines">
+			for _, e := range ed.Added {
+				<li class="tm-add">+ { e }</li>
+			}
+			for _, e := range ed.Removed {
+				<li class="tm-rem tm-strike">− { e }</li>
+			}
+		</ul>
+	</div>
 }
 
 // timemachineGroup renders a changed schedule group.
@@ -538,12 +560,12 @@ templ timemachineGroup(g ottrectm.GroupDiff) {
 
 // timemachineSchedule renders a single schedule change as compactly as possible.
 templ timemachineSchedule(s ottrectm.ScheduleDiff) {
-	<div class={ "tm-sched", templ.KV("tm-sched-fixed", s.Fixed) }>
+	<div class={ "tm-sched", templ.KV("tm-sched-fixed", s.Fixed), templ.KV("tm-sched-added", s.Change == tmAdded), templ.KV("tm-sched-removed", s.Change == tmRemoved) }>
 		<div class="tm-sched-head">
 			<span class={ "tm-badge", tmBadgeClass(s.Change) }>{ s.Change.String() }</span>
 			<span class="tm-sched-name">{ tmScheduleSummary(s) }</span>
 			if s.Fixed {
-				<span class="tm-tag">fixed dates</span>
+				<span class="tm-tag">specific dates</span>
 			}
 			if d := tmDateChange(s); d != "" {
 				<span class="tm-sched-date">{ d }</span>
@@ -551,13 +573,19 @@ templ timemachineSchedule(s ottrectm.ScheduleDiff) {
 		</div>
 		if s.RefDate != "" {
 			<p class="tm-sched-ref">
-				if s.Change == tmRemoved {
-					was a duplicate of the { s.RefDate } schedule
-				} else {
-					based on the { s.RefDate } schedule
-				}
-				if s.Identical {
-					{ " — identical" }
+				switch s.Change {
+					case tmRemoved:
+						if s.Identical {
+							Had the same weekly times as the { s.RefDate } schedule, which remains.
+						} else {
+							Nearly the same as the { s.RefDate } schedule, which remains. What was removed:
+						}
+					default:
+						if s.Identical {
+							Same weekly times as the { s.RefDate } schedule, for a different date range.
+						} else {
+							Based on the { s.RefDate } schedule, with these changes:
+						}
 				}
 			</p>
 		}
@@ -575,14 +603,25 @@ templ timemachineSchedule(s ottrectm.ScheduleDiff) {
 // timemachineScheduleFull renders the full grid of a wholly added/removed
 // schedule, collapsed by default to keep the page compact.
 templ timemachineScheduleFull(s ottrectm.ScheduleDiff) {
-	<details class="tm-sched-full">
-		<summary>{ timemachineScheduleFullSummary(s) }</summary>
-		if s.Change == tmRemoved && s.Old.Valid() {
-			@websiteFacilitySchedule(s.Old)
-		} else if s.New.Valid() {
+	// wrap in article.facility so the shared schedule-table styles (scoped under
+	// article.facility in facility.css) apply on the time machine pages.
+	if s.Change == tmAdded && s.New.Valid() {
+		// added schedules are shown expanded, not hidden behind an expander.
+		<article class="facility tm-sched-grid">
 			@websiteFacilitySchedule(s.New)
-		}
-	</details>
+		</article>
+	} else {
+		<details class="tm-sched-full">
+			<summary>{ timemachineScheduleFullSummary(s) }</summary>
+			<article class="facility">
+				if s.Change == tmRemoved && s.Old.Valid() {
+					@websiteFacilitySchedule(s.Old)
+				} else if s.New.Valid() {
+					@websiteFacilitySchedule(s.New)
+				}
+			</article>
+		</details>
+	}
 }
 
 // timemachineScheduleTable renders a schedule's per-activity changes as a grid

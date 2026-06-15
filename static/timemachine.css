@@ -355,6 +355,20 @@ table.tm-grid tbody th {
 .tm-sched-full .table-wrap {
 	margin-top: .35rem;
 }
+.tm-sched-grid {
+	display: block;
+	margin-top: .35rem;
+}
+/* colour the schedule block's accent to match its change badge */
+.tm-sched-added {
+	border-left-color: var(--fxki-gr);
+}
+.tm-sched-removed {
+	border-left-color: var(--fxki-re);
+}
+.tm-sched-added table.schedule caption {
+	color: var(--fxki-gr);
+}
 
 /* text diff */
 .tm-text {

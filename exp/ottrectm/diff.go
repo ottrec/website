@@ -106,7 +106,16 @@ type FacilityDiff struct {
 	Old, New      ottrecidx.FacilityRef
 	SpecialHours  TextDiff
 	Notifications TextDiff
+	Errors        ErrorsDiff  // scrape errors added/removed
 	Groups        []GroupDiff // only groups that changed
+}
+
+// ErrorsDiff is the change to a facility's scrape errors (e.g. failed time
+// parsing), as a set diff.
+type ErrorsDiff struct {
+	Change  Change
+	Added   []string
+	Removed []string
 }
 
 // GroupDiff is the diff of a schedule group (matched by title). Old or New may
@@ -228,6 +237,7 @@ func CompareFacility(old, new ottrecidx.FacilityRef) FacilityDiff {
 	}
 	fd.SpecialHours = textDiff(oldSH, newSH)
 	fd.Notifications = textDiff(oldNT, newNT)
+	fd.Errors = errorsDiff(old, new)
 	fd.Groups = diffGroups(old, new)
 
 	switch {
@@ -235,12 +245,45 @@ func CompareFacility(old, new ottrecidx.FacilityRef) FacilityDiff {
 		fd.Change = Added
 	case !new.Valid():
 		fd.Change = Removed
-	case fd.SpecialHours.Change != Unchanged, fd.Notifications.Change != Unchanged, len(fd.Groups) > 0:
+	case fd.SpecialHours.Change != Unchanged, fd.Notifications.Change != Unchanged, fd.Errors.Change != Unchanged, len(fd.Groups) > 0:
 		fd.Change = Modified
 	default:
 		fd.Change = Unchanged
 	}
 	return fd
+}
+
+// errorsDiff computes the set difference of two facilities' scrape errors.
+func errorsDiff(old, new ottrecidx.FacilityRef) ErrorsDiff {
+	oldSet := map[string]bool{}
+	newSet := map[string]bool{}
+	if old.Valid() {
+		for e := range old.GetErrors() {
+			oldSet[e] = true
+		}
+	}
+	if new.Valid() {
+		for e := range new.GetErrors() {
+			newSet[e] = true
+		}
+	}
+	var ed ErrorsDiff
+	for e := range newSet {
+		if !oldSet[e] {
+			ed.Added = append(ed.Added, e)
+		}
+	}
+	for e := range oldSet {
+		if !newSet[e] {
+			ed.Removed = append(ed.Removed, e)
+		}
+	}
+	sort.Strings(ed.Added)
+	sort.Strings(ed.Removed)
+	if len(ed.Added) > 0 || len(ed.Removed) > 0 {
+		ed.Change = Modified
+	}
+	return ed
 }
 
 func facilitiesByKey(d ottrecidx.DataRef) map[string]ottrecidx.FacilityRef {
@@ -597,7 +640,10 @@ func addedSchedule(n ottrecidx.ScheduleRef, nsig map[string]int, olds []ottrecid
 }
 
 // removedSchedule builds the diff for a removed schedule, noting when it merely
-// duplicated a surviving one (so the grid need not be shown).
+// duplicated a surviving one. A removed schedule is never shown as a +/- delta
+// (that would read as edits to something that no longer exists, and the delta
+// would be relative to the survivor rather than to a prior version): an exact
+// duplicate shows just the note, and a near-duplicate shows its full grid.
 func removedSchedule(o ottrecidx.ScheduleRef, osig map[string]int, news []ottrecidx.ScheduleRef, newSig []map[string]int) ScheduleDiff {
 	sd := ScheduleDiff{Change: Removed, Name: schedName(o), Old: o, OldDate: schedDateLabel(o)}
 	ref, refDate, best := ottrecidx.ScheduleRef{}, "", 0.0
@@ -608,8 +654,8 @@ func removedSchedule(o ottrecidx.ScheduleRef, osig map[string]int, news []ottrec
 	}
 	if best >= copyThreshold && ref.Valid() {
 		sd.RefDate = refDate
-		sd.Activities = diffGrid(ref, o) // what the removed one had beyond the survivor
-		sd.Identical = len(sd.Activities) == 0
+		sd.Identical = len(diffGrid(ref, o)) == 0 // exactly duplicated the survivor
+		sd.ShowFull = !sd.Identical               // otherwise show what was removed, in full
 		return sd
 	}
 	sd.ShowFull = true

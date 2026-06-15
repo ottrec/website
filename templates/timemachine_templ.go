@@ -2508,11 +2508,125 @@ func timemachineFacilityBody(fd ottrectm.FacilityDiff) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
+		if fd.Errors.Change != tmUnchanged {
+			templ_7745c5c3_Err = timemachineErrors(fd.Errors).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
 		for _, g := range fd.Groups {
 			templ_7745c5c3_Err = timemachineGroup(g).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+		}
+		return nil
+	})
+}
+
+// timemachineErrors renders the change to a facility's scrape errors (e.g.
+// failed time parsing) as added/removed lines.
+func timemachineErrors(ed ottrectm.ErrorsDiff) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var130 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var130 == nil {
+			templ_7745c5c3_Var130 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 216, "<div class=\"tm-text\"><span class=\"tm-label\">Scrape errors ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var131 = []any{"tm-badge", tmBadgeClass(ed.Change)}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var131...)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 217, "<span class=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var132 string
+		templ_7745c5c3_Var132, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var131).String())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 1, Col: 0}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var132)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 218, "\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var133 string
+		templ_7745c5c3_Var133, templ_7745c5c3_Err = templ.JoinStringErrs(ed.Change.String())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 517, Col: 75}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var133))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 219, "</span></span><ul class=\"tm-text-lines\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for _, e := range ed.Added {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 220, "<li class=\"tm-add\">+ ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var134 string
+			templ_7745c5c3_Var134, templ_7745c5c3_Err = templ.JoinStringErrs(e)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 521, Col: 28}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var134))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 221, "</li>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		for _, e := range ed.Removed {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 222, "<li class=\"tm-rem tm-strike\">− ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var135 string
+			templ_7745c5c3_Var135, templ_7745c5c3_Err = templ.JoinStringErrs(e)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 524, Col: 40}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var135))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 223, "</li>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 224, "</ul></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
 		return nil
 	})
@@ -2535,62 +2649,62 @@ func timemachineGroup(g ottrectm.GroupDiff) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var130 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var130 == nil {
-			templ_7745c5c3_Var130 = templ.NopComponent
+		templ_7745c5c3_Var136 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var136 == nil {
+			templ_7745c5c3_Var136 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 216, "<div class=\"tm-group\"><h3 class=\"tm-group-title\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 225, "<div class=\"tm-group\"><h3 class=\"tm-group-title\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if g.Change != tmModified {
-			var templ_7745c5c3_Var131 = []any{"tm-badge", tmBadgeClass(g.Change)}
-			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var131...)
+			var templ_7745c5c3_Var137 = []any{"tm-badge", tmBadgeClass(g.Change)}
+			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var137...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 217, "<span class=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 226, "<span class=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var132 string
-			templ_7745c5c3_Var132, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var131).String())
+			var templ_7745c5c3_Var138 string
+			templ_7745c5c3_Var138, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var137).String())
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 1, Col: 0}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var132)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var138)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 218, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 227, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var133 string
-			templ_7745c5c3_Var133, templ_7745c5c3_Err = templ.JoinStringErrs(g.Change.String())
+			var templ_7745c5c3_Var139 string
+			templ_7745c5c3_Var139, templ_7745c5c3_Err = templ.JoinStringErrs(g.Change.String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 513, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 535, Col: 74}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var133))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var139))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 219, "</span> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 228, "</span> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		var templ_7745c5c3_Var134 string
-		templ_7745c5c3_Var134, templ_7745c5c3_Err = templ.JoinStringErrs(g.Title)
+		var templ_7745c5c3_Var140 string
+		templ_7745c5c3_Var140, templ_7745c5c3_Err = templ.JoinStringErrs(g.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 515, Col: 12}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 537, Col: 12}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var134))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var140))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 220, "</h3>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 229, "</h3>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -2601,75 +2715,75 @@ func timemachineGroup(g ottrectm.GroupDiff) templ.Component {
 			}
 		}
 		if g.Reservation.Change != tmUnchanged {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 221, "<div class=\"tm-resv\"><span class=\"tm-label\">Reservation links</span><ul class=\"tm-resv-list\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 230, "<div class=\"tm-resv\"><span class=\"tm-label\">Reservation links</span><ul class=\"tm-resv-list\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, l := range g.Reservation.Added {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 222, "<li class=\"tm-add\">+ <a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 231, "<li class=\"tm-add\">+ <a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var135 templ.SafeURL
-				templ_7745c5c3_Var135, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(l.URL))
+				var templ_7745c5c3_Var141 templ.SafeURL
+				templ_7745c5c3_Var141, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(l.URL))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 525, Col: 53}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 547, Col: 53}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var135))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 223, "\" target=\"_blank\" rel=\"noopener\">")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var141))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var136 string
-				templ_7745c5c3_Var136, templ_7745c5c3_Err = templ.JoinStringErrs(l.Label)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 525, Col: 96}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var136))
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 232, "\" target=\"_blank\" rel=\"noopener\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 224, "</a></li>")
+				var templ_7745c5c3_Var142 string
+				templ_7745c5c3_Var142, templ_7745c5c3_Err = templ.JoinStringErrs(l.Label)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 547, Col: 96}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var142))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 233, "</a></li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
 			for _, l := range g.Reservation.Removed {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 225, "<li class=\"tm-rem\">− <a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 234, "<li class=\"tm-rem\">− <a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var137 templ.SafeURL
-				templ_7745c5c3_Var137, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(l.URL))
+				var templ_7745c5c3_Var143 templ.SafeURL
+				templ_7745c5c3_Var143, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(l.URL))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 528, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 550, Col: 55}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var137))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 226, "\" target=\"_blank\" rel=\"noopener\">")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var143))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var138 string
-				templ_7745c5c3_Var138, templ_7745c5c3_Err = templ.JoinStringErrs(l.Label)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 528, Col: 98}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var138))
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 235, "\" target=\"_blank\" rel=\"noopener\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 227, "</a></li>")
+				var templ_7745c5c3_Var144 string
+				templ_7745c5c3_Var144, templ_7745c5c3_Err = templ.JoinStringErrs(l.Label)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 550, Col: 98}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var144))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 236, "</a></li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 228, "</ul></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 237, "</ul></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -2680,7 +2794,7 @@ func timemachineGroup(g ottrectm.GroupDiff) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 229, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 238, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -2705,170 +2819,200 @@ func timemachineSchedule(s ottrectm.ScheduleDiff) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var139 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var139 == nil {
-			templ_7745c5c3_Var139 = templ.NopComponent
+		templ_7745c5c3_Var145 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var145 == nil {
+			templ_7745c5c3_Var145 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var templ_7745c5c3_Var140 = []any{"tm-sched", templ.KV("tm-sched-fixed", s.Fixed)}
-		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var140...)
+		var templ_7745c5c3_Var146 = []any{"tm-sched", templ.KV("tm-sched-fixed", s.Fixed), templ.KV("tm-sched-added", s.Change == tmAdded), templ.KV("tm-sched-removed", s.Change == tmRemoved)}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var146...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 230, "<div class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 239, "<div class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var141 string
-		templ_7745c5c3_Var141, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var140).String())
+		var templ_7745c5c3_Var147 string
+		templ_7745c5c3_Var147, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var146).String())
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 1, Col: 0}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var141)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var147)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 231, "\"><div class=\"tm-sched-head\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 240, "\"><div class=\"tm-sched-head\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var142 = []any{"tm-badge", tmBadgeClass(s.Change)}
-		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var142...)
+		var templ_7745c5c3_Var148 = []any{"tm-badge", tmBadgeClass(s.Change)}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var148...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 232, "<span class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 241, "<span class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var143 string
-		templ_7745c5c3_Var143, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var142).String())
+		var templ_7745c5c3_Var149 string
+		templ_7745c5c3_Var149, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var148).String())
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 1, Col: 0}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var143)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var149)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 233, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 242, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var144 string
-		templ_7745c5c3_Var144, templ_7745c5c3_Err = templ.JoinStringErrs(s.Change.String())
+		var templ_7745c5c3_Var150 string
+		templ_7745c5c3_Var150, templ_7745c5c3_Err = templ.JoinStringErrs(s.Change.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 543, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 565, Col: 73}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var144))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 234, "</span> <span class=\"tm-sched-name\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var150))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var145 string
-		templ_7745c5c3_Var145, templ_7745c5c3_Err = templ.JoinStringErrs(tmScheduleSummary(s))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 544, Col: 53}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var145))
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 243, "</span> <span class=\"tm-sched-name\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 235, "</span> ")
+		var templ_7745c5c3_Var151 string
+		templ_7745c5c3_Var151, templ_7745c5c3_Err = templ.JoinStringErrs(tmScheduleSummary(s))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 566, Col: 53}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var151))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 244, "</span> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if s.Fixed {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 236, "<span class=\"tm-tag\">fixed dates</span> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 245, "<span class=\"tm-tag\">specific dates</span> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
 		if d := tmDateChange(s); d != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 237, "<span class=\"tm-sched-date\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 246, "<span class=\"tm-sched-date\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var146 string
-			templ_7745c5c3_Var146, templ_7745c5c3_Err = templ.JoinStringErrs(d)
+			var templ_7745c5c3_Var152 string
+			templ_7745c5c3_Var152, templ_7745c5c3_Err = templ.JoinStringErrs(d)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 549, Col: 35}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 571, Col: 35}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var146))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var152))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 238, "</span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 247, "</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 239, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 248, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if s.RefDate != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 240, "<p class=\"tm-sched-ref\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 249, "<p class=\"tm-sched-ref\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if s.Change == tmRemoved {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 241, "was a duplicate of the ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+			switch s.Change {
+			case tmRemoved:
+				if s.Identical {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 250, "Had the same weekly times as the ")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var153 string
+					templ_7745c5c3_Var153, templ_7745c5c3_Err = templ.JoinStringErrs(s.RefDate)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 579, Col: 51}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var153))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 251, " schedule, which remains.")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				} else {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 252, "Nearly the same as the ")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var154 string
+					templ_7745c5c3_Var154, templ_7745c5c3_Err = templ.JoinStringErrs(s.RefDate)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 581, Col: 41}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var154))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 253, " schedule, which remains. What was removed:")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
-				var templ_7745c5c3_Var147 string
-				templ_7745c5c3_Var147, templ_7745c5c3_Err = templ.JoinStringErrs(s.RefDate)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 555, Col: 39}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var147))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 242, " schedule ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 243, "based on the ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var148 string
-				templ_7745c5c3_Var148, templ_7745c5c3_Err = templ.JoinStringErrs(s.RefDate)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 557, Col: 29}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var148))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 244, " schedule ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+			default:
+				if s.Identical {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 254, "Same weekly times as the ")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var155 string
+					templ_7745c5c3_Var155, templ_7745c5c3_Err = templ.JoinStringErrs(s.RefDate)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 585, Col: 43}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var155))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 255, " schedule, for a different date range.")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				} else {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 256, "Based on the ")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var156 string
+					templ_7745c5c3_Var156, templ_7745c5c3_Err = templ.JoinStringErrs(s.RefDate)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 587, Col: 31}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var156))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 257, " schedule, with these changes:")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 			}
-			if s.Identical {
-				var templ_7745c5c3_Var149 string
-				templ_7745c5c3_Var149, templ_7745c5c3_Err = templ.JoinStringErrs(" — identical")
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 560, Col: 23}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var149))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 245, "</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 258, "</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
 		if s.Identical && s.RefDate == "" && s.Change == tmModified {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 246, "<p class=\"tm-note tm-muted\">Only the date range changed.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 259, "<p class=\"tm-note tm-muted\">Only the date range changed.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -2884,7 +3028,7 @@ func timemachineSchedule(s ottrectm.ScheduleDiff) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 247, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 260, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -2910,42 +3054,57 @@ func timemachineScheduleFull(s ottrectm.ScheduleDiff) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var150 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var150 == nil {
-			templ_7745c5c3_Var150 = templ.NopComponent
+		templ_7745c5c3_Var157 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var157 == nil {
+			templ_7745c5c3_Var157 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 248, "<details class=\"tm-sched-full\"><summary>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var151 string
-		templ_7745c5c3_Var151, templ_7745c5c3_Err = templ.JoinStringErrs(timemachineScheduleFullSummary(s))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 579, Col: 46}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var151))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 249, "</summary> ")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if s.Change == tmRemoved && s.Old.Valid() {
-			templ_7745c5c3_Err = websiteFacilitySchedule(s.Old).Render(ctx, templ_7745c5c3_Buffer)
+		if s.Change == tmAdded && s.New.Valid() {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 261, " <article class=\"facility tm-sched-grid\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		} else if s.New.Valid() {
 			templ_7745c5c3_Err = websiteFacilitySchedule(s.New).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 250, "</details>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 262, "</article>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 263, "<details class=\"tm-sched-full\"><summary>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var158 string
+			templ_7745c5c3_Var158, templ_7745c5c3_Err = templ.JoinStringErrs(timemachineScheduleFullSummary(s))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 615, Col: 47}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var158))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 264, "</summary><article class=\"facility\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if s.Change == tmRemoved && s.Old.Valid() {
+				templ_7745c5c3_Err = websiteFacilitySchedule(s.Old).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else if s.New.Valid() {
+				templ_7745c5c3_Err = websiteFacilitySchedule(s.New).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 265, "</article></details>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		return nil
 	})
@@ -2969,91 +3128,91 @@ func timemachineScheduleTable(t tmTable) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var152 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var152 == nil {
-			templ_7745c5c3_Var152 = templ.NopComponent
+		templ_7745c5c3_Var159 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var159 == nil {
+			templ_7745c5c3_Var159 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 251, "<div class=\"tm-grid-wrap table-wrap\"><table class=\"tm-grid\"><thead><tr><th></th>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 266, "<div class=\"tm-grid-wrap table-wrap\"><table class=\"tm-grid\"><thead><tr><th></th>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, d := range t.Days {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 252, "<th>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 267, "<th>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var153 string
-			templ_7745c5c3_Var153, templ_7745c5c3_Err = templ.JoinStringErrs(d)
+			var templ_7745c5c3_Var160 string
+			templ_7745c5c3_Var160, templ_7745c5c3_Err = templ.JoinStringErrs(d)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 597, Col: 13}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 636, Col: 13}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var153))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var160))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 253, "</th>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 268, "</th>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 254, "</tr></thead> <tbody>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 269, "</tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, r := range t.Rows {
-			var templ_7745c5c3_Var154 = []any{"tm-grid-row", "tm-grid-" + r.Change.String()}
-			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var154...)
+			var templ_7745c5c3_Var161 = []any{"tm-grid-row", "tm-grid-" + r.Change.String()}
+			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var161...)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 255, "<tr class=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 270, "<tr class=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var155 string
-			templ_7745c5c3_Var155, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var154).String())
+			var templ_7745c5c3_Var162 string
+			templ_7745c5c3_Var162, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var161).String())
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 1, Col: 0}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var155)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var162)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 256, "\"><th>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 271, "\"><th>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if r.Change == tmAdded {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 257, "<span class=\"tm-act-mark tm-add\">+</span> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 272, "<span class=\"tm-act-mark tm-add\">+</span> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else if r.Change == tmRemoved {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 258, "<span class=\"tm-act-mark tm-rem\">−</span> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 273, "<span class=\"tm-act-mark tm-rem\">−</span> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 259, "<span class=\"tm-grid-name\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 274, "<span class=\"tm-grid-name\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var156 string
-			templ_7745c5c3_Var156, templ_7745c5c3_Err = templ.JoinStringErrs(r.Name)
+			var templ_7745c5c3_Var163 string
+			templ_7745c5c3_Var163, templ_7745c5c3_Err = templ.JoinStringErrs(r.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 610, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 649, Col: 42}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var156))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var163))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 260, "</span></th>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 275, "</span></th>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, c := range r.Cells {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 261, "<td>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 276, "<td>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -3061,17 +3220,17 @@ func timemachineScheduleTable(t tmTable) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 262, "</td>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 277, "</td>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 263, "</tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 278, "</tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 264, "</tbody></table></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 279, "</tbody></table></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -3098,78 +3257,78 @@ func timemachineCell(c tmCell) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var157 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var157 == nil {
-			templ_7745c5c3_Var157 = templ.NopComponent
+		templ_7745c5c3_Var164 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var164 == nil {
+			templ_7745c5c3_Var164 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		from, to, arrow := c.Arrow()
 		if arrow {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 265, "<span class=\"tm-cell-line tm-rem tm-strike\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 280, "<span class=\"tm-cell-line tm-rem tm-strike\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var158 string
-			templ_7745c5c3_Var158, templ_7745c5c3_Err = templ.JoinStringErrs(from)
+			var templ_7745c5c3_Var165 string
+			templ_7745c5c3_Var165, templ_7745c5c3_Err = templ.JoinStringErrs(from)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 630, Col: 52}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 669, Col: 52}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var158))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 266, "</span> <span class=\"tm-cell-line\"><span class=\"tm-arrow\">→</span> <span class=\"tm-add\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var165))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var159 string
-			templ_7745c5c3_Var159, templ_7745c5c3_Err = templ.JoinStringErrs(to)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 631, Col: 88}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var159))
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 281, "</span> <span class=\"tm-cell-line\"><span class=\"tm-arrow\">→</span> <span class=\"tm-add\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 267, "</span></span>")
+			var templ_7745c5c3_Var166 string
+			templ_7745c5c3_Var166, templ_7745c5c3_Err = templ.JoinStringErrs(to)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 670, Col: 88}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var166))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 282, "</span></span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
 			for _, t := range c.Added {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 268, "<span class=\"tm-cell-line tm-add\">+")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 283, "<span class=\"tm-cell-line tm-add\">+")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var160 string
-				templ_7745c5c3_Var160, templ_7745c5c3_Err = templ.JoinStringErrs(t)
+				var templ_7745c5c3_Var167 string
+				templ_7745c5c3_Var167, templ_7745c5c3_Err = templ.JoinStringErrs(t)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 634, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 673, Col: 41}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var160))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var167))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 269, "</span> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 284, "</span> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
 			for _, t := range c.Removed {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 270, "<span class=\"tm-cell-line tm-rem tm-strike\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 285, "<span class=\"tm-cell-line tm-rem tm-strike\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var161 string
-				templ_7745c5c3_Var161, templ_7745c5c3_Err = templ.JoinStringErrs(t)
+				var templ_7745c5c3_Var168 string
+				templ_7745c5c3_Var168, templ_7745c5c3_Err = templ.JoinStringErrs(t)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 637, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 676, Col: 50}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var161))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var168))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 271, "</span>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 286, "</span>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -3196,122 +3355,122 @@ func timemachineTextDiff(label string, td ottrectm.TextDiff) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var162 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var162 == nil {
-			templ_7745c5c3_Var162 = templ.NopComponent
+		templ_7745c5c3_Var169 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var169 == nil {
+			templ_7745c5c3_Var169 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 272, "<div class=\"tm-text\"><span class=\"tm-label\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 287, "<div class=\"tm-text\"><span class=\"tm-label\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var163 string
-		templ_7745c5c3_Var163, templ_7745c5c3_Err = templ.JoinStringErrs(label)
+		var templ_7745c5c3_Var170 string
+		templ_7745c5c3_Var170, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 646, Col: 10}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 685, Col: 10}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var163))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 273, " ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var170))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var164 = []any{"tm-badge", tmBadgeClass(td.Change)}
-		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var164...)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 288, " ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 274, "<span class=\"")
+		var templ_7745c5c3_Var171 = []any{"tm-badge", tmBadgeClass(td.Change)}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var171...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var165 string
-		templ_7745c5c3_Var165, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var164).String())
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 289, "<span class=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var172 string
+		templ_7745c5c3_Var172, templ_7745c5c3_Err = templ.ResolveAttributeValue(templ.CSSClasses(templ_7745c5c3_Var171).String())
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 1, Col: 0}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var165)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var172)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 275, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 290, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var166 string
-		templ_7745c5c3_Var166, templ_7745c5c3_Err = templ.JoinStringErrs(td.Change.String())
+		var templ_7745c5c3_Var173 string
+		templ_7745c5c3_Var173, templ_7745c5c3_Err = templ.JoinStringErrs(td.Change.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 647, Col: 75}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 686, Col: 75}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var166))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var173))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 276, "</span></span><ul class=\"tm-text-lines\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 291, "</span></span><ul class=\"tm-text-lines\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, ln := range td.Lines {
 			switch ln.Change {
 			case tmAdded:
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 277, "<li class=\"tm-add\">+ ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 292, "<li class=\"tm-add\">+ ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var167 string
-				templ_7745c5c3_Var167, templ_7745c5c3_Err = templ.JoinStringErrs(ln.Text)
+				var templ_7745c5c3_Var174 string
+				templ_7745c5c3_Var174, templ_7745c5c3_Err = templ.JoinStringErrs(ln.Text)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 653, Col: 36}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 692, Col: 36}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var167))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var174))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 278, "</li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 293, "</li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			case tmRemoved:
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 279, "<li class=\"tm-rem tm-strike\">− ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 294, "<li class=\"tm-rem tm-strike\">− ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var168 string
-				templ_7745c5c3_Var168, templ_7745c5c3_Err = templ.JoinStringErrs(ln.Text)
+				var templ_7745c5c3_Var175 string
+				templ_7745c5c3_Var175, templ_7745c5c3_Err = templ.JoinStringErrs(ln.Text)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 655, Col: 48}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 694, Col: 48}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var168))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var175))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 280, "</li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 295, "</li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			default:
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 281, "<li class=\"tm-ctx tm-muted\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 296, "<li class=\"tm-ctx tm-muted\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var169 string
-				templ_7745c5c3_Var169, templ_7745c5c3_Err = templ.JoinStringErrs(ln.Text)
+				var templ_7745c5c3_Var176 string
+				templ_7745c5c3_Var176, templ_7745c5c3_Err = templ.JoinStringErrs(ln.Text)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 657, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `timemachine.templ`, Line: 696, Col: 43}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var169))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var176))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 282, "</li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 297, "</li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 283, "</ul></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 298, "</ul></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
