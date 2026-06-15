@@ -45,8 +45,8 @@ github.com/ncruces/julianday v1.0.0 h1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt
 github.com/ncruces/julianday v1.0.0/go.mod h1:Dusn2KvZrrovOMJuOt0TNXL6tB7U2E8kvza5fFc9G7g=
 github.com/pgaskin/go-lightningcss v0.0.0-20260614010002-b10cc786152c h1:LjWjWfmV4jlBciycIOqVBaOkUgpp/xttEqDfPK7r9ME=
 github.com/pgaskin/go-lightningcss v0.0.0-20260614010002-b10cc786152c/go.mod h1:PMbaYff5HA1TRadydzbLkH+LiFp9a/32m651PKpsL/c=
-github.com/pgaskin/ottrec v0.0.0-20260320115659-d7c3036c8cbb h1:DBAzE52TGcuJgGmdg5gcY6m21hgYBzEK4yfsVgw4hvc=
-github.com/pgaskin/ottrec v0.0.0-20260320115659-d7c3036c8cbb/go.mod h1:ZucBaUDR42XY4kyCLuAL2WnFjXdnm8etNE+SePgtwgE=
+github.com/pgaskin/ottrec v0.0.0-20260615074830-539684fe76b5 h1:bO8NFTg19lzB5OFyZ+KHl42MnVnNT7b9xJ3LlWfaN+U=
+github.com/pgaskin/ottrec v0.0.0-20260615074830-539684fe76b5/go.mod h1:N+7yAGCS9+QHNnG+rnBQNvg5GFLwhJpWBhoFQ2vQpmo=
 github.com/pgaskin/xmlwriter v0.0.4 h1:lERCWcbECQXAHwCMpGcoCo9xEJDJ1NFikUmXXmtLlc4=
 github.com/pgaskin/xmlwriter v0.0.4/go.mod h1:deYcrlgx3MXg0eHPF2pmX8PWqny+6ZyQ3kxFe3IpfOU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

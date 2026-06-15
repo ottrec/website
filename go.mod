@@ -12,7 +12,7 @@ require (
 	github.com/lmittmann/tint v1.1.3
 	github.com/ncruces/go-sqlite3 v0.35.0
 	github.com/pgaskin/go-lightningcss v0.0.0-20260614010002-b10cc786152c
-	github.com/pgaskin/ottrec v0.0.0-20260320115659-d7c3036c8cbb
+	github.com/pgaskin/ottrec v0.0.0-20260615074830-539684fe76b5
 	github.com/pgaskin/xmlwriter v0.0.4
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/pflag v1.0.10
