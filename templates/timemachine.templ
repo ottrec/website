@@ -99,6 +99,7 @@ templ TimemachineTrendsPage(params TimemachineTrendsParams) {
 	<html lang="en">
 		<head>
 			@timemachineHead("Trends - ottrec time machine", true)
+			<script src={ static.Path(static.TimemachineJS) } defer></script>
 		</head>
 		<body class="tm-page">
 			@timemachineNav("trends", "")
@@ -127,10 +128,12 @@ templ TimemachineTrendsPage(params TimemachineTrendsParams) {
 				</div>
 				if _, ok := params.latest(); ok {
 					@timemachineTrendSummary(params)
-					@timemachineChartCard("Total weekly hours", "Across the city, over time.", tmTotalChart(params))
-					@timemachineChartCard("By part of the city", "Weekly hours, stacked by sector.", tmSectorChart(params))
-					@timemachineChartCard("By time of day", "Weekly hours, stacked into morning (until 11:00), afternoon, and evening (from 17:00).", tmPeriodChart(params))
-					@timemachineChartCard("By weekday", "Weekly hours, stacked by day of the week.", tmWeekdayChart(params))
+					@timemachineChartCard("Total hours, and hours outside 9–5", "Total weekly hours offered (filled), with the hours outside Mon–Fri 9–5 as a line. The gap between the line and the top is the part that falls within the 9–5 workday.", tmTotalChart(params))
+					@timemachineChartCard("Hours per facility", "Average weekly hours at each facility that offers it — intensity rather than breadth.", tmPerFacilityChart(params))
+					@timemachineChartCard("By part of the city", "Weekly hours by sector.", tmSectorChart(params))
+					@timemachineChartCard("By time of day", "Weekly hours by morning (until 11:00), afternoon, and evening (from 17:00).", tmPeriodChart(params))
+					@timemachineChartCard("By weekday", "Weekly hours by day of the week.", tmWeekdayChart(params))
+					@timemachineHeatmapCard(params)
 				} else {
 					<p class="tm-muted">No data for this activity.</p>
 				}
@@ -153,6 +156,14 @@ templ timemachineTrendSummary(params TimemachineTrendsParams) {
 			<span class="tm-stat-num">{ strconv.Itoa(cur.Facilities) }</span>
 			<span class="tm-stat-lbl">facilities offering it</span>
 		</div>
+		<div class="tm-stat">
+			<span class="tm-stat-num">{ tmHours(cur.PerFacility()) }</span>
+			<span class="tm-stat-lbl">hours per facility</span>
+		</div>
+		<div class="tm-stat">
+			<span class="tm-stat-num">{ tmAccessiblePct(cur) }</span>
+			<span class="tm-stat-lbl">outside the 9–5 workday</span>
+		</div>
 		if yoy.OK {
 			<div class="tm-stat">
 				<span class="tm-stat-num">
@@ -164,7 +175,9 @@ templ timemachineTrendSummary(params TimemachineTrendsParams) {
 	</div>
 }
 
-// timemachineChartCard renders a titled stacked-area chart with a legend.
+// timemachineChartCard renders a titled chart (filled areas and/or lines) with a
+// legend. The chart's underlying data is embedded as JSON so timemachine.ts can
+// add a hover guideline and value tooltip.
 templ timemachineChartCard(title, sub string, c tmChart) {
 	<section class="tm-chart-card">
 		<h2>{ title }</h2>
@@ -172,31 +185,63 @@ templ timemachineChartCard(title, sub string, c tmChart) {
 		if c.Empty {
 			<p class="tm-muted">Not enough snapshots to chart.</p>
 		} else {
-			<svg class="tm-chart" viewBox={ c.VB() } role="img" aria-label={ title } preserveAspectRatio="xMidYMid meet">
-				for _, t := range c.YTicks {
-					<line class="tm-grid" x1={ c.AxisX1() } x2={ c.AxisX2() } y1={ t.PosStr() } y2={ t.PosStr() }></line>
-					<text class="tm-axis-y" x={ c.YLabelX() } y={ tmFmt(t.Pos + 3) } text-anchor="end">{ t.Label }</text>
-				}
-				for _, b := range c.Bands {
-					if c.Stacked {
-						<path class={ "tm-area", b.Class } d={ b.Area }></path>
-					} else {
-						<path class={ "tm-line", b.Class } d={ b.Area }></path>
+			<figure class="tm-chart-fig" data-chart={ c.DataJSON() }>
+				<svg class="tm-chart" viewBox={ c.VB() } role="img" aria-label={ title } preserveAspectRatio="xMidYMid meet">
+					for _, t := range c.YTicks {
+						<line class="tm-grid" x1={ c.AxisX1() } x2={ c.AxisX2() } y1={ t.PosStr() } y2={ t.PosStr() }></line>
+						<text class="tm-axis-y" x={ c.YLabelX() } y={ tmFmt(t.Pos + 3) } text-anchor="end">{ t.Label }</text>
 					}
-				}
-				for _, t := range c.XTicks {
-					<text class="tm-axis-x" x={ t.PosStr() } y={ c.XLabelY() } text-anchor="middle">{ t.Label }</text>
-				}
-			</svg>
+					for _, b := range c.Bands {
+						if b.Fill {
+							<path class={ "tm-area", b.Class } d={ b.Area }></path>
+						} else {
+							<path class={ "tm-line", b.Class } d={ b.Area }></path>
+						}
+					}
+					for _, t := range c.XTicks {
+						<text class="tm-axis-x" x={ t.PosStr() } y={ c.XLabelY() } text-anchor="middle">{ t.Label }</text>
+					}
+				</svg>
+			</figure>
 			<ul class="tm-legend">
 				for _, b := range c.Bands {
 					<li>
 						<span class={ "tm-swatch", b.Class }></span>
 						{ b.Label }
-						<span class="tm-muted">{ tmHours(b.Value) } h</span>
+						<span class="tm-muted">{ tmHours(b.Value) } { c.Unit }</span>
 					</li>
 				}
 			</ul>
+		}
+	</section>
+}
+
+// timemachineHeatmapCard renders the weekday × half-hour availability heatmap for
+// the newest snapshot.
+templ timemachineHeatmapCard(params TimemachineTrendsParams) {
+	{{ h := tmHeatmap(params) }}
+	<section class="tm-chart-card">
+		<h2>When it's available now</h2>
+		<p class="tm-muted">Weekday × time-of-day for the latest snapshot. Stronger colour means more facilities offer it at once.</p>
+		if h.Empty {
+			<p class="tm-muted">No parseable times for this activity.</p>
+		} else {
+			<div class="tm-heat" style={ "--cols:" + strconv.Itoa(len(h.Cols)) }>
+				<div class="tm-heat-corner"></div>
+				for _, col := range h.Cols {
+					<div class="tm-heat-hour">{ col.Hour }</div>
+				}
+				for _, row := range h.Rows {
+					<div class="tm-heat-day">{ row.Day }</div>
+					for _, cell := range row.Cells {
+						if cell.Op != "" {
+							<div class="tm-heat-cell tm-heat-on" style={ "opacity:" + cell.Op } title={ cell.Title }></div>
+						} else {
+							<div class="tm-heat-cell"></div>
+						}
+					}
+				}
+			</div>
 		}
 	</section>
 }
@@ -274,6 +319,7 @@ templ TimemachineDiffPage(params TimemachineDiffParams) {
 					}
 					@timemachineRangeStrip(params)
 					@timemachineDiffPicker(params)
+					@timemachinePeriodNav(params)
 					{{ added, removed, modified := params.Diff.Counts() }}
 					<p class="tm-counts">
 						if added > 0 {
@@ -360,6 +406,27 @@ templ timemachineDiffPicker(params TimemachineDiffParams) {
 		</label>
 		<button type="submit">Compare</button>
 	</form>
+}
+
+// timemachinePeriodNav links to the comparison window shifted one period (the
+// selected number of days) earlier or later, snapping to the nearest snapshot.
+templ timemachinePeriodNav(params TimemachineDiffParams) {
+	{{ prev, hasPrev := timemachinePrevHref(params) }}
+	{{ next, hasNext := timemachineNextHref(params) }}
+	if hasPrev || hasNext {
+		<nav class="tm-period-nav" aria-label="Shift comparison window by one period">
+			if hasPrev {
+				<a class="tm-period-link" href={ templ.URL(prev) } rel="prev">← Previous { tmPeriodLabel(params) }</a>
+			} else {
+				<span class="tm-period-link tm-period-disabled">← Previous { tmPeriodLabel(params) }</span>
+			}
+			if hasNext {
+				<a class="tm-period-link" href={ templ.URL(next) } rel="next">Next { tmPeriodLabel(params) } →</a>
+			} else {
+				<span class="tm-period-link tm-period-disabled">Next { tmPeriodLabel(params) } →</span>
+			}
+		</nav>
+	}
 }
 
 // TimemachineFacilityPage shows a single facility's change timeline.

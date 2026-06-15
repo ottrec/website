@@ -24,6 +24,91 @@
 		el.textContent = (el.dataset.prefix ?? "") + relativeTime(d);
 	}
 
+	// Trends charts (.tm-chart-fig): a hover guideline and value tooltip driven
+	// by the data embedded in each chart's .tm-chart-data script. Runs on every
+	// page; does nothing where there are no charts.
+	interface ChartData {
+		w: number;
+		plotL: number;
+		plotR: number;
+		top: number;
+		bottom: number;
+		unit: string;
+		bands: { label: string; class: string }[];
+		points: { x: number; date: string; vals: number[] }[];
+	}
+	const SVGNS = "http://www.w3.org/2000/svg";
+	for (const fig of document.querySelectorAll<HTMLElement>(".tm-chart-fig[data-chart]")) {
+		const svg = fig.querySelector<SVGSVGElement>("svg.tm-chart");
+		const raw = fig.getAttribute("data-chart");
+		if (!svg || !raw) continue;
+		let data: ChartData;
+		try {
+			data = JSON.parse(raw) as ChartData;
+		} catch {
+			continue;
+		}
+		const points = data.points ?? [];
+		if (points.length === 0) continue;
+
+		const line = document.createElementNS(SVGNS, "line");
+		line.classList.add("tm-hover-line");
+		line.setAttribute("y1", String(data.top));
+		line.setAttribute("y2", String(data.bottom));
+		line.setAttribute("visibility", "hidden");
+		svg.appendChild(line);
+
+		const tip = document.createElement("div");
+		tip.className = "tm-chart-tip";
+		tip.hidden = true;
+		fig.appendChild(tip);
+
+		const escape = (s: string): string => {
+			const d = document.createElement("div");
+			d.textContent = s;
+			return d.innerHTML;
+		};
+
+		const onMove = (ev: PointerEvent): void => {
+			const rect = svg.getBoundingClientRect();
+			if (rect.width === 0) return;
+			const vbx = ((ev.clientX - rect.left) / rect.width) * data.w;
+			const clamped = Math.max(data.plotL, Math.min(data.plotR, vbx));
+			let best = points[0]!;
+			let bestD = Infinity;
+			for (const p of points) {
+				const dd = Math.abs(p.x - clamped);
+				if (dd < bestD) {
+					bestD = dd;
+					best = p;
+				}
+			}
+			line.setAttribute("x1", String(best.x));
+			line.setAttribute("x2", String(best.x));
+			line.setAttribute("visibility", "visible");
+
+			let html = `<div class="tm-chart-tip-date">${escape(best.date)}</div>`;
+			data.bands.forEach((b, i) => {
+				const v = best.vals[i] ?? 0;
+				html += `<div class="tm-chart-tip-row"><span class="tm-swatch ${escape(b.class)}"></span>${escape(b.label)}<span class="tm-chart-tip-val">${v} ${escape(data.unit)}</span></div>`;
+			});
+			tip.innerHTML = html;
+			tip.hidden = false;
+
+			const fr = fig.getBoundingClientRect();
+			let left = ev.clientX - fr.left + 12;
+			if (left + tip.offsetWidth > fr.width) left = ev.clientX - fr.left - tip.offsetWidth - 12;
+			tip.style.left = `${Math.max(0, left)}px`;
+			tip.style.top = `${ev.clientY - fr.top + 12}px`;
+		};
+		const onLeave = (): void => {
+			line.setAttribute("visibility", "hidden");
+			tip.hidden = true;
+		};
+		svg.addEventListener("pointermove", onMove);
+		svg.addEventListener("pointerleave", onLeave);
+	}
+
 	const strip = document.querySelector<HTMLElement>(".tm-strip");
 	if (!strip) return;
 

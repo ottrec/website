@@ -72,21 +72,55 @@ var PeriodNames = [3]string{"Morning", "Afternoon", "Evening"}
 // indexes, which are [ottregions.Sector] values used directly as the index.
 var SectorNames = [5]string{"Other", "West", "East", "Central", "South"}
 
+// workdayStart and workdayEnd bound the typical 9-to-5 workday (minutes from
+// midnight, Monday–Friday). Hours outside this window — weekday evenings and
+// early mornings, plus all weekend — are counted as "accessible" (reachable by
+// someone working a standard workday).
+const (
+	workdayStart = 9 * 60
+	workdayEnd   = 17 * 60
+)
+
 // CategoryBreakdown holds the aggregated weekly hours offered for one category
-// in one snapshot, broken down several ways. The breakdowns each independently
-// sum to Total (modulo rounding).
+// in one snapshot, broken down several ways. The directional breakdowns
+// (ByWeekday, ByPeriod, BySector) each independently sum to Total (modulo
+// rounding); Accessible is a subset of Total.
 type CategoryBreakdown struct {
 	Total      float64    // total weekly hours offered
+	Accessible float64    // weekly hours outside the Mon–Fri 9–5 workday (evenings + weekends)
 	ByWeekday  [7]float64 // weekly hours by weekday (Sunday=0)
 	ByPeriod   [3]float64 // weekly hours by time-of-day period (see statPeriods)
 	BySector   [5]float64 // weekly hours by part of the city (indexed by ottregions.Sector)
 	Facilities int        // number of facilities offering the category
 }
 
-// add accumulates a time slot [start,end) minutes from midnight on weekday wd
-// (which may extend past 24:00 for overnight slots, wrapping onto following
-// days), attributing its duration to the weekday and time-of-day period(s) it
-// overlaps and to the facility's sector.
+// PerFacility returns the average weekly hours offered per facility (Total over
+// Facilities), or 0 if no facility offers the category.
+func (bd CategoryBreakdown) PerFacility() float64 {
+	if bd.Facilities == 0 {
+		return 0
+	}
+	return bd.Total / float64(bd.Facilities)
+}
+
+// walkSegments splits a time slot [start,end) minutes from midnight on weekday
+// wd (which may extend past 24:00 for overnight slots) into per-day segments,
+// wrapping onto following days, and calls fn for each with the resolved weekday
+// and within-day minute range [ds,de).
+func walkSegments(wd, start, end int, fn func(day, ds, de int)) {
+	for start < end {
+		dayStart := (start / 1440) * 1440
+		day := (wd + start/1440) % 7
+		ds := start - dayStart
+		de := min(end-dayStart, 1440)
+		fn(day, ds, de)
+		start = dayStart + 1440
+	}
+}
+
+// add accumulates a time slot [start,end) minutes from midnight on weekday wd,
+// attributing its duration to the weekday, time-of-day period(s), accessibility
+// window, and the facility's sector.
 func (bd *CategoryBreakdown) add(sec ottregions.Sector, wd, start, end int) {
 	if end <= start {
 		return
@@ -94,23 +128,28 @@ func (bd *CategoryBreakdown) add(sec ottregions.Sector, wd, start, end int) {
 	total := float64(end-start) / 60
 	bd.Total += total
 	bd.BySector[sectorIndex(sec)] += total
-	for start < end {
-		dayStart := (start / 1440) * 1440
-		day := (wd + start/1440) % 7
-		ds := start - dayStart
-		de := min(end-dayStart, 1440)
+	walkSegments(wd, start, end, func(day, ds, de int) {
 		bd.ByWeekday[day] += float64(de-ds) / 60
 		for p, pr := range statPeriods {
 			if lo, hi := max(ds, pr[0]), min(de, pr[1]); hi > lo {
 				bd.ByPeriod[p] += float64(hi-lo) / 60
 			}
 		}
-		start = dayStart + 1440
-	}
+		// accessible: the whole segment on weekends, otherwise the part outside
+		// the 9–5 workday.
+		work := 0
+		if day != 0 && day != 6 {
+			if lo, hi := max(ds, workdayStart), min(de, workdayEnd); hi > lo {
+				work = hi - lo
+			}
+		}
+		bd.Accessible += float64((de-ds)-work) / 60
+	})
 }
 
 func (bd *CategoryBreakdown) merge(o CategoryBreakdown) {
 	bd.Total += o.Total
+	bd.Accessible += o.Accessible
 	for i := range bd.ByWeekday {
 		bd.ByWeekday[i] += o.ByWeekday[i]
 	}
@@ -266,6 +305,50 @@ func effectiveActivities(fac ottrecidx.FacilityRef, d time.Time) func(yield func
 			}
 		}
 	}
+}
+
+// HeatmapBins is the number of half-hour columns in a [Dataset.CategoryHeatmap]
+// (48 half-hours per day).
+const HeatmapBins = 48
+
+// CategoryHeatmap returns a weekday × half-hour grid of the weekly hours offered
+// for a category in this snapshot. Cell [weekday][bin] (weekday Sunday=0, bin =
+// the half-hour starting at bin*30 minutes from midnight) holds the summed hours
+// across all facilities offering the category during that half-hour, so busier
+// times (more concurrent availability) read hotter. Uses the same effective-date
+// resolution as [CategoryStats].
+func (ds Dataset) CategoryHeatmap(category int) [7][HeatmapBins]float64 {
+	var m [7][HeatmapBins]float64
+	if category < 0 || category >= len(Categories) {
+		return m
+	}
+	d := snapshotDate(ds)
+	bit := uint32(1) << category
+	for fac := range ds.Data.Facilities() {
+		for act := range effectiveActivities(fac, d) {
+			if categoryMask(statActName(act))&bit == 0 {
+				continue
+			}
+			for tm := range act.Times() {
+				wd, ok := tm.GetWeekday()
+				if !ok {
+					continue
+				}
+				r, ok := tm.GetRange()
+				if !ok || int(r.End) <= int(r.Start) {
+					continue
+				}
+				walkSegments(int(wd), int(r.Start), int(r.End), func(day, ds, de int) {
+					for bin := ds / 30; bin <= (de-1)/30 && bin < HeatmapBins; bin++ {
+						if lo, hi := max(ds, bin*30), min(de, (bin+1)*30); hi > lo {
+							m[day][bin] += float64(hi-lo) / 60
+						}
+					}
+				})
+			}
+		}
+	}
+	return m
 }
 
 // scheduleCoversDate reports whether a schedule is in effect on date d. Regular

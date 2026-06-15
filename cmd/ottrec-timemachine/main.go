@@ -177,6 +177,7 @@ func renderFile(st *ottrectm.Store) error {
 			Datasets: sets,
 			Stats:    st.CategoryStats(),
 			Category: cat,
+			Heatmap:  sets[0].CategoryHeatmap(cat),
 		})
 	case "facility":
 		if *Facility == "" {

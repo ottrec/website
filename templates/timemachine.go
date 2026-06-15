@@ -132,6 +132,67 @@ func timemachineAllHref(params TimemachineDiffParams) string {
 	return timemachineDiffHref(params.Old.ID, params.New.ID, "")
 }
 
+// tmPeriodSpan returns the length of the selected comparison window (the time
+// between the from and to snapshots).
+func tmPeriodSpan(params TimemachineDiffParams) time.Duration {
+	return params.New.Updated.Sub(params.Old.Updated)
+}
+
+// tmPeriodLabel describes the window length in whole days (e.g. "7 days").
+func tmPeriodLabel(params TimemachineDiffParams) string {
+	days := int((tmPeriodSpan(params) + 12*time.Hour) / (24 * time.Hour))
+	if days == 1 {
+		return "1 day"
+	}
+	return strconv.Itoa(days) + " days"
+}
+
+// tmNearestDataset returns the loaded snapshot whose timestamp is closest to
+// target.
+func tmNearestDataset(datasets []ottrectm.Dataset, target time.Time) ottrectm.Dataset {
+	var best ottrectm.Dataset
+	var bestD time.Duration
+	for i, ds := range datasets {
+		d := ds.Updated.Sub(target)
+		if d < 0 {
+			d = -d
+		}
+		if i == 0 || d < bestD {
+			best, bestD = ds, d
+		}
+	}
+	return best
+}
+
+// timemachinePrevHref links to the comparison window one period earlier (its
+// newer end abutting the current window's older end). ok is false at the oldest
+// edge, where the window cannot move further back.
+func timemachinePrevHref(params TimemachineDiffParams) (string, bool) {
+	span := tmPeriodSpan(params)
+	if span <= 0 {
+		return "", false
+	}
+	newOld := tmNearestDataset(params.Datasets, params.Old.Updated.Add(-span))
+	if newOld.ID == params.Old.ID {
+		return "", false
+	}
+	return timemachineDiffHref(newOld.ID, params.Old.ID, params.OnlySlug), true
+}
+
+// timemachineNextHref links to the comparison window one period later (its older
+// end abutting the current window's newer end). ok is false at the newest edge.
+func timemachineNextHref(params TimemachineDiffParams) (string, bool) {
+	span := tmPeriodSpan(params)
+	if span <= 0 {
+		return "", false
+	}
+	newNew := tmNearestDataset(params.Datasets, params.New.Updated.Add(span))
+	if newNew.ID == params.New.ID {
+		return "", false
+	}
+	return timemachineDiffHref(params.New.ID, newNew.ID, params.OnlySlug), true
+}
+
 func (b tmBar) Title() string {
 	return tmDateShort(b.ds.Updated) + ": " + strconv.Itoa(b.mag) + " changed"
 }

@@ -256,5 +256,6 @@ func (h *timemachineTrendsHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		Datasets: sets,
 		Stats:    h.categoryStats(sets),
 		Category: cat,
+		Heatmap:  sets[0].CategoryHeatmap(cat),
 	}), http.StatusOK)
 }

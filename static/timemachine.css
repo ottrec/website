@@ -144,6 +144,28 @@
 	background: var(--fxki-bg-3);
 }
 
+/* shift-window-by-one-period nav */
+.tm-period-nav {
+	display: flex;
+	justify-content: space-between;
+	gap: .6rem;
+	margin: .1rem 0 .6rem;
+	font-size: .85rem;
+}
+.tm-period-link {
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.tm-period-link:hover,
+.tm-period-link:focus {
+	text-decoration: underline;
+}
+.tm-period-disabled {
+	color: var(--fxki-tx-2);
+	opacity: .5;
+	pointer-events: none;
+}
+
 /* badges */
 .tm-badge {
 	display: inline-block;
@@ -731,3 +753,89 @@ a.tm-fac-card:focus {
 .tm-band-4 { --band: var(--fxki-pu); }
 .tm-band-5 { --band: var(--fxki-ye); }
 .tm-band-6 { --band: var(--fxki-ma); }
+
+/* heatmap (weekday × half-hour availability) */
+.tm-heat {
+	display: grid;
+	grid-template-columns: auto repeat(var(--cols), 1fr);
+	gap: 1px;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .4rem;
+	padding: .4rem .5rem .5rem;
+	overflow-x: auto;
+}
+.tm-heat-corner {
+	grid-column: 1;
+}
+.tm-heat-hour {
+	font-size: .7rem;
+	color: var(--fxki-tx-2);
+	text-align: left;
+	align-self: end;
+	padding-bottom: 2px;
+	min-width: 0;
+}
+.tm-heat-day {
+	font-size: .75rem;
+	color: var(--fxki-tx-2);
+	padding-right: .4rem;
+	display: flex;
+	align-items: center;
+}
+.tm-heat-cell {
+	height: 1rem;
+	min-width: 6px;
+	border-radius: 1px;
+	background: var(--fxki-bg);
+}
+.tm-heat-on {
+	background: var(--fxki-bl);
+}
+
+/* chart hover guideline + tooltip (added by timemachine.ts) */
+.tm-chart-fig {
+	position: relative;
+	margin: 0;
+}
+.tm-hover-line {
+	stroke: var(--fxki-tx-2);
+	stroke-width: 1;
+	stroke-dasharray: 3 3;
+	pointer-events: none;
+}
+.tm-chart-tip {
+	position: absolute;
+	z-index: 5;
+	pointer-events: none;
+	min-width: 7rem;
+	max-width: 16rem;
+	padding: .4rem .55rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	background: var(--fxki-bg);
+	box-shadow: 0 2px 8px rgb(0 0 0 / .25);
+	font-size: .8rem;
+	line-height: 1.35;
+}
+.tm-chart-tip[hidden] {
+	display: none;
+}
+.tm-chart-tip-date {
+	font-weight: bold;
+	margin-bottom: .15rem;
+}
+.tm-chart-tip-row {
+	display: flex;
+	align-items: center;
+	gap: .35rem;
+	white-space: nowrap;
+}
+.tm-chart-tip-row .tm-swatch {
+	flex: none;
+}
+.tm-chart-tip-val {
+	margin-left: auto;
+	color: var(--fxki-tx-2);
+	padding-left: .5rem;
+}
