@@ -392,6 +392,11 @@ for (const f of data.facilities) {
 		iconAnchor: [15, 15],
 	})
 	const marker = L.marker([f.lat, f.lng], {icon})
+	// register this before bindTooltip so hoveredIndex is current by the time
+	// Leaflet's own mouseover handler opens the tooltip and fires tooltipopen
+	// (listeners run in registration order) otherwise the tooltipopen guard
+	// below sees a stale hoveredIndex and suppresses every genuine hover
+	marker.on('mouseover', () => { hoveredIndex = f.index; setHighlight(f.index, true) })
 	marker.bindTooltip(f.name, {direction: 'top', offset: [0, -12]})
 	marker.on('tooltipopen', () => {
 		// suppress tooltips opened while dragging or replayed afterwards for pins
@@ -423,7 +428,6 @@ for (const f of data.facilities) {
 			loadPopup(f, popup)
 		}
 	})
-	marker.on('mouseover', () => { hoveredIndex = f.index; setHighlight(f.index, true) })
 	marker.on('mouseout', () => {
 		if (hoveredIndex === f.index) hoveredIndex = null
 		setHighlight(f.index, false)
