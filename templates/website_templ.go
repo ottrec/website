@@ -688,7 +688,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "</time>.</p></header><nav class=\"home-tiles\" aria-label=\"Sections\"><a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>Schedules</h2><p>Browse or search the full drop-in schedules on a single page.</p></a> <a href=\"/activities\" data-icon=\"overview\"><h2>Activities</h2><p>Find facilities offering each activity, by area, weekday, and time of day.</p></a></nav><section class=\"home-about\"><p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p><p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current. With it you can:</p><ul><li><a href=\"/map\">Browse facilities on a map</a>, filtering by activity, weekday, and time.</li><li><a href=\"/schedules\">See schedules and alerts</a> across several facilities at once.</li><li><a href=\"/activities\">Find every facility offering an activity</a> in your area, at the time you want.</li><li><a href=\"/schedules?advanced=1\">Build a personalized page</a> with only the schedules you care about.</li></ul><p>Every facility is tagged with a region name like Barrhaven, Orléans, or Kanata, not just a street address, so you can browse by area and find the facilities in the part of the city you want, without having to know every street name.</p></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region (Central, Barrhaven, Orleans, etc) and sector (central, south, west, east) information on the schedule headers and <a href=\"/activities\">activities</a> page.</p></li><li><time datetime=\"2026-06-13\">Jun 13, 2026</time><p>Star facilities to bring them to the top of the page and highlight them on the map.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Filter schedules with <a href=\"/schedules?advanced=1\">custom queries</a> to build your own page with only the facilities and activities you care about.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Launched ottrec.ca with an interactive <a href=\"/map\">map</a>, searchable <a href=\"/schedules\">schedules</a>, and <a href=\"/activities\">activities</a> by facility.</p></li><li><time datetime=\"2025-10-26\">October 26, 2025</time><p>Launched data.ottrec.ca with simplified datasets in JSON and CSV, and an API for historical data.</p></li><li><time datetime=\"2025-04-12\">April 12, 2025</time><p>Started collecting and parsing schedule information.</p></li></ul></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "</time>.</p></header><nav class=\"home-tiles\" aria-label=\"Sections\"><a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>Schedules</h2><p>Browse or search the full drop-in schedules on a single page.</p></a> <a href=\"/activities\" data-icon=\"overview\"><h2>Activities</h2><p>Find facilities offering each activity, by area, weekday, and time of day.</p></a></nav><section class=\"home-about\"><p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p><p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current. With it you can:</p><ul><li><a href=\"/map\">Browse facilities on a map</a>, filtering by activity, weekday, and time.</li><li><a href=\"/schedules\">See schedules and alerts</a> across several facilities at once.</li><li><a href=\"/activities\">Find every facility offering an activity</a> in your area, at the time you want.</li><li><a href=\"/about/ottrecql\">Build a personalized page</a> with only the schedules you care about.</li></ul><p>Every facility is tagged with a region name like Barrhaven, Orléans, or Kanata, not just a street address, so you can browse by area and find the facilities in the part of the city you want, without having to know every street name.</p></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>The advanced search now has a much smarter <a href=\"/about/ottrecql\">editor</a> and a dedicated <a href=\"/about/ottrecql\">reference page</a>.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region (Central, Barrhaven, Orleans, etc) and sector (central, south, west, east) information on the schedule headers and <a href=\"/activities\">activities</a> page.</p></li><li><time datetime=\"2026-06-13\">Jun 13, 2026</time><p>Star facilities to bring them to the top of the page and highlight them on the map.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Filter schedules with <a href=\"/schedules?advanced=1\">custom queries</a> to build your own page with only the facilities and activities you care about.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Launched ottrec.ca with an interactive <a href=\"/map\">map</a>, searchable <a href=\"/schedules\">schedules</a>, and <a href=\"/activities\">activities</a> by facility.</p></li><li><time datetime=\"2025-10-26\">October 26, 2025</time><p>Launched data.ottrec.ca with simplified datasets in JSON and CSV, and an API for historical data.</p></li><li><time datetime=\"2025-04-12\">April 12, 2025</time><p>Started collecting and parsing schedule information.</p></li></ul></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -754,7 +754,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var37 string
 		templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 216, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 220, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 		if templ_7745c5c3_Err != nil {
@@ -767,7 +767,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var38 templ.SafeURL
 		templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.WebsiteCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 217, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 221, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 		if templ_7745c5c3_Err != nil {
@@ -796,7 +796,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var39 string
 		templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 223, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 227, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 		if templ_7745c5c3_Err != nil {
@@ -809,7 +809,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var40 string
 		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(message)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 224, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 228, Col: 16}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 		if templ_7745c5c3_Err != nil {
