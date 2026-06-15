@@ -63,8 +63,8 @@ func SchedulesSearchQuery(q string) ottrecql.Node {
 // SchedulesMaxQueryLen and SchedulesMaxQueryCost limit user-specified queries
 // (see the ottrecql package docs).
 const (
-	SchedulesMaxQueryLen  = 2000
-	SchedulesMaxQueryCost = 5000
+	SchedulesMaxQueryLen  = 5000
+	SchedulesMaxQueryCost = 7000
 )
 
 // SchedulesParseQuery parses a user-specified advanced query, limiting its
@@ -77,6 +77,7 @@ func SchedulesParseQuery(q string) (ottrecql.Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	node = ottrecql.Optimize(node)
 	if c := ottrecql.Cost(node); c > SchedulesMaxQueryCost {
 		return nil, fmt.Errorf("query too expensive (cost %d, max %d)", c, SchedulesMaxQueryCost)
 	}
