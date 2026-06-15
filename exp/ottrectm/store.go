@@ -36,10 +36,12 @@ type Store struct {
 	// Open before that goroutine starts), so it isn't guarded by mu.
 	cache *ottrecdata.Cache
 
-	mu   sync.RWMutex
-	dxr  *ottrecidx.Indexer
-	sets []Dataset // newest first (by Updated)
-	seq  []string  // full version-id sequence (newest first, incl. superseded) from the last load
+	mu    sync.RWMutex
+	dxr   *ottrecidx.Indexer
+	sets  []Dataset                // newest first (by Updated)
+	seq   []string                 // full version-id sequence (newest first, incl. superseded) from the last load
+	mags  []int                    // cached per-snapshot change magnitudes, aligned with sets (see Magnitudes)
+	stats map[string]FacilityStats // cached per-facility change stats (see FacilityChangeStats)
 }
 
 // Open loads all datasets up to maxAge old from the ottrecdata cache at path
@@ -81,6 +83,26 @@ func (s *Store) Datasets() []Dataset {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return append([]Dataset(nil), s.sets...)
+}
+
+// Magnitudes returns a copy of the cached per-snapshot change magnitudes,
+// aligned with [Store.Datasets] (see [Magnitudes]).
+func (s *Store) Magnitudes() []int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return append([]int(nil), s.mags...)
+}
+
+// FacilityStats returns a copy of the cached per-facility change stats (see
+// [FacilityChangeStats]).
+func (s *Store) FacilityStats() map[string]FacilityStats {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make(map[string]FacilityStats, len(s.stats))
+	for k, v := range s.stats {
+		out[k] = v
+	}
+	return out
 }
 
 // run polls for new data every 15s, and fully reloads whenever the day rolls
@@ -150,6 +172,8 @@ func (s *Store) reloadLocked(ctx context.Context) error {
 	s.dxr = dxr
 	s.sets = sets
 	s.seq = seq
+	s.mags = Magnitudes(sets)
+	s.stats = FacilityChangeStats(sets)
 	slog.Info("timemachine: loaded data", "datasets", len(sets), "versions", len(seq))
 	return nil
 }
@@ -205,6 +229,8 @@ func (s *Store) update(ctx context.Context) error {
 
 	s.sets = sets
 	s.seq = seq
+	s.mags = Magnitudes(sets)
+	s.stats = FacilityChangeStats(sets)
 	slog.Info("timemachine: updated datasets", "loaded", loaded, "total", len(sets))
 	return nil
 }

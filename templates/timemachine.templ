@@ -1,0 +1,482 @@
+package templates
+
+import (
+	"strconv"
+
+	"github.com/pgaskin/ottrec-website/exp/ottrectm"
+	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/static"
+)
+
+// timemachineHead renders the shared <head> for the time machine pages. Only the
+// homepage is indexable (noindex false); every other page sets noindex and is
+// disallowed in robots.txt.
+templ timemachineHead(title string, noindex bool) {
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	@websiteThemeHead()
+	@websiteIconsHead()
+	if noindex {
+		<meta name="robots" content="noindex, nofollow"/>
+	}
+	<title>{ title }</title>
+	<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+	<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
+	<link rel="stylesheet" href={ static.Path(static.TimemachineCSS) }/>
+	@websiteHeadExtra()
+}
+
+// timemachineNav renders the shared header bar and the public-preview notice
+// shown on every page. active is the slug of the current nav link ("" for none).
+templ timemachineNav(active, subtitle string) {
+	<nav class="map-topnav tm-topnav">
+		<a class="brand" href="/">ottrec time machine <span class="tm-beta">beta</span></a>
+		<a class={ "nav", templ.KV("active", active == "datasets") } href="/datasets">Compare</a>
+		<a class={ "nav", templ.KV("active", active == "facilities") } href="/facilities">Facilities</a>
+		<div class="topnav-end">
+			if subtitle != "" {
+				<span class="tm-nav-sub">{ subtitle }</span>
+			}
+			<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+		</div>
+	</nav>
+	<div class="tm-notice" role="note">
+		<p style="font-weight: bold">
+			This is a public preview. The time machine is still under development and is highly experimental.
+		</p>
+		<p>
+			Unlike the main site and dataset, the time machine has not been rigorously tested or fully reviewed and was mostly vibecoded (as an experiment). It does not meet my usual quality standards.
+		</p>
+		<p>
+			The diffs may be inaccurate or misleading, and everything is subject to change. Do not depend on them. You have been warned.
+		</p>
+	</div>
+}
+
+// TimemachineIndexPage lists the loaded snapshots and facilities.
+templ TimemachineIndexPage(params TimemachineIndexParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@timemachineHead("ottrec time machine", false)
+		</head>
+		<body class="tm-page">
+			@timemachineNav("", "")
+			<main class="tm-main">
+				<header class="tm-header">
+					<h1>Time machine</h1>
+					<p>See how City of Ottawa drop-in recreation schedules have changed over time.</p>
+					if len(params.Datasets) > 0 {
+						<p class="tm-muted">
+							Snapshots span <strong>{ tmDate(params.Datasets[len(params.Datasets)-1].Updated) }</strong> to <strong>{ tmDate(params.Datasets[0].Updated) }</strong>.
+							For older data, see <a href="https://data.ottrec.ca">data.ottrec.ca</a>.
+						</p>
+					}
+				</header>
+				<nav class="tm-tiles" aria-label="Sections">
+					<a href="/datasets" data-icon="calendar_month">
+						<h2>Compare snapshots</h2>
+						<p>See everything that changed between any two dates, across all facilities, with an overview of when the biggest changes happened.</p>
+					</a>
+					<a href="/facilities" data-icon="overview">
+						<h2>Facilities</h2>
+						<p>Pick a facility to see its full timeline of schedule, special-hours, and notification changes.</p>
+					</a>
+				</nav>
+			</main>
+		</body>
+	</html>
+}
+
+// TimemachineFacilitiesPage lists every facility, linking to its change timeline.
+templ TimemachineFacilitiesPage(params TimemachineFacilitiesParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@timemachineHead("Facilities - ottrec time machine", true)
+			<script src={ static.Path(static.TimemachineJS) } defer></script>
+		</head>
+		<body class="tm-page">
+			@timemachineNav("facilities", "")
+			<main class="tm-main">
+				<header class="tm-header">
+					<h1>Facilities</h1>
+					<p>Pick a facility to see its full change history.</p>
+				</header>
+				<ul class="tm-facility-index">
+					for fac := range params.Data.Facilities() {
+						{{ href := timemachineFacilityHref(params.Slugs, ottrectm.FacilityKey(fac)) }}
+						<li>
+							if href != "" {
+								<a class="tm-fac-card" href={ templ.URL(href) }>
+									@timemachineFacilityCardBody(params, fac)
+								</a>
+							} else {
+								<span class="tm-fac-card">
+									@timemachineFacilityCardBody(params, fac)
+								</span>
+							}
+						</li>
+					}
+				</ul>
+			</main>
+		</body>
+	</html>
+}
+
+// timemachineFacilityCardBody renders the inside of a facility card: the name
+// with the last-modified date underneath (enhanced to a relative time by
+// timemachine.ts).
+templ timemachineFacilityCardBody(params TimemachineFacilitiesParams, fac ottrecidx.FacilityRef) {
+	<span class="tm-fac-card-name">{ fac.GetName() }</span>
+	if s, ok := tmFacilityStats(params, fac); ok {
+		<span class="tm-fac-card-date">
+			changed { tmCount(s.Count) }, last
+			<time class="tm-reltime" datetime={ tmISO(s.Last) } title={ tmDate(s.Last) }>{ tmDateShort(s.Last) }</time>
+		</span>
+	} else {
+		<span class="tm-fac-card-date">no changes recorded</span>
+	}
+}
+
+// TimemachineDiffPage shows the diff between two snapshots.
+templ TimemachineDiffPage(params TimemachineDiffParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@timemachineHead("Changes "+tmDateShort(params.Old.Updated)+" → "+tmDateShort(params.New.Updated)+" - ottrec time machine", true)
+			<script src={ static.Path(static.TimemachineJS) } defer></script>
+		</head>
+		<body class="tm-page">
+			@timemachineNav("datasets", "")
+			<main class="tm-main">
+				<header class="tm-header">
+					<h1>Changes</h1>
+					<p class="tm-range">{ tmDate(params.Old.Updated) } <span class="tm-arrow">→</span> { tmDate(params.New.Updated) }</p>
+					if params.OnlySlug != "" {
+						<p class="tm-only-banner">
+							Showing only <strong>{ params.OnlyName }</strong>
+							<a href={ templ.URL(timemachineAllHref(params)) }>show all changes</a>
+						</p>
+					}
+					@timemachineRangeStrip(params)
+					@timemachineDiffPicker(params)
+					{{ added, removed, modified := params.Diff.Counts() }}
+					<p class="tm-counts">
+						if added > 0 {
+							<span class="tm-badge tm-added">{ strconv.Itoa(added) } added</span>
+						}
+						if removed > 0 {
+							<span class="tm-badge tm-removed">{ strconv.Itoa(removed) } removed</span>
+						}
+						if modified > 0 {
+							<span class="tm-badge tm-modified">{ strconv.Itoa(modified) } changed</span>
+						}
+						if added == 0 && removed == 0 && modified == 0 {
+							<span class="tm-muted">No changes.</span>
+						}
+					</p>
+				</header>
+				for _, fd := range params.Diff.Changed() {
+					@timemachineFacilitySection(params, fd)
+				}
+			</main>
+		</body>
+	</html>
+}
+
+// timemachineRangeStrip renders the snapshot range selector: one narrow bar per
+// snapshot (oldest left), its height showing how much changed in that snapshot,
+// clickable to set the diff endpoints. timemachine.ts upgrades it to two-click
+// range selection; without JS each bar is a link.
+templ timemachineRangeStrip(params TimemachineDiffParams) {
+	<div class="tm-strip-wrap">
+		<div
+			class="tm-strip"
+			role="group"
+			aria-label="Select snapshot range"
+			data-from={ params.Old.ID }
+			data-to={ params.New.ID }
+			data-only={ params.OnlySlug }
+		>
+			for _, b := range tmBars(params) {
+				<a
+					class={ "tm-bar",
+						templ.KV("tm-bar-range", b.inRange),
+						templ.KV("tm-bar-from", b.isFrom),
+						templ.KV("tm-bar-to", b.isTo) }
+					href={ templ.URL(tmBarHref(params, b)) }
+					data-id={ b.ds.ID }
+					data-prev={ b.prevID }
+					data-date={ tmDateShort(b.ds.Updated) }
+					data-mag={ strconv.Itoa(b.mag) }
+					title={ b.Title() }
+				>
+					<span class="tm-bar-fill" style={ "height:" + strconv.Itoa(b.heightPct) + "%" }></span>
+				</a>
+			}
+		</div>
+		<p class="tm-strip-readout" aria-live="polite">
+			<span class="tm-strip-readout-default">{ tmDateShort(params.Old.Updated) } → { tmDateShort(params.New.Updated) }</span>
+		</p>
+	</div>
+}
+
+// timemachineDiffPicker renders the two snapshot dropdowns for choosing the diff
+// range.
+templ timemachineDiffPicker(params TimemachineDiffParams) {
+	<form class="tm-picker" method="get" action="/datasets">
+		if params.OnlySlug != "" {
+			<input type="hidden" name="only" value={ params.OnlySlug }/>
+		}
+		<label>
+			From
+			<select name="from">
+				for _, ds := range params.Datasets {
+					<option value={ ds.ID } selected?={ ds.ID == params.Old.ID }>{ tmDateShort(ds.Updated) }</option>
+				}
+			</select>
+		</label>
+		<label>
+			To
+			<select name="to">
+				for _, ds := range params.Datasets {
+					<option value={ ds.ID } selected?={ ds.ID == params.New.ID }>{ tmDateShort(ds.Updated) }</option>
+				}
+			</select>
+		</label>
+		<button type="submit">Compare</button>
+	</form>
+}
+
+// TimemachineFacilityPage shows a single facility's change timeline.
+templ TimemachineFacilityPage(params TimemachineFacilityParams) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@timemachineHead(params.Name+" - ottrec time machine", true)
+		</head>
+		<body class="tm-page">
+			@timemachineNav("facilities", params.Name)
+			<main class="tm-main">
+				<header class="tm-header">
+					<h1>{ params.Name }</h1>
+					<p class="tm-muted">{ strconv.Itoa(len(params.Entries)) } changes over { strconv.Itoa(len(params.Datasets)) } snapshots.</p>
+				</header>
+				if len(params.Entries) == 0 {
+					<p class="tm-muted">No recorded changes.</p>
+				}
+				<ol class="tm-timeline">
+					for _, e := range params.Entries {
+						<li class="tm-timeline-entry">
+							<div class="tm-timeline-date">
+								<span class="tm-badge { tmBadgeClass(e.Diff.Change) }">{ tmDate(e.Date) }</span>
+								<span class="tm-muted">since { tmDateShort(e.PrevDate) }</span>
+							</div>
+							<div class="tm-timeline-body">
+								if e.Diff.Change == tmAdded {
+									<p class="tm-note">Facility added.</p>
+								}
+								if e.Diff.Change == tmRemoved {
+									<p class="tm-note">Facility removed.</p>
+								}
+								@timemachineFacilityBody(e.Diff)
+							</div>
+						</li>
+					}
+				</ol>
+			</main>
+		</body>
+	</html>
+}
+
+// timemachineFacilitySection renders one facility's changes on the diff page,
+// with its name as a heading.
+templ timemachineFacilitySection(params TimemachineDiffParams, fd ottrectm.FacilityDiff) {
+	{{ href := timemachineFacilityHref(params.Slugs, fd.URL) }}
+	{{ slug := params.Slugs[fd.URL] }}
+	<section class="tm-facility">
+		<h2 class="tm-facility-name">
+			<span class={ "tm-badge", tmBadgeClass(fd.Change) }>{ fd.Change.String() }</span>
+			if href != "" {
+				<a href={ templ.URL(href) }>{ fd.Name }</a>
+			} else {
+				{ fd.Name }
+			}
+			if params.OnlySlug == "" && slug != "" {
+				<a class="tm-only-btn" href={ templ.URL(timemachineOnlyHref(params, slug)) } title="Show only this facility">only</a>
+			}
+		</h2>
+		@timemachineFacilityBody(fd)
+	</section>
+}
+
+// timemachineFacilityBody renders the changed parts of a facility (text changes
+// and groups), shared by the diff and timeline pages.
+templ timemachineFacilityBody(fd ottrectm.FacilityDiff) {
+	if tmShowText(fd.SpecialHours) {
+		@timemachineTextDiff("Special hours", fd.SpecialHours)
+	}
+	if tmShowText(fd.Notifications) {
+		@timemachineTextDiff("Notifications", fd.Notifications)
+	}
+	for _, g := range fd.Groups {
+		@timemachineGroup(g)
+	}
+}
+
+// timemachineGroup renders a changed schedule group.
+templ timemachineGroup(g ottrectm.GroupDiff) {
+	<div class="tm-group">
+		<h3 class="tm-group-title">
+			if g.Change != tmModified {
+				<span class={ "tm-badge", tmBadgeClass(g.Change) }>{ g.Change.String() }</span>
+			}
+			{ g.Title }
+		</h3>
+		if tmShowText(g.ScheduleChanges) {
+			@timemachineTextDiff("Schedule changes", g.ScheduleChanges)
+		}
+		if g.Reservation.Change != tmUnchanged {
+			<div class="tm-resv">
+				<span class="tm-label">Reservation links</span>
+				<ul class="tm-resv-list">
+					for _, l := range g.Reservation.Added {
+						<li class="tm-add">+ <a href={ templ.URL(l.URL) } target="_blank" rel="noopener">{ l.Label }</a></li>
+					}
+					for _, l := range g.Reservation.Removed {
+						<li class="tm-rem">− <a href={ templ.URL(l.URL) } target="_blank" rel="noopener">{ l.Label }</a></li>
+					}
+				</ul>
+			</div>
+		}
+		for _, s := range g.Schedules {
+			@timemachineSchedule(s)
+		}
+	</div>
+}
+
+// timemachineSchedule renders a single schedule change as compactly as possible.
+templ timemachineSchedule(s ottrectm.ScheduleDiff) {
+	<div class={ "tm-sched", templ.KV("tm-sched-fixed", s.Fixed) }>
+		<div class="tm-sched-head">
+			<span class={ "tm-badge", tmBadgeClass(s.Change) }>{ s.Change.String() }</span>
+			<span class="tm-sched-name">{ tmScheduleSummary(s) }</span>
+			if s.Fixed {
+				<span class="tm-tag">fixed dates</span>
+			}
+			if d := tmDateChange(s); d != "" {
+				<span class="tm-sched-date">{ d }</span>
+			}
+		</div>
+		if s.RefDate != "" {
+			<p class="tm-sched-ref">
+				if s.Change == tmRemoved {
+					was a duplicate of the { s.RefDate } schedule
+				} else {
+					based on the { s.RefDate } schedule
+				}
+				if s.Identical {
+					{ " — identical" }
+				}
+			</p>
+		}
+		if s.Identical && s.RefDate == "" && s.Change == tmModified {
+			<p class="tm-note tm-muted">Only the date range changed.</p>
+		}
+		if s.ShowFull {
+			@timemachineScheduleFull(s)
+		} else if len(s.Activities) > 0 {
+			@timemachineScheduleTable(tmScheduleTable(s))
+		}
+	</div>
+}
+
+// timemachineScheduleFull renders the full grid of a wholly added/removed
+// schedule, collapsed by default to keep the page compact.
+templ timemachineScheduleFull(s ottrectm.ScheduleDiff) {
+	<details class="tm-sched-full">
+		<summary>{ timemachineScheduleFullSummary(s) }</summary>
+		if s.Change == tmRemoved && s.Old.Valid() {
+			@websiteFacilitySchedule(s.Old)
+		} else if s.New.Valid() {
+			@websiteFacilitySchedule(s.New)
+		}
+	</details>
+}
+
+// timemachineScheduleTable renders a schedule's per-activity changes as a grid
+// (activities × changed days), mirroring the site's schedule tables.
+templ timemachineScheduleTable(t tmTable) {
+	<div class="tm-grid-wrap table-wrap">
+		<table class="tm-grid">
+			<thead>
+				<tr>
+					<th></th>
+					for _, d := range t.Days {
+						<th>{ d }</th>
+					}
+				</tr>
+			</thead>
+			<tbody>
+				for _, r := range t.Rows {
+					<tr class={ "tm-grid-row", "tm-grid-" + r.Change.String() }>
+						<th>
+							if r.Change == tmAdded {
+								<span class="tm-act-mark tm-add">+</span>
+							} else if r.Change == tmRemoved {
+								<span class="tm-act-mark tm-rem">−</span>
+							}
+							<span class="tm-grid-name">{ r.Name }</span>
+						</th>
+						for _, c := range r.Cells {
+							<td>
+								@timemachineCell(c)
+							</td>
+						}
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+// timemachineCell renders one activity×day cell: a single replaced time as the
+// old value over the new (on two lines), otherwise the added (+) and removed (−)
+// times stacked.
+templ timemachineCell(c tmCell) {
+	{{ from, to, arrow := c.Arrow() }}
+	if arrow {
+		<span class="tm-cell-line tm-rem tm-strike">{ from }</span>
+		<span class="tm-cell-line"><span class="tm-arrow">→</span> <span class="tm-add">{ to }</span></span>
+	} else {
+		for _, t := range c.Added {
+			<span class="tm-cell-line tm-add">+{ t }</span>
+		}
+		for _, t := range c.Removed {
+			<span class="tm-cell-line tm-rem tm-strike">{ t }</span>
+		}
+	}
+}
+
+// timemachineTextDiff renders a line-level text diff (special hours, etc).
+templ timemachineTextDiff(label string, td ottrectm.TextDiff) {
+	<div class="tm-text">
+		<span class="tm-label">
+			{ label }
+			<span class={ "tm-badge", tmBadgeClass(td.Change) }>{ td.Change.String() }</span>
+		</span>
+		<ul class="tm-text-lines">
+			for _, ln := range td.Lines {
+				switch ln.Change {
+					case tmAdded:
+						<li class="tm-add">+ { ln.Text }</li>
+					case tmRemoved:
+						<li class="tm-rem tm-strike">− { ln.Text }</li>
+					default:
+						<li class="tm-ctx tm-muted">{ ln.Text }</li>
+				}
+			}
+		</ul>
+	</div>
+}
