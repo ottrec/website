@@ -36,12 +36,14 @@ func mapSlotKey(slot [2]int) string {
 }
 
 // mapSlotLabel is the human-readable am/pm label for a slot, shown in the UI.
+// It shows the inclusive last minute of the [start, end) range so the boundaries
+// read clearly and don't look like they overlap, e.g. "9:00 am – 10:59 am".
 func mapSlotLabel(slot [2]int) string {
-	return mapClockTime(slot[0]) + "–" + mapClockTime(slot[1])
+	return mapClockTime(slot[0]) + " – " + mapClockTime(slot[1]-1)
 }
 
 // mapClockTime formats minutes-from-midnight as a 12-hour time with its am/pm
-// meridiem, e.g. "6 am", "11 am", "12:30 pm".
+// meridiem, e.g. "6:00 am", "11:00 am", "12:30 pm".
 func mapClockTime(min int) string {
 	h, m := (min/60)%24, min%60
 	meridiem := "am"
@@ -52,10 +54,7 @@ func mapClockTime(min int) string {
 	if h12 == 0 {
 		h12 = 12
 	}
-	if m != 0 {
-		return fmt.Sprintf("%d:%02d %s", h12, m, meridiem)
-	}
-	return fmt.Sprintf("%d %s", h12, meridiem)
+	return fmt.Sprintf("%d:%02d %s", h12, m, meridiem)
 }
 
 // mapCategories contains the predefined activity categories for the map
