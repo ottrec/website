@@ -50,9 +50,9 @@ templ websiteThemeHead() {
 // websiteIconsHead links the site icons. The ico fallback is also reachable
 // at /favicon.ico for clients that never read the page head.
 templ websiteIconsHead() {
-	<link rel="icon" href={ static.Path(static.FaviconICO) } sizes="32x32"/>
-	<link rel="icon" href={ static.Path(static.FaviconSVG) } type="image/svg+xml"/>
-	<link rel="apple-touch-icon" href={ static.Path(static.AppleTouchIconPNG) }/>
+	<link rel="icon" href={ static.Path(static.FaviconICO) + "?v=1" } sizes="32x32"/>
+	<link rel="icon" href={ static.Path(static.FaviconSVG) + "?v=1" } type="image/svg+xml"/>
+	<link rel="apple-touch-icon" href={ static.Path(static.AppleTouchIconPNG) + "?v=1" }/>
 }
 
 // websiteSocialHead emits Open Graph and Twitter Card meta for link previews.
