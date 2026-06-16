@@ -94,6 +94,11 @@ func (r Region) LatLng() (lat, lng float64) {
 // outside the area.
 const maxRegionDist = 20.0 / 111.0
 
+// MaxRegionDist returns the cutoff distance (in degrees, longitude weighted by
+// latitude) beyond which [RegionAt] returns [RegionUnknown]. It is exposed so a
+// renderer can reproduce the cutoff faithfully.
+func MaxRegionDist() float64 { return maxRegionDist }
+
 // RegionAt returns the region whose place label point is nearest to the given
 // coordinate, or [RegionUnknown] if none is within ~20 km. This is a Voronoi-
 // style assignment: OSM place labels are points, not areas, so a coordinate
@@ -153,6 +158,14 @@ const (
 	sectorSouthLat = 45.35    // south of here (and not West) is the South end
 	sectorEastLng  = -75.6064 // east of here (and not West/South) is the East end
 )
+
+// SectorBoundaries returns the hardcoded sector boundary lines: the longitude
+// west of which is the West end, the latitude south of which (and not West) is
+// the South end, and the longitude east of which (and not West/South) is the
+// East end. Everything else is Central. Exposed so the boundaries can be drawn.
+func SectorBoundaries() (westLng, southLat, eastLng float64) {
+	return sectorWestLng, sectorSouthLat, sectorEastLng
+}
 
 // SectorAt returns the sector a coordinate falls in. It always returns one of
 // West/East/Central/South (never [SectorUnknown]); the boundaries are coarse and

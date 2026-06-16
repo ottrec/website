@@ -179,6 +179,8 @@ var (
 	TimemachineCSS = assets.Register("timemachine.css", css)
 	TimemachineJS  = assets.Register("timemachine.ts", ts)
 	AboutCSS       = assets.Register("about.css", css)
+	RegionsCSS     = assets.Register("regions.css", css)
+	RegionsJS      = assets.Register("regions.ts", ts)
 	HomeCSS        = assets.Register("home.css", css)
 	ThemeJS        = assets.Register("theme.ts", ts)
 	StarredJS      = assets.Register("starred.ts", ts)
@@ -205,6 +207,8 @@ var Website = assets.
 		TimemachineCSS,
 		TimemachineJS,
 		AboutCSS,
+		RegionsCSS,
+		RegionsJS,
 		HomeCSS,
 		ThemeJS,
 		StarredJS,

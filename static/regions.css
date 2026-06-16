@@ -1,0 +1,205 @@
+.regions-page {
+	main {
+		max-width: 60rem;
+		margin: 0 auto;
+		padding: 1rem 1rem 3rem;
+	}
+
+	h1, p, section {
+		max-width: 44rem;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	h1, h2 {
+		font-family: 'Source Serif 4', serif;
+	}
+	h1 {
+		font-size: 1.4rem;
+		margin-bottom: .25rem;
+	}
+	h2 {
+		font-size: 1.05rem;
+		margin: 1.75rem 0 .25rem;
+	}
+	section {
+		scroll-margin-top: .75rem;
+	}
+	p, li {
+		font-size: .9rem;
+		line-height: 1.6;
+		margin: .5rem 0;
+	}
+	a {
+		color: var(--fxki-bl);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.region-map {
+	width: 100%;
+	height: clamp(400px, 70vh, 660px);
+	margin: 1rem 0 .5rem;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .4rem;
+	background: var(--fxki-bg-2);
+	overflow: hidden;
+
+	.region-noscript {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		padding: 2rem;
+		text-align: center;
+		color: var(--fxki-tx-2);
+	}
+
+	/* marker is positioned by Leaflet, so center on the span */
+	.region-label,
+	.sector-label {
+		width: 0;
+		height: 0;
+
+		span {
+			position: absolute;
+			left: 0;
+			top: 0;
+			transform: translate(-50%, -50%);
+			white-space: nowrap;
+			pointer-events: none;
+			text-shadow:
+				-1px -1px 0 var(--fxki-bg), 1px -1px 0 var(--fxki-bg),
+				-1px 1px 0 var(--fxki-bg), 1px 1px 0 var(--fxki-bg);
+		}
+	}
+	.region-label span {
+		font-size: .72rem;
+		color: var(--fxki-tx);
+	}
+	.region-label-minor span {
+		font-size: .72rem;
+		color: var(--fxki-tx-2);
+		display: none;
+	}
+	.region-map.zoomed .region-label-minor span {
+		display: inline;
+	}
+	.sector-label span {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.05rem;
+		font-weight: 600;
+		letter-spacing: .03em;
+		text-transform: uppercase;
+		color: var(--fxki-tx-2);
+	}
+
+	.leaflet-container {
+		background: var(--fxki-bg-2);
+		font: inherit;
+
+		.leaflet-control-attribution {
+			/* --fxki-bg with alpha; avoid color-mix so postcss can't drop it */
+			background: light-dark(rgba(255, 252, 240, .8), rgba(16, 15, 15, .8));
+			color: var(--fxki-tx-2);
+			font-size: 80%;
+		}
+		.leaflet-control-attribution a {
+			color: var(--fxki-bl);
+		}
+		.leaflet-control-layers {
+			background: var(--fxki-bg);
+			color: var(--fxki-tx);
+			border: 1px solid var(--fxki-ui-3);
+			border-radius: .3rem;
+			box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+		}
+		.leaflet-control-layers-expanded {
+			padding: .4rem .6rem;
+			font-size: .8rem;
+		}
+		.leaflet-control-layers label {
+			display: flex;
+			align-items: center;
+			gap: .35rem;
+			margin: .1rem 0;
+		}
+		.leaflet-tooltip {
+			font: inherit;
+			font-size: .75rem;
+			padding: .15rem .5rem;
+			background: var(--fxki-bg);
+			color: var(--fxki-tx);
+			border: 1px solid var(--fxki-ui-2);
+			border-radius: .3rem;
+			box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+		}
+		.leaflet-tooltip-top::before {
+			border-top-color: var(--fxki-ui-2);
+		}
+	}
+}
+
+.region-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	font-size: .8rem;
+	color: var(--fxki-tx-2);
+
+	.region-key {
+		display: inline-flex;
+		align-items: center;
+		gap: .4rem;
+
+		&::before {
+			content: '';
+			display: inline-block;
+		}
+
+		&.region-key-shade::before {
+			width: 1rem;
+			height: .7rem;
+			border-radius: .15rem;
+			background: rgba(135, 154, 57, .32);
+		}
+		&.region-key-line::before {
+			width: 1rem;
+			border-top: 2px dashed light-dark(#1c1b1a, #cecdc3);
+			opacity: .7;
+		}
+		&.region-key-dot::before {
+			width: .5rem;
+			height: .5rem;
+			border-radius: 50%;
+			background: #1a4f8c;
+		}
+	}
+}
+
+.region-table {
+	width: 100%;
+	max-width: 44rem;
+	margin: .75rem auto 0;
+	border-collapse: collapse;
+	font-family: 'Asap', sans-serif;
+	font-size: .82rem;
+
+	th, td {
+		padding: .3rem .6rem;
+		text-align: left;
+		border-bottom: 1px solid var(--fxki-ui-2);
+	}
+	th {
+		font-weight: 600;
+		color: var(--fxki-tx-2);
+		border-bottom-color: var(--fxki-ui-3);
+	}
+	.num {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+}

@@ -85,6 +85,10 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /about/ottrecql", &websiteOttrecqlHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /about/regions", &websiteRegionsHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /api/regions/layer.png", &websiteRegionsLayerHandler{})
 	mux.Handle("/static/", static.Handler(static.Website))
 	mux.Handle("GET /favicon.ico", static.Handler(static.Website))
 
@@ -522,7 +526,7 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	paths := []string{"", "map", "schedules", "activities", "about", "about/ottrecql"}
+	paths := []string{"", "map", "schedules", "activities", "about", "about/ottrecql", "about/regions"}
 	for _, cat := range templates.ScheduleCategories {
 		paths = append(paths, "schedules/"+cat.Slug)
 	}
