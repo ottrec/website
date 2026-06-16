@@ -38,7 +38,7 @@ templ WebsiteTodayPage(params WebsiteParams) {
 				</header>
 				{{ updated := params.Data.Index().Updated().In(ottrecidx.TZ) }}
 				<p class="today-updated" role="note">
-					Schedules data was last updated <time id="today-updated-time" datetime={ updated.Format(time.RFC3339) }>at { updated.Format("Jan 2, 3:04 PM") }</time>. Check the official facility page before heading out.
+					Schedule data was last updated <time id="today-updated-time" datetime={ updated.Format(time.RFC3339) }>at { updated.Format("Jan 2, 3:04 PM") }</time>. Check the official facility page before heading out.
 				</p>
 				<div class="today-filters" id="today-filters" hidden></div>
 				<div class="today-chips" id="today-chips"></div>

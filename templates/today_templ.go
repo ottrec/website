@@ -137,14 +137,14 @@ func WebsiteTodayPage(params WebsiteParams) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		updated := params.Data.Index().Updated().In(ottrecidx.TZ)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<p class=\"today-updated\" role=\"note\">Schedules data was last updated <time id=\"today-updated-time\" datetime=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<p class=\"today-updated\" role=\"note\">Schedule data was last updated <time id=\"today-updated-time\" datetime=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(updated.Format(time.RFC3339))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 41, Col: 106}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 41, Col: 105}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
 		if templ_7745c5c3_Err != nil {
@@ -157,7 +157,7 @@ func WebsiteTodayPage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(updated.Format("Jan 2, 3:04 PM"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 41, Col: 146}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 41, Col: 145}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
