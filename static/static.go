@@ -173,6 +173,8 @@ var (
 	MapJS          = assets.Register("map.ts", ts)
 	ActivitiesCSS  = assets.Register("activities.css", css)
 	ActivitiesJS   = assets.Register("activities.ts", ts)
+	TodayCSS       = assets.Register("today.css", css)
+	TodayJS        = assets.Register("today.ts", ts)
 	SchedulesCSS   = assets.Register("schedules.css", css)
 	SchedulesJS    = assets.Register("schedules.ts", ts)
 	OttrecqlCSS    = assets.Register("ottrecql.css", css)
@@ -200,6 +202,8 @@ var Website = assets.
 		MapJS,
 		ActivitiesCSS,
 		ActivitiesJS,
+		TodayCSS,
+		TodayJS,
 		SchedulesCSS,
 		SchedulesJS,
 		OttrecqlCSS,

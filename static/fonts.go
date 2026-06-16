@@ -73,6 +73,8 @@ func main() {
 			'\uf2a6', // pickleball
 			'\uf20e', // database
 			'\uf09a', // star
+			'\ue002', // warning
+			'\ue5c5', // arrow_drop_down
 			'\ue518', // light_mode
 			'\ue51c', // dark_mode
 			'\ue1ab', // brightness_auto

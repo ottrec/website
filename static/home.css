@@ -25,6 +25,7 @@ body.home-page {
 	direction: ltr;
 	-moz-osx-font-smoothing: grayscale;
 }
+.home-page [data-icon="schedule"]::before { content: '\e192'; }
 .home-page [data-icon="map"]::before { content: '\e55b'; }
 .home-page [data-icon="calendar_month"]::before { content: '\ebcc'; }
 .home-page [data-icon="overview"]::before { content: '\e4a7'; }

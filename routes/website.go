@@ -56,6 +56,15 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /activities", &websiteActivitiesHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /today", &websiteTodayHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /api/changes", &websiteTodayChangesHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /api/errors", &websiteTodayErrorsHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("GET /schedules", &websiteSchedulesHandler{
 		websiteHandlerBase: base,
 	})
@@ -526,7 +535,7 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	paths := []string{"", "map", "schedules", "activities", "about", "about/ottrecql", "about/regions"}
+	paths := []string{"", "today", "map", "schedules", "activities", "about", "about/ottrecql", "about/regions"}
 	for _, cat := range templates.ScheduleCategories {
 		paths = append(paths, "schedules/"+cat.Slug)
 	}
@@ -573,6 +582,92 @@ func (h *websiteActivitiesHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 			Base: h.base(r),
 			Data: data,
 		}), http.StatusOK, nil
+	})
+}
+
+// websiteTodayHandler serves the chronological "what's on" feed. Like the map,
+// it keeps the client-side f-* filter params (which don't affect the rendered
+// output) for shareable links, but canonicalizes anything else away.
+type websiteTodayHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if r.URL.RawQuery != "" {
+		q := r.URL.Query()
+		clean := true
+		for k := range q {
+			if !strings.HasPrefix(k, "f-") {
+				delete(q, k)
+				clean = false
+			}
+		}
+		if !clean {
+			w.Header().Set("Cache-Control", "no-store")
+			u := r.URL.EscapedPath()
+			if enc := q.Encode(); enc != "" {
+				u += "?" + enc
+			}
+			http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+			return
+		}
+	}
+
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		return templates.WebsiteTodayPage(templates.WebsiteParams{
+			Base: h.base(r),
+			Data: data,
+		}), http.StatusOK, nil
+	})
+}
+
+// websiteTodayChangesHandler serves the HTML fragment for the today page's
+// schedule-changes modal: the schedule changes for a facility's group plus its
+// notifications and special hours.
+type websiteTodayChangesHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteTodayChangesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	slug := r.URL.Query().Get("facility")
+	group, _ := strconv.Atoi(r.URL.Query().Get("group"))
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		fac, ok := templates.MapFacilityBySlug(data, slug)
+		if !ok {
+			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
+		}
+		grp, hasGroup := templates.FacilityGroupAt(fac, group)
+		return templates.WebsiteTodayChanges(templates.WebsiteTodayChangesParams{
+			Facility: fac,
+			Group:    grp,
+			HasGroup: hasGroup,
+		}), http.StatusOK, nil
+	})
+}
+
+// websiteTodayErrorsHandler serves the HTML fragment for the today page's
+// "possibly incomplete" modal: a facility's scrape errors.
+type websiteTodayErrorsHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteTodayErrorsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	slug := r.URL.Query().Get("facility")
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		fac, ok := templates.MapFacilityBySlug(data, slug)
+		if !ok {
+			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
+		}
+		return templates.WebsiteTodayErrors(fac), http.StatusOK, nil
 	})
 }
 

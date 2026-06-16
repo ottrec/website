@@ -87,6 +87,7 @@ templ websiteSocialHead(base, url, title, description string) {
 templ websiteTopNav(active string, updated time.Time) {
 	<nav class="map-topnav">
 		<a class="brand" href="/">ottrec.ca</a>
+		<a class={ "nav", templ.KV("active", active == "today") } href="/today">Today</a>
 		<a class={ "nav", templ.KV("active", active == "map") } href="/map">Map</a>
 		<a class={ "nav", templ.KV("active", active == "schedules") } href="/schedules">Schedules</a>
 		<a class={ "nav", templ.KV("active", active == "activities") } href="/activities">Activities</a>
@@ -142,6 +143,10 @@ templ WebsiteHomePage(params WebsiteParams) {
 					<p class="home-updated">Schedules updated <time datetime={ params.Data.Index().Updated().In(ottrecidx.TZ).Format(time.RFC3339) }>{ params.Data.Index().Updated().In(ottrecidx.TZ).Format("January 2, 2006") }</time>.</p>
 				</header>
 				<nav class="home-tiles" aria-label="Sections">
+					<a href="/today" data-icon="schedule">
+						<h2>Today</h2>
+						<p>What's on now and over the next week, as a simple day-by-day feed.</p>
+					</a>
 					<a href="/map" data-icon="map">
 						<h2>Map</h2>
 						<p>Every facility on a map, filterable by activity, weekday, and time.</p>

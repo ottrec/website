@@ -1,0 +1,204 @@
+package templates
+
+import (
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/pgaskin/ottrec-website/static"
+)
+
+templ WebsiteTodayPage(params WebsiteParams) {
+	{{ feed := buildTodayFeed(params.Data, timeNow()) }}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
+			@websiteIconsHead()
+			if params.Base != "" {
+				<link rel="canonical" href={ params.Base + "today" }/>
+			}
+			<title>Today - Ottawa Recreation Schedules</title>
+			<meta name="description" content="A chronological feed of City of Ottawa drop-in recreation sessions happening now and over the next week, including schedule changes, filterable by facility, activity, weekday, and time."/>
+			@websiteSocialHead(params.Base, params.Base+"today", "Today - Ottawa Recreation Schedules", "City of Ottawa drop-in recreation sessions on now and over the next week, including schedule changes, as a plain chronological feed.")
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.TodayCSS) }/>
+			@websiteHeadExtra()
+		</head>
+		<body class="today-page">
+			@websiteTopNav("today", params.Data.Index().Updated())
+			<main class="today-main">
+				<header class="today-header">
+					<h1>What's on</h1>
+					<p>Drop-in recreation across the City of Ottawa, on now and over the next week. Pick a day, then narrow it down. Times are Ottawa time; only facilities with sessions in this period are shown.</p>
+				</header>
+				{{ updated := params.Data.Index().Updated().In(ottrecidx.TZ) }}
+				<p class="today-updated" role="note">
+					Schedules data was last updated <time id="today-updated-time" datetime={ updated.Format(time.RFC3339) }>at { updated.Format("Jan 2, 3:04 PM") }</time>. Check the official facility page before heading out.
+				</p>
+				<div class="today-filters" id="today-filters" hidden></div>
+				<div class="today-chips" id="today-chips"></div>
+				<div class="today-board">
+					<div class="today-tabs" id="today-tabs" role="tablist" hidden></div>
+					<div class="today-feed" id="today-feed">
+						for _, day := range feed.Days {
+							<section class="today-day" data-date={ day.DateISO } data-wd={ strconv.Itoa(day.WdIndex) }>
+								<h2 class="today-day-head">
+									if day.Rel != "" {
+										<span class="rel">{ day.Rel }</span>
+									}
+									<span class="wd">{ day.Weekday }</span>
+									<span class="date">{ day.Month }</span>
+								</h2>
+								if day.Empty {
+									<p class="today-empty">No listed drop-in sessions.</p>
+								} else {
+									for _, hr := range day.Hours {
+										<section class="today-hour" data-hour={ strconv.Itoa(hr.Hour) }>
+											<h3 class="today-hour-head">{ hr.Label }</h3>
+											<ol class="today-sessions">
+												for _, s := range hr.Sessions {
+													<li
+														class={ "today-session", templ.KV("fixed", s.Fixed) }
+														data-slug={ s.Slug }
+														data-cats={ strconv.Itoa(s.Cats) }
+														data-start={ strconv.Itoa(s.Start) }
+														data-end={ strconv.Itoa(s.End) }
+													>
+														<span class="t-time">{ s.Time }</span>
+														<span class="t-act">{ s.Activity }</span>
+														<span class="t-fac">
+															<button type="button" class="fac-star" data-fac-star={ s.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
+															<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
+															if s.Region != "" {
+																<span class="t-region">{ s.Region }</span>
+															}
+															if s.SourceURL != "" {
+																<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
+															}
+															<button type="button" class="t-exclude" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden>×</button>
+														</span>
+														if s.Qual != "" {
+															<span class="t-qual">{ s.Qual }</span>
+														}
+														@todaySessionWarnings(s)
+													</li>
+												}
+											</ol>
+										</section>
+									}
+								}
+							</section>
+						}
+					</div>
+					<p class="today-noresults" id="today-noresults" hidden>Nothing matches these filters.</p>
+				</div>
+			</main>
+			@websiteFooter()
+			@templ.JSONScript("today-data", feed.JSON)
+			<script src={ static.Path(static.StarredJS) }></script>
+			<script src={ static.Path(static.TodayJS) }></script>
+		</body>
+	</html>
+}
+
+// todaySessionWarnings renders a warning line under a session for each caveat.
+// The holiday warning links straight to the official facility page; the changes
+// and incomplete warnings are buttons that open a modal (fetched from
+// /api/changes and /api/errors).
+templ todaySessionWarnings(s todaySession) {
+	if s.Holiday {
+		<span class="t-warn holiday">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			if s.SourceURL != "" {
+				<a href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">Hours may differ around holidays or special dates — see the official facility page.</a>
+			} else {
+				<span>Hours may differ around holidays or special dates — see the official facility page.</span>
+			}
+		</span>
+	}
+	if s.Changes {
+		<button type="button" class="t-warn changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span>There are schedule changes posted for this facility — see the details.</span>
+		</button>
+	}
+	if s.Incomplete {
+		<button type="button" class="t-warn incomplete" data-warn="errors" data-slug={ s.Slug } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span>Some of this facility's times couldn't be read; this may be incomplete.</span>
+		</button>
+	}
+}
+
+// WebsiteTodayErrors is the HTML fragment fetched for the "possibly incomplete"
+// modal: the facility's scrape errors, with a link to the official page.
+templ WebsiteTodayErrors(fac ottrecidx.FacilityRef) {
+	<div class="today-modal-body">
+		<h2>{ fac.GetName() }</h2>
+		<p class="today-modal-lead">Some information for this facility couldn't be read automatically, so the listing here may be incomplete. The official page is authoritative.</p>
+		if hasFacilityErrors(fac) {
+			<ul class="today-modal-errors">
+				for e := range fac.GetErrors() {
+					<li>{ e }</li>
+				}
+			</ul>
+		} else {
+			<p class="today-modal-empty">No specific errors are recorded.</p>
+		}
+		@todayModalSource(fac.GetSourceURL())
+	</div>
+}
+
+// WebsiteTodayChangesParams is the data for the schedule-changes modal fragment.
+type WebsiteTodayChangesParams struct {
+	Facility ottrecidx.FacilityRef
+	Group    ottrecidx.ScheduleGroupRef
+	HasGroup bool
+}
+
+// WebsiteTodayChanges is the HTML fragment fetched for the "schedule changes"
+// modal: the group's schedule-changes plus the facility's notifications and
+// special hours, with a link to the official page at the bottom.
+templ WebsiteTodayChanges(params WebsiteTodayChangesParams) {
+	{{ fac := params.Facility }}
+	<div class="today-modal-body">
+		<h2>{ fac.GetName() }</h2>
+		if params.HasGroup {
+			if t := strings.TrimSpace(params.Group.GetTitle()); t != "" {
+				<p class="today-modal-lead">{ t }</p>
+			}
+			if h := strings.TrimSpace(params.Group.GetScheduleChangesHTML()); h != "" {
+				<section>
+					<h3>Schedule changes</h3>@rawScrapedHTML(h)
+				</section>
+			}
+		}
+		if h := strings.TrimSpace(fac.GetNotificationsHTML()); h != "" {
+			<section>
+				<h3>Notifications</h3>@rawScrapedHTML(h)
+			</section>
+		}
+		if h := strings.TrimSpace(fac.GetSpecialHoursHTML()); h != "" {
+			<section>
+				<h3>Special hours</h3>@rawScrapedHTML(h)
+			</section>
+		}
+		if !todayHasChangesContent(fac, params.Group, params.HasGroup) {
+			<p class="today-modal-empty">No additional details are posted.</p>
+		}
+		@todayModalSource(fac.GetSourceURL())
+	</div>
+}
+
+// todayModalSource renders the official-page link shown at the bottom of every
+// today modal.
+templ todayModalSource(sourceURL string) {
+	if sourceURL != "" {
+		<p class="today-modal-source"><a href={ templ.URL(sourceURL) } target="_blank" rel="noopener">View on the City of Ottawa website</a></p>
+	}
+}
