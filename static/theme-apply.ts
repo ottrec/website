@@ -7,9 +7,10 @@ export const KEY = 'theme'
 export function savedTheme(): Theme {
 	try {
 		const t = localStorage.getItem(KEY)
-		if (t === 'light' || t === 'dark') return t
+		if (t === 'light' || t === 'dark' || t === 'auto') return t
 	} catch {}
-	return 'auto'
+	// default to light; 'auto' (follow the OS) is opt-in via the navbar toggle
+	return 'light'
 }
 
 export function applyColorScheme(t: Theme) {

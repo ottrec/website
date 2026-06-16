@@ -19,10 +19,10 @@ function init(btn: HTMLElement) {
 	}
 
 	btn.addEventListener('click', () => {
-		const next = ({auto: 'light', light: 'dark', dark: 'auto'} as const)[savedTheme()]
+		const next = ({light: 'dark', dark: 'auto', auto: 'light'} as const)[savedTheme()]
 		try {
-			if (next === 'auto') localStorage.removeItem(KEY)
-			else localStorage.setItem(KEY, next)
+			// 'auto' is stored explicitly since the default (no key) is now light
+			localStorage.setItem(KEY, next)
 		} catch {}
 		apply(next)
 	})
