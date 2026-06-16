@@ -397,7 +397,7 @@ func WebsiteOttrecqlPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<main><h1>The ottrecql query language</h1><p class=\"ottrecql-lede\">ottrecql is the small query language behind the <a href=\"/schedules?advanced=1\">advanced search</a> on ottrec.ca. It allows you to create custom schedule pages by filtering every City of Ottawa drop-in recreation activity by name, facility, weekday, time, date, and location, combining conditions with <code>and</code>, <code>or</code>, and <code>not</code>. Type a query to search across all schedules.</p><form class=\"ottrecql-search\" action=\"/schedules\" method=\"get\"><input type=\"hidden\" name=\"advanced\" value=\"1\"> <textarea name=\"q\" rows=\"3\" placeholder=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<main><h1>The ottrecql query language</h1><p class=\"ottrecql-lede\">ottrecql is the small query language behind the <a href=\"/schedules?advanced=1\">advanced search</a> on ottrec.ca. It allows you to create custom schedule pages by filtering every City of Ottawa drop-in recreation activity by name, facility, weekday, time, date, and location, combining conditions with <code>and</code>, <code>or</code>, and <code>not</code>. Type a query to search across all schedules.</p><form class=\"ottrecql-search\" method=\"get\"><input type=\"hidden\" name=\"advanced\" value=\"1\"> <textarea name=\"q\" rows=\"3\" placeholder=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -410,7 +410,7 @@ func WebsiteOttrecqlPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" aria-label=\"Search query\" data-ottrecql data-lint=\"/api/ottrecql/validate\" data-facilities=\"/api/ottrecql/facilities\" data-activities=\"/api/ottrecql/activities\"></textarea> <button type=\"submit\">Search schedules</button></form><section class=\"ottrecql-help\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" aria-label=\"Search query\" data-ottrecql data-lint=\"/api/ottrecql/validate\" data-facilities=\"/api/ottrecql/facilities\" data-activities=\"/api/ottrecql/activities\"></textarea> <button type=\"submit\" formaction=\"/today\">Search upcoming activities</button> <button type=\"submit\" formaction=\"/schedules\">Search schedules</button></form><section class=\"ottrecql-help\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -433,7 +433,7 @@ func WebsiteOttrecqlPage(params WebsiteParams) templ.Component {
 		var templ_7745c5c3_Var26 string
 		templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.ResolveAttributeValue(static.Path(static.OttrecqlEditorJS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `ottrecql.templ`, Line: 119, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `ottrecql.templ`, Line: 120, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var26)
 		if templ_7745c5c3_Err != nil {

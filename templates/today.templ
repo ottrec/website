@@ -9,8 +9,8 @@ import (
 	"github.com/pgaskin/ottrec-website/static"
 )
 
-templ WebsiteTodayPage(params WebsiteParams) {
-	{{ feed := buildTodayFeed(params.Data, timeNow()) }}
+templ WebsiteTodayPage(params WebsiteTodayParams) {
+	{{ feed := buildTodayFeed(params.Filtered, MapFacilitySlugger(params.Data), timeNow()) }}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -27,9 +27,12 @@ templ WebsiteTodayPage(params WebsiteParams) {
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.TodayCSS) }/>
+			if params.Advanced {
+				<link rel="stylesheet" href={ static.Path(static.OttrecqlCSS) }/>
+			}
 			@websiteHeadExtra()
 		</head>
-		<body class="today-page">
+		<body class={ "today-page", templ.KV("today-advanced", params.Advanced) }>
 			@websiteTopNav("today", params.Data.Index().Updated())
 			<main class="today-main">
 				<header class="today-header">
@@ -40,59 +43,80 @@ templ WebsiteTodayPage(params WebsiteParams) {
 				<p class="today-updated" role="note">
 					Schedule data was last updated <time id="today-updated-time" datetime={ updated.Format(time.RFC3339) }>at { updated.Format("Jan 2, 3:04 PM") }</time>. Check the official facility page before heading out.
 				</p>
+				if params.Advanced {
+					<form class="today-search today-search-advanced" action="/today" method="get">
+						<input type="hidden" name="advanced" value="1"/>
+						<textarea name="q" rows="3" placeholder={ `activity("lane sw") and time(18:00-21:00)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities">{ params.Query }</textarea>
+						<div class="row">
+							<button type="submit">Search</button>
+							<a class="today-search-mode" href="/today">Simple filters</a>
+						</div>
+					</form>
+					@schedulesQueryHelp()
+				}
 				<div class="today-filters" id="today-filters" hidden></div>
+				if !params.Advanced {
+					<a class="today-search-mode today-advanced-link" href="/today?advanced=1">Advanced search</a>
+				}
 				<div class="today-chips" id="today-chips"></div>
+				if params.QueryError != "" {
+					<p class="today-query-error">{ params.QueryError }</p>
+				}
 				<div class="today-board">
 					<div class="today-tabs" id="today-tabs" role="tablist" hidden></div>
 					<div class="today-feed" id="today-feed">
-						for _, day := range feed.Days {
-							<section class="today-day" data-date={ day.DateISO } data-wd={ strconv.Itoa(day.WdIndex) }>
-								<h2 class="today-day-head">
-									if day.Rel != "" {
-										<span class="rel">{ day.Rel }</span>
-									}
-									<span class="wd">{ day.Weekday }</span>
-									<span class="date">{ day.Month }</span>
-								</h2>
-								if day.Empty {
-									<p class="today-empty">No listed drop-in sessions.</p>
-								} else {
-									for _, hr := range day.Hours {
-										<section class="today-hour" data-hour={ strconv.Itoa(hr.Hour) }>
-											<h3 class="today-hour-head">{ hr.Label }</h3>
-											<ol class="today-sessions">
-												for _, s := range hr.Sessions {
-													<li
-														class={ "today-session", templ.KV("fixed", s.Fixed) }
-														data-slug={ s.Slug }
-														data-cats={ strconv.Itoa(s.Cats) }
-														data-start={ strconv.Itoa(s.Start) }
-														data-end={ strconv.Itoa(s.End) }
-													>
-														<span class="t-time">{ s.Time }</span>
-														<span class="t-act">{ s.Activity }</span>
-														<span class="t-fac">
-															<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
-															if s.Region != "" {
-																<span class="t-region">{ s.Region }</span>
+						if params.QueryError == "" {
+							for _, day := range feed.Days {
+								<section class="today-day" data-date={ day.DateISO } data-wd={ strconv.Itoa(day.WdIndex) }>
+									<h2 class="today-day-head">
+										if day.Rel != "" {
+											<span class="rel">{ day.Rel }</span>
+										}
+										<span class="wd">{ day.Weekday }</span>
+										<span class="date">{ day.Month }</span>
+									</h2>
+									if day.Empty {
+										<p class="today-empty">No listed drop-in sessions.</p>
+									} else {
+										for _, hr := range day.Hours {
+											<section class="today-hour" data-hour={ strconv.Itoa(hr.Hour) }>
+												<h3 class="today-hour-head">{ hr.Label }</h3>
+												<ol class="today-sessions">
+													for _, s := range hr.Sessions {
+														<li
+															class={ "today-session", templ.KV("fixed", s.Fixed) }
+															data-slug={ s.Slug }
+															data-cats={ strconv.Itoa(s.Cats) }
+															data-start={ strconv.Itoa(s.Start) }
+															data-end={ strconv.Itoa(s.End) }
+														>
+															<span class="t-time">{ s.Time }</span>
+															<span class="t-act">{ s.Activity }</span>
+															<span class="t-fac">
+																<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
+																if s.Region != "" {
+																	<span class="t-region">{ s.Region }</span>
+																}
+																<button type="button" class="fac-star" data-fac-star={ s.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
+																if s.SourceURL != "" {
+																	<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
+																}
+																if !params.Advanced {
+																	<button type="button" class="t-exclude" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden></button>
+																}
+															</span>
+															if s.Qual != "" {
+																<span class="t-qual">{ s.Qual }</span>
 															}
-															<button type="button" class="fac-star" data-fac-star={ s.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
-															if s.SourceURL != "" {
-																<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
-															}
-															<button type="button" class="t-exclude" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden></button>
-														</span>
-														if s.Qual != "" {
-															<span class="t-qual">{ s.Qual }</span>
-														}
-														@todaySessionWarnings(s)
-													</li>
-												}
-											</ol>
-										</section>
+															@todaySessionWarnings(s)
+														</li>
+													}
+												</ol>
+											</section>
+										}
 									}
-								}
-							</section>
+								</section>
+							}
 						}
 					</div>
 					<p class="today-noresults" id="today-noresults" hidden>Nothing matches these filters.</p>
@@ -101,6 +125,11 @@ templ WebsiteTodayPage(params WebsiteParams) {
 			@websiteFooter()
 			@templ.JSONScript("today-data", feed.JSON)
 			<script src={ static.Path(static.StarredJS) }></script>
+			if params.Advanced {
+				// enhances the query textarea into the CodeMirror editor before
+				// today.js runs (matching the schedules advanced search)
+				<script src={ static.Path(static.OttrecqlEditorJS) }></script>
+			}
 			<script src={ static.Path(static.TodayJS) }></script>
 		</body>
 	</html>

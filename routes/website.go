@@ -596,19 +596,29 @@ func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	w.Header().Add("Vary", "Accept-Encoding")
 	w.Header().Set("Cache-Control", "public, no-cache")
 
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	advanced := r.URL.Query().Get("advanced") != ""
+
+	// keep the advanced search params and the client-side f-* filter params (the
+	// latter don't affect the rendered output) for shareable links, but
+	// canonicalize anything else away.
 	if r.URL.RawQuery != "" {
-		q := r.URL.Query()
+		qq := r.URL.Query()
 		clean := true
-		for k := range q {
-			if !strings.HasPrefix(k, "f-") {
-				delete(q, k)
-				clean = false
+		for k := range qq {
+			// advanced search params, plus the client-side f-* filter params
+			// (which don't affect the rendered output); q only matters in
+			// advanced mode, where the feed is filtered server-side.
+			if k == "advanced" || (k == "q" && advanced) || strings.HasPrefix(k, "f-") {
+				continue
 			}
+			delete(qq, k)
+			clean = false
 		}
 		if !clean {
 			w.Header().Set("Cache-Control", "no-store")
 			u := r.URL.EscapedPath()
-			if enc := q.Encode(); enc != "" {
+			if enc := qq.Encode(); enc != "" {
 				u += "?" + enc
 			}
 			http.Redirect(w, r, u, http.StatusTemporaryRedirect)
@@ -617,10 +627,23 @@ func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
-		return templates.WebsiteTodayPage(templates.WebsiteParams{
-			Base: h.base(r),
-			Data: data,
-		}), http.StatusOK, nil
+		params := templates.WebsiteTodayParams{
+			Base:     h.base(r),
+			Data:     data,
+			Filtered: data,
+			Advanced: advanced,
+			Query:    q,
+		}
+		if advanced && q != "" {
+			node, err := templates.SchedulesParseQuery(q)
+			if err == nil {
+				params.Filtered, err = templates.SchedulesFilter(data, node)
+			}
+			if err != nil {
+				params.QueryError = err.Error()
+			}
+		}
+		return templates.WebsiteTodayPage(params), http.StatusOK, nil
 	})
 }
 

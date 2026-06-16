@@ -25,6 +25,19 @@ const todayBadgeWindow = 7
 // timeNow is the wall clock used to anchor "today", overridable in tests.
 var timeNow = time.Now
 
+// WebsiteTodayParams parameterizes the "what's on" feed page. The simple filters
+// are client-side (the pills in today.ts); the advanced mode is server-side: it
+// runs an ottrecql query and builds the feed from the filtered data, replacing
+// the pills with the query box (mirroring the schedules advanced search).
+type WebsiteTodayParams struct {
+	Base       string
+	Data       ottrecidx.DataRef // full data, for slugs and the updated timestamp
+	Filtered   ottrecidx.DataRef // data to build the feed from (== Data unless advanced)
+	Advanced   bool              // advanced (ottrecql) search mode
+	Query      string            // current query box contents
+	QueryError string            // query parse/limit error to show instead of the feed
+}
+
 // todayPeriods are the time-of-day buckets for the time-range filter pill,
 // reusing the activities page's morning/afternoon/evening split.
 var todayPeriods = activityPeriods
@@ -228,7 +241,11 @@ func todaySectorLabel(s ottregions.Sector) string {
 // Ottawa time). It is anchored at the wall clock rather than the data date so
 // "today" is correct; cached pages may drift but self-correct when the data
 // updates daily (as scheduleClass does).
-func buildTodayFeed(data ottrecidx.DataRef, now time.Time) todayFeed {
+//
+// slug assigns each facility its page slug; pass [MapFacilitySlugger] over the
+// full (unfiltered) data so slugs stay stable when data is an ottrecql-filtered
+// subset (the advanced search), matching the schedules pages.
+func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.Time) todayFeed {
 	loc := ottrecidx.TZ
 	now = now.In(loc)
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
@@ -251,10 +268,9 @@ func buildTodayFeed(data ottrecidx.DataRef, now time.Time) todayFeed {
 	}
 	facList := []todayFacilityJSON{}
 	facSeen := map[string]bool{}
-	slugs := map[string]bool{}
 
 	for fac := range data.Facilities() {
-		meta := facMeta{slug: mapUniqueSlug(slugs, fac.GetName())}
+		meta := facMeta{slug: slug(fac.GetName())}
 		if r := fac.Region(); r != ottregions.RegionUnknown {
 			meta.region = r.Name()
 		}

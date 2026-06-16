@@ -48,6 +48,73 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
+/* advanced (ottrecql) search box, mirroring the schedules advanced search */
+
+.today-search {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	margin: .25rem 0 1rem;
+}
+.today-search-advanced {
+	flex-direction: column;
+	align-items: flex-start;
+}
+.today-search-advanced textarea {
+	align-self: stretch;
+	max-width: none;
+	font-family: ui-monospace, monospace;
+	font-size: .85rem;
+	padding: .35em .6em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .35rem;
+	background: var(--fxki-bg);
+	color: inherit;
+	resize: vertical;
+}
+/* the textarea is progressively enhanced into this editor (ottrecql-editor) */
+.today-search-advanced ottrecql-editor {
+	align-self: stretch;
+	font-size: .85rem;
+}
+.today-search-advanced .row {
+	display: flex;
+	align-items: baseline;
+	gap: 1rem;
+}
+.today-search button {
+	font: inherit;
+	font-size: .9rem;
+	padding: .35em 1em;
+	border: 1px solid var(--fxki-ui-3);
+	border-radius: .35rem;
+	background: var(--fxki-bg-2);
+	color: inherit;
+	cursor: pointer;
+}
+.today-search button:hover {
+	background: var(--fxki-bg-3);
+}
+.today-search-mode {
+	font-size: .8rem;
+	color: var(--fxki-bl);
+	text-decoration: none;
+}
+.today-search-mode:hover {
+	text-decoration: underline;
+}
+/* the "Advanced search" link sits tight under the filter pills */
+.today-advanced-link {
+	display: inline-block;
+	margin: 0 0 .75rem;
+	font-size: .72rem;
+}
+.today-query-error {
+	margin: 0 0 .75rem;
+	color: var(--fxki-re);
+	font-size: .85rem;
+}
+
 /* filter pills */
 
 .today-filters {

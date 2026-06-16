@@ -45,6 +45,11 @@ interface Day {
 	sessions: Session[]
 }
 
+// advanced (ottrecql) search mode is server-side: the feed is already filtered,
+// so this script skips the client-side filter pills, chips, exclude buttons, and
+// f-* URL state, but keeps the tabs, "now" line, stars, and warning modals.
+const advanced = document.body.classList.contains('today-advanced')
+
 const feedEl = document.getElementById('today-feed')!
 const tabsEl = document.getElementById('today-tabs')!
 const noResultsEl = document.getElementById('today-noresults')!
@@ -168,12 +173,14 @@ function apply() {
 				hr.hidden = ![...hr.querySelectorAll<HTMLElement>('.today-session')].some((el) => !el.hidden)
 		}
 	}
-	noResultsEl.hidden = shownCount > 0
+	noResultsEl.hidden = advanced || shownCount > 0
 	markNow()
-	updateExcludeButtons()
-	renderChips()
-	for (const p of pills) p.updateButton()
-	writeURL()
+	if (!advanced) {
+		updateExcludeButtons()
+		renderChips()
+		for (const p of pills) p.updateButton()
+		writeURL()
+	}
 }
 
 // "now" line, in Ottawa time. Only the active day is shown, so this just tags
@@ -216,7 +223,7 @@ feedEl.addEventListener('click', (ev) => {
 		const slug = exclude.dataset['exclude']
 		if (slug) {
 			filter.exclude.add(slug)
-			facilityPill.syncChecks()
+			facilityPill?.syncChecks()
 			apply()
 		}
 		return
@@ -440,29 +447,33 @@ function buildCheckPill<T extends string | number>(cfg: {
 	return p
 }
 
-// build the pills
+// build the pills (skipped entirely in advanced mode, where the feed is already
+// filtered server-side and the query box replaces the pills)
 
-const facilityOptions: PillOption[] = []
-for (const sector of data.sectors)
-	for (const f of data.facilities)
-		if (f.sector === sector)
-			facilityOptions.push({value: f.slug, label: f.name, group: sector})
-const facilityPill = buildCheckPill({
-	title: 'Facilities',
-	options: facilityOptions,
-	parse: (v) => v,
-	selected: filter.include,
-	searchable: true,
-	note: 'Only facilities with sessions over the next week are listed. Check some to show only those; hidden ones (× in the feed) are struck out.',
-	excludeSet: filter.exclude,
-	alsoActive: () => filter.exclude.size > 0,
-})
+let facilityPill: Pill | undefined
+if (!advanced) {
+	const facilityOptions: PillOption[] = []
+	for (const sector of data.sectors)
+		for (const f of data.facilities)
+			if (f.sector === sector)
+				facilityOptions.push({value: f.slug, label: f.name, group: sector})
+	facilityPill = buildCheckPill({
+		title: 'Facilities',
+		options: facilityOptions,
+		parse: (v) => v,
+		selected: filter.include,
+		searchable: true,
+		note: 'Only facilities with sessions over the next week are listed. Check some to show only those; hidden ones (× in the feed) are struck out.',
+		excludeSet: filter.exclude,
+		alsoActive: () => filter.exclude.size > 0,
+	})
 
-const catOptions: PillOption[] = data.categories
-	.map((label, i) => ({label, i}))
-	.filter(({i}) => presentCats.has(i))
-	.map(({label, i}) => ({value: String(i), label}))
-buildCheckPill({title: 'Activity', options: catOptions, parse: (v) => Number(v), selected: filter.cats})
+	const catOptions: PillOption[] = data.categories
+		.map((label, i) => ({label, i}))
+		.filter(({i}) => presentCats.has(i))
+		.map(({label, i}) => ({value: String(i), label}))
+	buildCheckPill({title: 'Activity', options: catOptions, parse: (v) => Number(v), selected: filter.cats})
+}
 
 // separate start/end time picker pills, each a single time input
 
@@ -512,8 +523,10 @@ function buildTimeBoundPill(title: string, key: 'timeFrom' | 'timeTo'): Pill {
 	pills.push(p)
 	return p
 }
-buildTimeBoundPill('Start', 'timeFrom')
-buildTimeBoundPill('End', 'timeTo')
+if (!advanced) {
+	buildTimeBoundPill('Start', 'timeFrom')
+	buildTimeBoundPill('End', 'timeTo')
+}
 
 // starred-only toggle pill, shown only when there are starred facilities
 
@@ -684,13 +697,15 @@ function relativeUpdated() {
 
 // init
 
-loadURL()
-syncAll()
+if (!advanced) {
+	loadURL()
+	syncAll()
+}
 ottrecStarred.onchange(() => {
 	syncStarredPill()
 	if (filter.starredOnly) apply()
 })
-filtersEl.hidden = false
+if (!advanced) filtersEl.hidden = false
 tabsEl.hidden = false
 apply()
 relativeUpdated()
