@@ -195,6 +195,8 @@ body.home-page {
 		font-family: 'Source Serif 4', serif;
 		font-size: 1.15rem;
 		margin: 0 0 .5rem;
+		padding-bottom: .3rem;
+		border-bottom: 1px solid var(--fxki-ui-2);
 	}
 	ul {
 		margin: 0;
