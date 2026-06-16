@@ -130,6 +130,31 @@ function tocTracking() {
 	update()
 }
 
+// on mobile the toc sidebar is hidden; reveal a button that opens it as a
+// full-screen overlay (closing on a link tap, the close button, or Escape)
+function tocToggle() {
+	const toggle = document.querySelector<HTMLButtonElement>('.schedules-toc-toggle')
+	const toc = document.querySelector<HTMLElement>('.schedules-toc')
+	if (!toggle || !toc) return
+
+	const setOpen = (open: boolean) => {
+		toc.classList.toggle('open', open)
+		toggle.setAttribute('aria-expanded', String(open))
+		if (open) toc.scrollTop = 0
+	}
+	toggle.addEventListener('click', () => setOpen(!toc.classList.contains('open')))
+	toc.querySelector('.schedules-toc-close')?.addEventListener('click', () => setOpen(false))
+	// follow a link → jump to the section and dismiss the overlay
+	toc.addEventListener('click', (ev) => {
+		if ((ev.target as HTMLElement).closest('a[href^="#"]')) setOpen(false)
+	})
+	document.addEventListener('keydown', (ev) => {
+		if (ev.key === 'Escape' && toc.classList.contains('open')) setOpen(false)
+	})
+	toggle.hidden = false
+}
+
 liveValidation()
 sortStarred()
 tocTracking()
+tocToggle()

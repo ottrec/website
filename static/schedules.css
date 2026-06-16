@@ -145,9 +145,69 @@
 	color: var(--fxki-bl);
 	text-decoration: underline;
 }
+/* the toggle button and overlay header only exist on mobile (see media query) */
+.schedules-toc-toggle,
+.schedules-toc-head {
+	display: none;
+}
 @media (max-width: 900px) {
+	/* hidden until the button is tapped open (and until JS reveals the button) */
 	.schedules-toc {
 		display: none;
+	}
+	.schedules-toc-toggle:not([hidden]) {
+		display: inline-flex;
+		align-items: center;
+		position: fixed;
+		right: 1rem;
+		bottom: 1rem;
+		z-index: 1390;
+		padding: .5rem .9rem;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: 2rem;
+		background: var(--fxki-bg);
+		color: var(--fxki-tx);
+		font: inherit;
+		box-shadow: 0 1px 4px rgb(0 0 0 / .25);
+		cursor: pointer;
+	}
+	.schedules-toc.open {
+		display: block;
+		position: fixed;
+		inset: 0;
+		z-index: 1400;
+		width: auto;
+		max-height: none;
+		margin: 0;
+		padding: 0 1.25rem 1.25rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		background: var(--fxki-bg);
+		font-size: .95rem;
+	}
+	.schedules-toc.open .schedules-toc-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		position: sticky;
+		top: 0;
+		padding: .75rem 0;
+		background: var(--fxki-bg);
+		border-bottom: 1px solid var(--fxki-ui-2);
+		font-weight: 600;
+	}
+	.schedules-toc.open .schedules-toc-close {
+		padding: 0 .25rem;
+		border: 0;
+		background: none;
+		color: var(--fxki-tx-2);
+		font-size: 1.5rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+	/* larger tap targets in the overlay */
+	.schedules-toc.open a {
+		padding: .35rem 0;
 	}
 }
 .schedules-facility,

@@ -56,8 +56,13 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 			<main>
 				<div class="schedules-layout">
 					if len(params.TOC) > 0 && params.QueryError == "" && !params.Single {
-						<aside class="schedules-toc">
+						<button type="button" class="schedules-toc-toggle" aria-controls="schedules-toc" aria-expanded="false" hidden>Contents</button>
+						<aside class="schedules-toc" id="schedules-toc">
 							<nav aria-label="Facilities">
+								<div class="schedules-toc-head">
+									<span>Contents</span>
+									<button type="button" class="schedules-toc-close" aria-label="Close contents">&times;</button>
+								</div>
 								<ul>
 									for _, f := range params.TOC {
 										<li>
