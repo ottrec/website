@@ -72,15 +72,15 @@ templ WebsiteTodayPage(params WebsiteParams) {
 														<span class="t-time">{ s.Time }</span>
 														<span class="t-act">{ s.Activity }</span>
 														<span class="t-fac">
-															<button type="button" class="fac-star" data-fac-star={ s.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
 															<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
 															if s.Region != "" {
 																<span class="t-region">{ s.Region }</span>
 															}
+															<button type="button" class="fac-star" data-fac-star={ s.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
 															if s.SourceURL != "" {
 																<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
 															}
-															<button type="button" class="t-exclude" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden>×</button>
+															<button type="button" class="t-exclude" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden></button>
 														</span>
 														if s.Qual != "" {
 															<span class="t-qual">{ s.Qual }</span>
