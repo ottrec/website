@@ -341,26 +341,6 @@ ul#fac-list {
 	color: var(--fxki-tx-2);
 	line-height: 1.3;
 }
-#fac-list .chips {
-	margin: .3rem 0 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: .2rem;
-}
-.chip {
-	font-size: .65rem;
-	line-height: 1.4;
-	background: var(--fxki-ui);
-	color: var(--fxki-tx-2);
-	padding: .05em .5em;
-	border-radius: .7em;
-	white-space: nowrap;
-}
-.chip.sel {
-	background: var(--fxki-bl);
-	color: var(--fxki-paper);
-}
-
 /* map markers and popups */
 
 .fac-pin {

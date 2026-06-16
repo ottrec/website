@@ -51,6 +51,7 @@ function showToast(msg: string) {
  *   activities  Set of enabled activity indices (into .activities); empty = all
  *   name        substring to match against the facility name, case-insensitive
  *   starredOnly only match starred facilities
+ *   hideEmpty   hide facilities with no drop-in activity data at all
  */
 interface Filter {
 	days: Set<number>
@@ -59,6 +60,7 @@ interface Filter {
 	activities: Set<number>
 	name: string
 	starredOnly: boolean
+	hideEmpty: boolean
 }
 
 // the JSON data island embedded in the page
@@ -97,6 +99,7 @@ interface Query {
 	days: Set<number>
 	mask: Uint8Array
 	timeFiltered: boolean
+	hideEmpty: boolean
 	starred: Set<number> | null // starred facility indices, if filtering by starred
 }
 
@@ -170,6 +173,7 @@ class FacilityData {
 			days,
 			mask,
 			timeFiltered: filter.slots.size > 0 || filter.days.size > 0,
+			hideEmpty: filter.hideEmpty,
 			starred: filter.starredOnly
 				? new Set(this.facilities.filter((f) => ottrecStarred.has(f.slug)).map((f) => f.index))
 				: null,
@@ -206,8 +210,8 @@ class FacilityData {
 	#facilityMatches(i: number, q: Query): boolean {
 		if (!this.#facilityPrefilter(i, q)) return false
 		const start = this.#entryStart[i]!, end = this.#entryStart[i + 1]!
-		if (start === end) // no activity data at all; show unless filtering by activity, category, or time
-			return !q.activities && !q.cats && !q.timeFiltered
+		if (start === end) // no activity data at all; show unless hidden or filtering by activity, category, or time
+			return !q.hideEmpty && !q.activities && !q.cats && !q.timeFiltered
 		for (let e = start; e < end; e++) {
 			if (!this.#activityAllowed(this.#entryActivity[e]!, q)) continue
 			if (this.#entryTimeMatches(e, q)) return true
@@ -231,14 +235,6 @@ class FacilityData {
 		for (const c of categories)
 			if (this.#activityCats[a]! & (1 << c)) return true
 		return false
-	}
-
-	// facilityActivities returns the sorted activity indices offered by a facility.
-	facilityActivities(i: number): number[] {
-		const out = []
-		for (let e = this.#entryStart[i]!; e < this.#entryStart[i + 1]!; e++)
-			out.push(this.#entryActivity[e]!)
-		return out
 	}
 
 	// activityCounts returns, for each activity, the number of facilities which
@@ -306,6 +302,7 @@ const filter: Filter = {
 	activities: new Set(),
 	name: '',
 	starredOnly: false,
+	hideEmpty: false,
 }
 let order = 'alpha'
 let visible: number[] = []
@@ -339,6 +336,7 @@ placeChips()
 const activitiesFilteredEl = document.getElementById('filter-activities-filtered')!
 const starredSectionEl = document.getElementById('filter-starred')!
 const starredOnlyEl = document.getElementById('filter-starred-only') as HTMLInputElement
+const hideEmptyEl = document.getElementById('filter-hide-empty') as HTMLInputElement
 
 // the starred-only filter is only shown once there's something to filter by
 function syncStarredFilter() {
@@ -696,6 +694,7 @@ function buildCheckList(el: HTMLElement, labels: string[], set: Set<number>, cha
 
 function syncControls() {
 	starredOnlyEl.checked = filter.starredOnly
+	hideEmptyEl.checked = filter.hideEmpty
 	dayBtns.forEach((btn, d) => btn.classList.toggle('on', filter.days.has(d)))
 	slotRows.forEach((r, i) => r.input.checked = filter.slots.has(i))
 	catRows.forEach((r, i) => r.input.checked = filter.categories.has(i))
@@ -748,6 +747,8 @@ function filterURL(): string {
 		params.set('f-q', filter.name)
 	if (filter.starredOnly)
 		params.set('f-starred', '1')
+	if (filter.hideEmpty)
+		params.set('f-has-act', '1')
 	if (!params.keys().next().done) {
 		params.set('f-v', '1')
 		params.set('f-t', data.updated)
@@ -783,7 +784,7 @@ function loadURLState() {
 	const reset: string[] = []
 	// an unrecognized f-* param means the link is from a newer format; reset
 	// everything rather than restoring it partially
-	const known = ['f-v', 'f-t', 'f-days', 'f-times', 'f-cat', 'f-act', 'f-xact', 'f-q', 'f-starred']
+	const known = ['f-v', 'f-t', 'f-days', 'f-times', 'f-cat', 'f-act', 'f-xact', 'f-q', 'f-starred', 'f-has-act']
 	for (const key of params.keys())
 		if (key.startsWith('f-') && !known.includes(key)) {
 			showToast('Some filters were reset because the schedule data changed (all).')
@@ -821,6 +822,7 @@ function loadURLState() {
 	}
 	filter.name = params.get('f-q') || ''
 	filter.starredOnly = params.get('f-starred') === '1'
+	filter.hideEmpty = params.get('f-has-act') === '1'
 	if (reset.length)
 		showToast('Some filters were reset because the schedule data changed (' + reset.join(', ') + ').')
 }
@@ -870,7 +872,6 @@ function sortVisible() {
 }
 
 function renderList() {
-	const maxChips = 8
 	const frag = document.createDocumentFragment()
 	for (const i of visible) {
 		const f = data.facilities[i]!
@@ -899,23 +900,7 @@ function renderList() {
 		const addr = document.createElement('p')
 		addr.className = 'addr'
 		addr.textContent = f.address
-		const chips = document.createElement('p')
-		chips.className = 'chips'
-		const acts = data.facilityActivities(i)
-		acts.sort((a, b) => (Number(filter.activities.has(b)) - Number(filter.activities.has(a))) || a - b)
-		for (const a of acts.slice(0, maxChips)) {
-			const chip = document.createElement('span')
-			chip.className = filter.activities.has(a) ? 'chip sel' : 'chip'
-			chip.textContent = data.activities[a]!
-			chips.append(chip)
-		}
-		if (acts.length > maxChips) {
-			const chip = document.createElement('span')
-			chip.className = 'chip'
-			chip.textContent = '+' + (acts.length - maxChips)
-			chips.append(chip)
-		}
-		li.append(h, addr, chips)
+		li.append(h, addr)
 		li.addEventListener('mouseenter', () => setHighlight(i, true))
 		li.addEventListener('mouseleave', () => setHighlight(i, false))
 		li.addEventListener('click', () => focusFacility(i))
@@ -1015,6 +1000,8 @@ function renderChips() {
 	const chips: {label: string, clear: () => void}[] = []
 	if (filter.starredOnly)
 		chips.push({label: 'Starred', clear: () => filter.starredOnly = false})
+	if (filter.hideEmpty)
+		chips.push({label: 'Has activities', clear: () => filter.hideEmpty = false})
 	if (filter.days.size)
 		chips.push({
 			label: [...filter.days].sort((a, b) => a - b).map((d) => data.days[d]).join(', '),
@@ -1054,6 +1041,10 @@ searchEl.addEventListener('input', () => {
 })
 starredOnlyEl.addEventListener('change', () => {
 	filter.starredOnly = starredOnlyEl.checked
+	update()
+})
+hideEmptyEl.addEventListener('change', () => {
+	filter.hideEmpty = hideEmptyEl.checked
 	update()
 })
 // keep the markers, list order, starred-only filter, and any open popup in
