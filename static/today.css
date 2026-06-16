@@ -34,6 +34,7 @@
 
 /* shared Material Symbols glyph base */
 .today-pill:not(.toggle) > button::after,
+.t-exclude::before,
 .t-warn-ico::before {
 	font-family: 'Material Symbols Outlined';
 	font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -534,27 +535,36 @@
 .t-source {
 	font-size: .76em;
 	padding: .05rem .45rem;
-	border: 1px solid var(--fxki-bl);
+	border: none;
 	border-radius: 999px;
+	background: light-dark(rgb(32 94 166 / .1), rgb(131 173 234 / .14));
 	color: var(--fxki-bl);
 	text-decoration: none;
 	white-space: nowrap;
 }
 .t-source:hover {
-	background: light-dark(var(--fxki-blue-50), var(--fxki-blue-950));
+	background: light-dark(rgb(32 94 166 / .2), rgb(131 173 234 / .26));
 }
 .t-exclude {
-	font: inherit;
-	font-size: .9em;
-	line-height: 1;
-	padding: 0 .25em;
+	display: inline-flex;
+	align-self: center;
+	align-items: center;
+	justify-content: center;
+	width: 1.3em;
+	height: 1.3em;
+	padding: 0;
 	border: none;
-	background: none;
-	color: var(--fxki-tx-3);
+	border-radius: 50%;
+	background: light-dark(rgb(209 77 65 / .1), rgb(232 112 95 / .14));
+	color: var(--fxki-re);
 	cursor: pointer;
 }
+.t-exclude::before {
+	content: '\e5cd'; /* close */
+	font-size: .9em;
+}
 .t-exclude:hover {
-	color: var(--fxki-re);
+	background: light-dark(rgb(209 77 65 / .2), rgb(232 112 95 / .26));
 }
 .t-qual {
 	grid-column: 2;
