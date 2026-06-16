@@ -568,16 +568,18 @@
 	grid-column: 2;
 	display: flex;
 	align-items: baseline;
-	gap: .3rem;
-	margin: .1rem 0 0;
-	padding: 0;
-	border: none;
+	gap: .35rem;
+	margin: .25rem 0 0;
+	padding: .25rem .5rem;
+	border: 1px solid transparent;
+	border-radius: .35rem;
 	background: none;
 	text-align: left;
 	font: inherit;
 	font-size: .8rem;
 	line-height: 1.35;
-	color: var(--fxki-tx-2);
+	font-weight: 500;
+	color: var(--fxki-tx);
 }
 button.t-warn {
 	cursor: pointer;
@@ -601,9 +603,22 @@ button.t-warn:hover span:last-child {
 	content: '\e002'; /* warning */
 	font-size: .95rem;
 }
+.t-warn.holiday {
+	background: light-dark(rgb(209 77 65 / .1), rgb(232 112 95 / .15));
+	border-color: light-dark(rgb(209 77 65 / .35), rgb(232 112 95 / .35));
+}
+.t-warn.changes {
+	background: light-dark(rgb(218 112 44 / .12), rgb(236 139 73 / .15));
+	border-color: light-dark(rgb(218 112 44 / .38), rgb(236 139 73 / .35));
+}
+.t-warn.incomplete {
+	background: light-dark(rgb(0 0 0 / .04), rgb(255 255 255 / .05));
+	border-color: var(--fxki-ui);
+	color: var(--fxki-tx-2);
+}
 .t-warn.holiday .t-warn-ico { color: var(--fxki-re); }
 .t-warn.changes .t-warn-ico { color: var(--fxki-or); }
-.t-warn.incomplete .t-warn-ico { color: var(--fxki-tx-3); }
+.t-warn.incomplete .t-warn-ico { color: var(--fxki-tx-2); }
 
 /* "now"/"past" states, set client-side in Ottawa time */
 .today-session.now {
