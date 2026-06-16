@@ -296,7 +296,8 @@ main.error-page a:hover {
 .map-topnav {
     display: flex;
     align-items: baseline;
-    gap: 1.25rem;
+    flex-wrap: wrap;
+    gap: .5rem 1.25rem;
     padding: .6rem 1rem;
     border-bottom: 1px solid var(--fxki-ui-2);
     background: var(--fxki-bg);
@@ -379,6 +380,10 @@ body.error-page .map-topnav {
     border-color: var(--fxki-ui-3);
 }
 @media (max-width: 540px) {
+    /* tighter spacing so the links fit before wrapping */
+    .map-topnav {
+        column-gap: .9rem;
+    }
     /* it gets cut off by the nav links otherwise */
     .map-topnav time {
         display: none;
