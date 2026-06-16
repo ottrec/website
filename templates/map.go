@@ -29,8 +29,33 @@ var mapSlots = [][2]int{
 	{21 * 60, 24 * 60},
 }
 
-func mapSlotLabel(slot [2]int) string {
+// mapSlotKey is the stable 24-hour identifier for a slot, used as the slot's
+// value in the URL filter state (kept format-stable so old links keep working).
+func mapSlotKey(slot [2]int) string {
 	return fmt.Sprintf("%02d:%02d-%02d:%02d", slot[0]/60, slot[0]%60, (slot[1]/60)%24, slot[1]%60)
+}
+
+// mapSlotLabel is the human-readable am/pm label for a slot, shown in the UI.
+func mapSlotLabel(slot [2]int) string {
+	return mapClockTime(slot[0]) + "–" + mapClockTime(slot[1])
+}
+
+// mapClockTime formats minutes-from-midnight as a 12-hour time with its am/pm
+// meridiem, e.g. "6 am", "11 am", "12:30 pm".
+func mapClockTime(min int) string {
+	h, m := (min/60)%24, min%60
+	meridiem := "am"
+	if h >= 12 {
+		meridiem = "pm"
+	}
+	h12 := h % 12
+	if h12 == 0 {
+		h12 = 12
+	}
+	if m != 0 {
+		return fmt.Sprintf("%d:%02d %s", h12, m, meridiem)
+	}
+	return fmt.Sprintf("%d %s", h12, meridiem)
 }
 
 // mapCategories contains the predefined activity categories for the map
@@ -56,9 +81,12 @@ const mapCategoryOther = "Other"
 // mapDataJSON is embedded into the map page as a JSON data island and consumed
 // by the FacilityData class in the inline script.
 type mapDataJSON struct {
-	Updated    string   `json:"updated"`
-	Days       []string `json:"days"`
+	Updated string   `json:"updated"`
+	Days    []string `json:"days"`
+	// Slots holds the stable 24-hour slot keys used in the URL filter state;
+	// SlotLabels holds the parallel am/pm labels shown in the UI.
 	Slots      []string `json:"slots"`
+	SlotLabels []string `json:"slotLabels"`
 	Categories []string `json:"categories"`
 	Activities []string `json:"activities"`
 	// ActivityCategories contains a bitmask of indexes into Categories for
@@ -193,15 +221,18 @@ func buildMapData(data ottrecidx.DataRef) mapDataJSON {
 		})
 	}
 
+	slotKeys := make([]string, len(mapSlots))
 	slotLabels := make([]string, len(mapSlots))
 	for i, slot := range mapSlots {
+		slotKeys[i] = mapSlotKey(slot)
 		slotLabels[i] = mapSlotLabel(slot)
 	}
 
 	return mapDataJSON{
 		Updated:            data.Index().Updated().In(ottrecidx.TZ).Format("2006-01-02"),
 		Days:               mapDays,
-		Slots:              slotLabels,
+		Slots:              slotKeys,
+		SlotLabels:         slotLabels,
 		Categories:         catNames,
 		Activities:         actNames,
 		ActivityCategories: actCats,

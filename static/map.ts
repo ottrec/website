@@ -24,6 +24,12 @@ function showError(msg: string) {
 window.addEventListener('error', (ev) => showError(ev.message || 'unknown error'))
 window.addEventListener('unhandledrejection', (ev) => showError((ev.reason && ev.reason.message) || String(ev.reason)))
 
+// normalizeText lowercases and strips diacritics so a search for "lariviere"
+// matches "Larivière" (and vice versa).
+function normalizeText(s: string): string {
+	return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
 // transient toast over the map (e.g., when stale url filters are reset)
 
 function showToast(msg: string) {
@@ -59,7 +65,8 @@ interface Filter {
 interface DataJSON {
 	updated: string
 	days: string[]
-	slots: string[]
+	slots: string[]      // stable 24h keys used in the URL filter state
+	slotLabels: string[] // am/pm labels shown in the UI
 	categories: string[]
 	activities: string[]
 	activityCategories: number[]
@@ -100,7 +107,8 @@ interface Query {
 class FacilityData {
 	updated: string
 	days: string[]
-	slots: string[]
+	slots: string[]      // stable 24h keys used in the URL filter state
+	slotLabels: string[] // am/pm labels shown in the UI
 	categories: string[]
 	activities: string[]
 	facilities: Facility[]
@@ -110,12 +118,13 @@ class FacilityData {
 	#entryMask: Uint8Array      // 7 bytes per entry; byte d bit s = available on weekday d during slot s
 	#entryStart: Uint32Array    // facility i owns entries entryStart[i] ... entryStart[i+1]-1
 	#activityCats: Uint16Array  // category bitmask per activity
-	#nameLower: string[]        // lowercased facility names for matching
+	#nameLower: string[]        // normalized facility names for matching (lowercased, diacritics stripped)
 
 	constructor(json: DataJSON) {
 		this.updated = json.updated
 		this.days = json.days
 		this.slots = json.slots
+		this.slotLabels = json.slotLabels
 		this.categories = json.categories
 		this.activities = json.activities
 		this.#activityCats = Uint16Array.from(json.activityCategories)
@@ -127,7 +136,7 @@ class FacilityData {
 			lat: f.lat || 0,
 			lng: f.lng || 0,
 		}))
-		this.#nameLower = this.facilities.map((f) => f.name.toLowerCase())
+		this.#nameLower = this.facilities.map((f) => normalizeText(f.name))
 
 		const packed = json.facilities.map((f) => atob(f.mask || ''))
 		const total = packed.reduce((n, p) => n + p.length / 9, 0)
@@ -155,7 +164,7 @@ class FacilityData {
 		const mask = new Uint8Array(7)
 		for (const d of days) mask[d] = slotBits
 		return {
-			name: filter.name.trim().toLowerCase(),
+			name: normalizeText(filter.name.trim()),
 			activities: filter.activities.size ? filter.activities : null,
 			cats: [...filter.categories].reduce((m, c) => m | (1 << c), 0),
 			days,
@@ -644,7 +653,7 @@ function buildFilters() {
 		daysEl.append(btn)
 		return btn
 	})
-	slotRows = buildCheckList(document.getElementById('filter-slots')!, data.slots, filter.slots)
+	slotRows = buildCheckList(document.getElementById('filter-slots')!, data.slotLabels, filter.slots)
 	catRows = buildCheckList(document.getElementById('filter-categories')!, data.categories, filter.categories, applyCategorySelection)
 	actRows = buildCheckList(document.getElementById('filter-activities')!, data.activities, filter.activities)
 }
@@ -939,7 +948,7 @@ function renderChips() {
 			clear: () => filter.days.clear(),
 		})
 	for (const s of [...filter.slots].sort((a, b) => a - b))
-		chips.push({label: data.slots[s]!, clear: () => filter.slots.delete(s)})
+		chips.push({label: data.slotLabels[s]!, clear: () => filter.slots.delete(s)})
 	for (const c of [...filter.categories].sort((x, y) => x - y))
 		chips.push({label: data.categories[c]!, clear: () => {
 			filter.categories.delete(c)
