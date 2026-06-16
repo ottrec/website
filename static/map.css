@@ -386,6 +386,44 @@ ul#fac-list {
 	background: var(--fxki-or);
 	opacity: 1;
 }
+/* edge arrows: blue indicators at the map edge pointing to off-screen facilities.
+ * The overlay tracks container coordinates, so it lives outside the (transformed)
+ * map panes; z-index keeps it above the markers but below the leaflet controls. */
+.edge-arrows {
+	position: absolute;
+	inset: 0;
+	z-index: 650;
+	pointer-events: none;
+}
+.edge-arrow {
+	position: absolute;
+	width: 26px;
+	height: 26px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--fxki-bl);
+	cursor: pointer;
+	pointer-events: auto;
+	opacity: .85;
+	filter: drop-shadow(0 1px 2px rgb(0 0 0 / .35));
+	/* longhand only: a comma-separated transition shorthand hangs the embedded
+	 * postcss, and the inline transform (rotation) must not animate as the map moves */
+	transition-property: opacity;
+	transition-duration: .1s;
+}
+.edge-arrow:hover,
+.edge-arrow:focus-visible {
+	opacity: 1;
+}
+.edge-arrow svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	fill: currentColor;
+}
+
 .leaflet-container {
 	background: var(--fxki-bg-2);
 	font: inherit;
@@ -687,6 +725,11 @@ ul#fac-list {
 	label.check {
 		font-size: 1rem;
 		padding: .2em 0;
+	}
+	/* smaller edge arrows on mobile, scaling with the (smaller) viewport edge */
+	.edge-arrow {
+		width: clamp(16px, 5vmin, 26px);
+		height: clamp(16px, 5vmin, 26px);
 	}
 }
 

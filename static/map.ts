@@ -570,6 +570,7 @@ function scheduleOverlaySync() {
 	overlaySyncRAF = requestAnimationFrame(() => {
 		overlaySyncRAF = 0
 		const open = overlayOpen()
+		renderEdgeArrows() // show/hide the edge arrows to match the overlay state
 		if (open === overlayPushed) return
 		if (open) {
 			overlayPushed = true
@@ -831,6 +832,7 @@ function update() {
 	sortVisible()
 	renderList()
 	updateMarkers()
+	renderEdgeArrows()
 	applyCounts(slotRows, data.slotCounts(filter))
 	applyCounts(catRows, data.categoryCounts(filter))
 	applyCounts(actRows, data.activityCounts(filter))
@@ -937,6 +939,77 @@ function updateMarkers() {
 		}
 	}
 }
+
+// edge arrows: a blue arrow at the map edge for each visible facility that's
+// off-screen, pointing toward it; clicking it pans the map to that facility.
+const edgeArrowsEl = document.createElement('div')
+edgeArrowsEl.className = 'edge-arrows'
+map.getContainer().append(edgeArrowsEl)
+
+// the arrow glyph points east (angle 0); the button is rotated toward the facility
+const edgeArrowSVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8z"/></svg>'
+
+let edgeArrowsRAF = 0
+function scheduleEdgeArrows() {
+	if (edgeArrowsRAF) return
+	edgeArrowsRAF = requestAnimationFrame(() => { edgeArrowsRAF = 0; renderEdgeArrows() })
+}
+
+function renderEdgeArrows() {
+	const size = map.getSize()
+	const inset = 18 // keep arrows just inside the map edge
+	// the overlay sits above the map panes, so hide it while a popup/detail panel
+	// covers the map (and when the map is too small to have a meaningful interior)
+	if (overlayOpen() || size.x < 2 * inset || size.y < 2 * inset) { edgeArrowsEl.replaceChildren(); return }
+	const cx = size.x / 2, cy = size.y / 2
+	const minX = inset, maxX = size.x - inset, minY = inset, maxY = size.y - inset
+	// bucket off-screen facilities by edge position so a crowded edge stays
+	// legible; each bucket keeps the facility nearest the viewport (and a count)
+	const buckets = new Map<string, {i: number, dist: number, x: number, y: number, angle: number, count: number}>()
+	for (const i of visible) {
+		const f = data.facilities[i]!
+		if (!f.lat && !f.lng) continue
+		const p = map.latLngToContainerPoint([f.lat, f.lng])
+		if (p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY) continue // on-screen
+		const dx = p.x - cx, dy = p.y - cy
+		// scale the center->facility ray to where it crosses the inset edge
+		let t = Infinity
+		if (dx > 0) t = Math.min(t, (maxX - cx) / dx)
+		else if (dx < 0) t = Math.min(t, (minX - cx) / dx)
+		if (dy > 0) t = Math.min(t, (maxY - cy) / dy)
+		else if (dy < 0) t = Math.min(t, (minY - cy) / dy)
+		if (!isFinite(t) || t <= 0) continue
+		const x = cx + dx * t, y = cy + dy * t
+		const dist = Math.hypot(dx, dy)
+		const key = Math.round(x / 30) + ':' + Math.round(y / 30)
+		const prev = buckets.get(key)
+		if (!prev) buckets.set(key, {i, dist, x, y, angle: Math.atan2(dy, dx), count: 1})
+		else if (prev.count++, dist < prev.dist) {
+			prev.i = i, prev.dist = dist, prev.x = x, prev.y = y, prev.angle = Math.atan2(dy, dx)
+		}
+	}
+	const frag = document.createDocumentFragment()
+	for (const b of buckets.values()) {
+		const f = data.facilities[b.i]!
+		const more = b.count > 1 ? ' (+' + (b.count - 1) + ' more nearby)' : ''
+		const btn = document.createElement('button')
+		btn.type = 'button'
+		btn.className = 'edge-arrow'
+		btn.title = f.name + more
+		btn.setAttribute('aria-label', 'Pan to ' + f.name + more)
+		btn.style.left = b.x + 'px'
+		btn.style.top = b.y + 'px'
+		btn.style.transform = 'translate(-50%, -50%) rotate(' + b.angle + 'rad)'
+		btn.innerHTML = edgeArrowSVG
+		const ll: L.LatLngTuple = [f.lat, f.lng]
+		// just bring the facility into view; don't open its popup
+		btn.addEventListener('click', () => map.panTo(ll))
+		frag.append(btn)
+	}
+	edgeArrowsEl.replaceChildren(frag)
+}
+
+map.on('move zoom resize', scheduleEdgeArrows)
 
 function renderChips() {
 	const chips: {label: string, clear: () => void}[] = []
