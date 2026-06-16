@@ -97,9 +97,11 @@ body.home-page {
 	margin: 2rem 0;
 }
 .home-tiles a {
-	position: relative;
-	overflow: hidden;
-	display: block;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: center;
+	column-gap: .6rem;
+	row-gap: .35rem;
 	padding: 1rem 1.1rem 1.1rem;
 	border: 1px solid var(--fxki-ui-2);
 	border-radius: .6rem;
@@ -111,25 +113,26 @@ body.home-page {
 .home-tiles a:hover {
 	background: var(--fxki-bg-3);
 }
+.home-tiles a:hover::before {
+	color: var(--fxki-tx-2);
+}
 .home-tiles h2 {
+	grid-column: 2;
 	font-family: 'Source Serif 4', serif;
 	font-size: 1.05rem;
-	margin: 0 0 .25rem;
+	margin: 0;
 }
 .home-tiles p {
-	position: relative;
-	z-index: 2;
+	grid-column: 1 / -1;
 	margin: 0;
 	font-size: .85rem;
 	color: var(--fxki-tx-2);
 }
 .home-tiles a::before {
-	position: absolute;
-	right: .4rem;
-	bottom: .3rem;
-	z-index: 1;
-	font-size: 3.25rem;
-	color: var(--fxki-ui-2);
+	grid-column: 1;
+	font-size: 1.5rem;
+	color: var(--fxki-tx-3);
+	transition: color .12s ease;
 }
 
 /* what's new */
