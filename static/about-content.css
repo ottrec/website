@@ -11,12 +11,23 @@
 .about-content {
 	color: var(--fxki-tx);
 
+	/* Hold the flowing prose to a comfortable reading measure (~68ch) while
+	   letting wide blocks like the regions map and centrepoints table use the
+	   full main width. */
+	h1, h2, h3, h4,
+	p, ul, ol, blockquote, hr {
+		max-width: 38rem;
+	}
+
 	h1, h2, h3, h4 {
 		font-family: 'Source Serif 4', serif;
 		scroll-margin-top: .75rem;
+		letter-spacing: -.01em;
+		text-wrap: balance;
 	}
 	h1 {
 		font-size: 1.6rem;
+		line-height: 1.15;
 		margin: 0 0 .4rem;
 	}
 	h2 {
@@ -32,10 +43,31 @@
 		margin: 1.25rem 0 .3rem;
 	}
 
+	/* self-link revealed when hovering a heading (or focused for keyboards) */
+	.heading-anchor {
+		margin-left: .35em;
+		color: var(--fxki-tx-3);
+		font-weight: 400;
+		text-decoration: none;
+		opacity: 0;
+		transition: opacity .1s;
+	}
+	h1:hover .heading-anchor,
+	h2:hover .heading-anchor,
+	h3:hover .heading-anchor,
+	h4:hover .heading-anchor,
+	.heading-anchor:focus {
+		opacity: 1;
+	}
+	.heading-anchor:hover {
+		color: var(--fxki-bl);
+	}
+
 	p {
 		font-size: 1.05rem;
 		line-height: 1.7;
 		margin: .6rem 0;
+		text-wrap: pretty;
 	}
 	ul, ol {
 		padding-left: 1.25rem;
@@ -130,6 +162,19 @@
 	img {
 		max-width: 100%;
 		height: auto;
+	}
+
+	figure {
+		margin: 1rem 0;
+	}
+	figure img {
+		display: block;
+	}
+	figcaption {
+		margin-top: .4rem;
+		font-size: .9rem;
+		line-height: 1.5;
+		color: var(--fxki-tx-2);
 	}
 
 	> :first-child {

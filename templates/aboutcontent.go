@@ -15,7 +15,11 @@ import (
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
+	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/text"
+	"github.com/yuin/goldmark/util"
 )
 
 // aboutContentFS holds the markdown sources for the generic /about/{slug} pages,
@@ -26,11 +30,48 @@ import (
 //go:embed about-*.md
 var aboutContentFS embed.FS
 
-// aboutMarkdown renders the about pages: GitHub-flavored tables, autolinks, and
-// strikethrough on top of CommonMark.
+// aboutMarkdown renders the about pages: GitHub-flavored tables, autolinks,
+// strikethrough, and smart typography (curly quotes, em/en dashes, ellipses) on
+// top of CommonMark. Headings get auto-generated ids and a hover anchor link
+// (see aboutHeadingRenderer) so they can be linked to.
 var aboutMarkdown = goldmark.New(
-	goldmark.WithExtensions(extension.Table, extension.Linkify, extension.Strikethrough),
+	goldmark.WithExtensions(extension.Table, extension.Linkify, extension.Strikethrough, extension.Typographer),
+	goldmark.WithParserOptions(parser.WithAutoHeadingID()),
+	goldmark.WithRendererOptions(renderer.WithNodeRenderers(util.Prioritized(aboutHeadingRenderer{}, 100))),
 )
+
+// aboutHeadingRenderer overrides goldmark's default heading rendering to append
+// a self-link to each heading that has an id (revealed on hover via CSS). It
+// otherwise matches the default renderer.
+type aboutHeadingRenderer struct{}
+
+func (aboutHeadingRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
+	reg.Register(ast.KindHeading, renderAboutHeading)
+}
+
+func renderAboutHeading(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	n := node.(*ast.Heading)
+	if entering {
+		_, _ = w.WriteString("<h")
+		_ = w.WriteByte("0123456"[n.Level])
+		if n.Attributes() != nil {
+			html.RenderAttributes(w, node, html.HeadingAttributeFilter)
+		}
+		_ = w.WriteByte('>')
+	} else {
+		if id, ok := n.AttributeString("id"); ok {
+			if idb, ok := id.([]byte); ok {
+				_, _ = w.WriteString(`<a class="heading-anchor" href="#`)
+				_, _ = w.Write(util.EscapeHTML(util.URLEscape(idb, false)))
+				_, _ = w.WriteString(`" aria-label="Permalink to this section">#</a>`)
+			}
+		}
+		_, _ = w.WriteString("</h")
+		_ = w.WriteByte("0123456"[n.Level])
+		_, _ = w.WriteString(">\n")
+	}
+	return ast.WalkContinue, nil
+}
 
 // aboutContentBlock is a dynamic, data-driven region of an about page, embedded
 // in the markdown with a "```block <name>```" fence (see aboutContentBlocks).
