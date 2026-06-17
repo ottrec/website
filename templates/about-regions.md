@@ -6,10 +6,10 @@ description: How ottrec.ca divides the Ottawa area into areas like Kanata/Westbo
 class: regions-page
 
 about_label: regions & sectors
-about_blurb: how facilities are grouped into areas like Kanata, Westboro, and Orléans.
+about_blurb: how the region/sector labels for facilities are determined
 
 home_label: ottregions
-home_blurb: how the region/sector labels for facilities are determined
+home_blurb: how facilities are grouped into areas like Kanata, Westboro, and Orléans
 ---
 
 <!--

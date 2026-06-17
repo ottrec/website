@@ -5,7 +5,7 @@ author: Patrick Gaskin
 description: How ottrec.ca's recreation schedule data is scraped, parsed, and verified so it stays accurate and complete.
 
 about_label: data quality
-about_blurb: How the schedule data is scraped, parsed, and verified (for the technically inclined).
+about_blurb: how the schedule data is scraped, parsed, and verified
 
 home_label: data quality
 home_blurb: how the schedule data is scraped, parsed, and verified

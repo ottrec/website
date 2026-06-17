@@ -163,7 +163,7 @@
    page-specific bits: hold the tables to the same measure as the prose (centered
    in the column, not the full main width) and right-align the numeric cells */
 .regions-page .region-table {
-	max-width: 38rem;
+	max-width: 44rem;
 	margin: .75rem auto;
 
 	.num {

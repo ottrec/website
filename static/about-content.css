@@ -147,6 +147,7 @@
 		border-collapse: collapse;
 		font-family: 'Asap', sans-serif;
 		font-size: .92rem;
+		border: 1px solid var(--fxki-ui-2);
 
 		th, td {
 			padding: .3rem .6rem;
@@ -157,6 +158,7 @@
 			font-weight: 600;
 			color: var(--fxki-tx-2);
 			border-bottom-color: var(--fxki-ui-3);
+			background: var(--fxki-bg-2);
 		}
 	}
 
