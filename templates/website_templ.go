@@ -710,14 +710,14 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</time>.</p></header><nav class=\"home-tiles\" aria-label=\"Sections\"><a href=\"/today\" data-icon=\"schedule\"><h2>Today</h2><p>What's on now and over the next week, as a simple day-by-day feed.</p></a> <a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>Schedules</h2><p>Browse or search the full drop-in schedules on a single page.</p></a> <a href=\"/activities\" data-icon=\"overview\"><h2>Activities</h2><p>Find facilities offering each activity, by area, weekday, and time of day.</p></a></nav><section class=\"home-about\"><p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p><p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current.</p></section><section class=\"home-other\" aria-labelledby=\"home-other-heading\"><h2 id=\"home-other-heading\">More stuff</h2><ul><li><a href=\"/about/regions\">ottregions</a> &mdash; how the region/sector labels for facilities are determined</li><li><a href=\"/about/ottrecql\">ottrecql</a> &mdash; info about the advanced search query syntax, for building your own filtered page.</li><li><a href=\"https://data.ottrec.ca\">dataset</a> &mdash; use the schedule data to build something yourself.</li></ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</time>.</p></header><nav class=\"home-tiles\" aria-label=\"Sections\"><a href=\"/today\" data-icon=\"schedule\"><h2>Today</h2><p>What's on now and over the next week, as a simple day-by-day feed.</p></a> <a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>Schedules</h2><p>Browse or search the full drop-in schedules on a single page.</p></a> <a href=\"/activities\" data-icon=\"overview\"><h2>Activities</h2><p>Find facilities offering each activity, by area, weekday, and time of day.</p></a></nav><section class=\"home-about\"><p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p><p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current.</p></section><section class=\"home-other\" aria-labelledby=\"home-other-heading\"><h2 id=\"home-other-heading\">More stuff</h2><ul><li><a href=\"https://data.ottrec.ca\">dataset</a> &mdash; use the schedule data to build something yourself.</li><li><a href=\"/about/ottrecql\">ottrecql</a> &mdash; info about the advanced search query syntax, for building your own filtered page.</li><li><a href=\"/about/regions\">ottregions</a> &mdash; how the region/sector labels for facilities are determined</li><li><a href=\"/about/data-quality\">data quality</a> &mdash; how the schedule data is scraped, parsed, and verified</li></ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var38 string
 		templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs("for more info")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 184, Col: 150}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 185, Col: 150}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 		if templ_7745c5c3_Err != nil {
@@ -789,7 +789,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var40 string
 		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 214, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 215, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 		if templ_7745c5c3_Err != nil {
@@ -802,7 +802,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var41 templ.SafeURL
 		templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.WebsiteCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 215, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 216, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 		if templ_7745c5c3_Err != nil {
@@ -831,7 +831,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var42 string
 		templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 221, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 222, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 		if templ_7745c5c3_Err != nil {
@@ -844,7 +844,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		var templ_7745c5c3_Var43 string
 		templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(message)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 222, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 223, Col: 16}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 		if templ_7745c5c3_Err != nil {
