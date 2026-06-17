@@ -68,7 +68,7 @@ Although I used LLMs for the lower-risk website code and styling, I did not use 
 
 This is the most delicate part since the facility pages are human-written and frequently change format in subtle ways. It is especially important that I don't accidentally discard possible schedule data, and that I parse things deterministically and precisely (rather than relying on an LLM as some similar projects do) to ensure that the data is accurate.
 
-The scraper runs at least twice per day around noon and midnight. Prior to June 16, 2026, it ran at least once per day.
+The scraper runs at least twice per day around noon and midnight. Prior to June 16, 2026, it ran at least once per day. At the time of writing, it's been tested on almost two years of schedule pages, and has successfully parsed them (even across a few layout changes) with only a few updates required.
 
 I do this in three stages: crawling, extraction, and parsing.
 
