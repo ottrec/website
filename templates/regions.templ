@@ -18,12 +18,13 @@ templ WebsiteRegionsPage(params WebsiteParams) {
 			@websiteSocialHead(params.Base, params.Base+"about/regions", "Ottawa Neighborhoods and Suburbs", "How ottrec.ca divides the Ottawa area into areas like Kanata/Westboro/Orleans, and central/south/east/west.")
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.LeafletCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.AboutContentCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.RegionsCSS) }/>
 			@websiteHeadExtra()
 		</head>
 		<body class="regions-page">
 			@websiteTopNav("about", params.Data.Index().Updated())
-			<main>
+			<main class="about-content">
 				<h1>Ottawa Neighborhoods &amp; Suburbs</h1>
 				<section>
 					<p>

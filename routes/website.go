@@ -100,6 +100,12 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /about/regions", &websiteRegionsHandler{
 		websiteHandlerBase: base,
 	})
+	for _, slug := range aboutContentPages {
+		mux.Handle("GET /about/"+slug, &websiteAboutContentHandler{
+			websiteHandlerBase: base,
+			slug:               slug,
+		})
+	}
 	mux.Handle("GET /api/regions/layer.png", &websiteRegionsLayerHandler{})
 	mux.Handle("/static/", static.Handler(static.Website))
 	mux.Handle("GET /favicon.ico", static.Handler(static.Website))
@@ -288,6 +294,13 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	})
 }
 
+// aboutContentPages is the hard-coded list of generic /about/{slug} pages, each
+// backed by a templates/about-{slug}.md markdown file. It drives both handler
+// registration and the sitemap, so it isn't derived from the embedded directory.
+var aboutContentPages = []string{
+	"data-quality",
+}
+
 type websiteAboutHandler struct {
 	websiteHandlerBase
 }
@@ -306,6 +319,40 @@ func (h *websiteAboutHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return templates.WebsiteAboutPage(templates.WebsiteParams{
 			Base: h.base(r),
 			Data: data,
+		}), http.StatusOK, nil
+	})
+}
+
+// websiteAboutContentHandler serves a generic /about/{slug} page rendered from
+// the templates/about-{slug}.md markdown file.
+type websiteAboutContentHandler struct {
+	websiteHandlerBase
+	slug string
+}
+
+func (h *websiteAboutContentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+
+	content, ok := templates.AboutContentBySlug(h.slug)
+	if !ok {
+		// shouldn't happen: handlers are registered from the same list, and the
+		// markdown is rendered at startup, but guard anyway.
+		templates.RenderError(w, r, templates.WebsiteErrorPage, "Not Found", "We couldn't find the page you're looking for.", http.StatusNotFound)
+		return
+	}
+
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		return templates.WebsiteAboutContentPage(templates.WebsiteAboutContentParams{
+			Base:    h.base(r),
+			Data:    data,
+			Content: content,
 		}), http.StatusOK, nil
 	})
 }
@@ -539,6 +586,9 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	}
 
 	paths := []string{"", "today", "map", "schedules", "activities", "about", "about/ottrecql", "about/regions"}
+	for _, slug := range aboutContentPages {
+		paths = append(paths, "about/"+slug)
+	}
 	for _, cat := range templates.ScheduleCategories {
 		paths = append(paths, "schedules/"+cat.Slug)
 	}

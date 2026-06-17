@@ -1,0 +1,50 @@
+package templates
+
+import (
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/static"
+)
+
+// WebsiteAboutContentParams carries the rendered markdown page and the site
+// chrome bits shared by every page.
+type WebsiteAboutContentParams struct {
+	Base    string
+	Data    ottrecidx.DataRef
+	Content *AboutContent
+}
+
+// WebsiteAboutContentPage renders a generic /about/{slug} page from a markdown
+// file (see aboutContentPages). The rendered HTML lives under .about-content, so
+// about-content.css styles its headings, lists, tables, and so on.
+templ WebsiteAboutContentPage(params WebsiteAboutContentParams) {
+	{{ canonical := params.Base + "about/" + params.Content.Slug }}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			@websiteThemeHead()
+			@websiteIconsHead()
+			if params.Base != "" {
+				<link rel="canonical" href={ canonical }/>
+			}
+			<title>{ params.Content.Title }</title>
+			if params.Content.Description != "" {
+				<meta name="description" content={ params.Content.Description }/>
+			}
+			@websiteSocialHead(params.Base, canonical, params.Content.Title, params.Content.Description)
+			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
+			<link rel="stylesheet" href={ static.Path(static.AboutContentCSS) }/>
+			@websiteHeadExtra()
+		</head>
+		<body class="about-content-page">
+			@websiteTopNav("about", params.Data.Index().Updated())
+			<main>
+				<article class="about-content">
+					@params.Content.Body
+				</article>
+			</main>
+			@websiteFooter()
+		</body>
+	</html>
+}

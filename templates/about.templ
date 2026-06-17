@@ -1,6 +1,9 @@
 package templates
 
-import "github.com/ottrec/website/static"
+import (
+	"github.com/ottrec/website/static"
+	"strings"
+)
 
 templ WebsiteAboutPage(params WebsiteParams) {
 	<!DOCTYPE html>
@@ -28,6 +31,27 @@ templ WebsiteAboutPage(params WebsiteParams) {
 					<p>
 						ottrec.ca is an unofficial website created by <a href="https://github.com/pgaskin">Patrick Gaskin</a> that makes it easier to find City of Ottawa drop-in recreation activities and facilities.
 					</p>
+				</section>
+				<section id="articles">
+					<h2>Articles</h2>
+					<ul>
+						<li><a href="/about/regions">regions &amp; sectors</a> &mdash; how facilities are grouped into areas like Kanata, Westboro, and Orléans.</li>
+						<li><a href="/about/ottrecql">ottrecql</a> &mdash; the advanced search query language reference.</li>
+						for _, slug := range aboutArticleSlugs() {
+							if page, ok := AboutContentBySlug(slug); ok {
+								<li>
+									<a href={ templ.SafeURL("/about/" + slug) }>
+										switch slug {
+											case "data-quality":
+												{ "data quality" }
+											default:
+												{ strings.ToLower(page.Title) }
+										}
+									</a> &mdash; { aboutArticleDescription(slug) }
+								</li>
+							}
+						}
+					</ul>
 				</section>
 				@websiteAboutExtra()
 				<section id="advanced-search">

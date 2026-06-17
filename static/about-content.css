@@ -1,0 +1,124 @@
+/* Shared styling for the generic markdown-backed /about/{slug} pages. Everything
+   is scoped under .about-content so the rendered markdown (headings, lists,
+   tables, code, etc.) matches the look of the /about and /about/regions pages. */
+
+.about-content-page main {
+	max-width: 44rem;
+	margin: 0 auto;
+	padding: 1rem 1rem 3rem;
+}
+
+.about-content {
+	color: var(--fxki-tx);
+
+	h1, h2, h3, h4 {
+		font-family: 'Source Serif 4', serif;
+		scroll-margin-top: .75rem;
+	}
+	h1 {
+		font-size: 1.6rem;
+		margin: 0 0 .4rem;
+	}
+	h2 {
+		font-size: 1.25rem;
+		margin: 2rem 0 .35rem;
+	}
+	h3 {
+		font-size: 1.1rem;
+		margin: 1.5rem 0 .3rem;
+	}
+	h4 {
+		font-size: 1rem;
+		margin: 1.25rem 0 .3rem;
+	}
+
+	p, li {
+		font-size: 1.05rem;
+		line-height: 1.7;
+		margin: .6rem 0;
+	}
+	ul, ol {
+		padding-left: 1.25rem;
+		margin: .5rem 0;
+	}
+	li > ul, li > ol {
+		margin: .25rem 0;
+	}
+
+	a {
+		color: var(--fxki-bl);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	strong {
+		font-weight: 600;
+	}
+
+	hr {
+		margin: 1.75rem 0;
+		border: none;
+		border-top: 1px solid var(--fxki-ui-2);
+	}
+
+	blockquote {
+		margin: .75rem 0;
+		padding: .1rem 0 .1rem 1rem;
+		border-left: 3px solid var(--fxki-ui-3);
+		color: var(--fxki-tx-2);
+	}
+
+	code {
+		font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+		font-size: .85em;
+		padding: .1em .3em;
+		border-radius: .25rem;
+		background: var(--fxki-bg-2);
+	}
+	pre {
+		margin: .75rem 0;
+		padding: .75rem 1rem;
+		overflow-x: auto;
+		border: 1px solid var(--fxki-ui-2);
+		border-radius: .4rem;
+		background: var(--fxki-bg-2);
+
+		code {
+			padding: 0;
+			background: none;
+			font-size: .9rem;
+			line-height: 1.5;
+		}
+	}
+
+	table {
+		width: 100%;
+		margin: .75rem 0;
+		border-collapse: collapse;
+		font-family: 'Asap', sans-serif;
+		font-size: .92rem;
+
+		th, td {
+			padding: .3rem .6rem;
+			text-align: left;
+			border-bottom: 1px solid var(--fxki-ui-2);
+		}
+		th {
+			font-weight: 600;
+			color: var(--fxki-tx-2);
+			border-bottom-color: var(--fxki-ui-3);
+		}
+	}
+
+	img {
+		max-width: 100%;
+		height: auto;
+	}
+
+	> :first-child {
+		margin-top: 0;
+	}
+}

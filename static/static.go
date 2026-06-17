@@ -166,26 +166,27 @@ var (
 	AppleTouchIconPNG = assets.Register("apple-touch-icon.png")
 	SocialCardPNG     = assets.Register("social-card.png") // og:image / twitter:image; see social-card.py
 
-	DataCSS        = assets.Register("data.css", css)
-	WebsiteCSS     = assets.Register("website.css", css)
-	FacilityCSS    = assets.Register("facility.css", css)
-	MapCSS         = assets.Register("map.css", css)
-	MapJS          = assets.Register("map.ts", ts)
-	ActivitiesCSS  = assets.Register("activities.css", css)
-	ActivitiesJS   = assets.Register("activities.ts", ts)
-	TodayCSS       = assets.Register("today.css", css)
-	TodayJS        = assets.Register("today.ts", ts)
-	SchedulesCSS   = assets.Register("schedules.css", css)
-	SchedulesJS    = assets.Register("schedules.ts", ts)
-	OttrecqlCSS    = assets.Register("ottrecql.css", css)
-	TimemachineCSS = assets.Register("timemachine.css", css)
-	TimemachineJS  = assets.Register("timemachine.ts", ts)
-	AboutCSS       = assets.Register("about.css", css)
-	RegionsCSS     = assets.Register("regions.css", css)
-	RegionsJS      = assets.Register("regions.ts", ts)
-	HomeCSS        = assets.Register("home.css", css)
-	ThemeJS        = assets.Register("theme.ts", ts)
-	StarredJS      = assets.Register("starred.ts", ts)
+	DataCSS         = assets.Register("data.css", css)
+	WebsiteCSS      = assets.Register("website.css", css)
+	FacilityCSS     = assets.Register("facility.css", css)
+	MapCSS          = assets.Register("map.css", css)
+	MapJS           = assets.Register("map.ts", ts)
+	ActivitiesCSS   = assets.Register("activities.css", css)
+	ActivitiesJS    = assets.Register("activities.ts", ts)
+	TodayCSS        = assets.Register("today.css", css)
+	TodayJS         = assets.Register("today.ts", ts)
+	SchedulesCSS    = assets.Register("schedules.css", css)
+	SchedulesJS     = assets.Register("schedules.ts", ts)
+	OttrecqlCSS     = assets.Register("ottrecql.css", css)
+	TimemachineCSS  = assets.Register("timemachine.css", css)
+	TimemachineJS   = assets.Register("timemachine.ts", ts)
+	AboutCSS        = assets.Register("about.css", css)
+	AboutContentCSS = assets.Register("about-content.css", css)
+	RegionsCSS      = assets.Register("regions.css", css)
+	RegionsJS       = assets.Register("regions.ts", ts)
+	HomeCSS         = assets.Register("home.css", css)
+	ThemeJS         = assets.Register("theme.ts", ts)
+	StarredJS       = assets.Register("starred.ts", ts)
 
 	// advanced search editor component
 	OttrecqlEditorJS = assets.Register("ottrecql-editor/index.ts", ts)
@@ -211,6 +212,7 @@ var Website = assets.
 		TimemachineCSS,
 		TimemachineJS,
 		AboutCSS,
+		AboutContentCSS,
 		RegionsCSS,
 		RegionsJS,
 		HomeCSS,

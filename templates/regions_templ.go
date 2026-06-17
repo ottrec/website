@@ -100,15 +100,28 @@ func WebsiteRegionsPage(params WebsiteParams) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 templ.SafeURL
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.RegionsCSS))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.AboutContentCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 21, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 21, Col: 68}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"><link rel=\"stylesheet\" href=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var6 templ.SafeURL
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.RegionsCSS))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 22, Col: 63}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -116,7 +129,7 @@ func WebsiteRegionsPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</head><body class=\"regions-page\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</head><body class=\"regions-page\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -124,45 +137,32 @@ func WebsiteRegionsPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<main><h1>Ottawa Neighborhoods &amp; Suburbs</h1><section><p>To make it easier to figure out the general location of unknown facilities (the address is kind of unhelpful), I group facilities into central/east/west/south sectors and include a label for the general region.</p><p>This page explains my methodology to determine the grouping.</p></section><div class=\"region-map\" id=\"region-map\"><noscript><div class=\"region-noscript\"><p>The map needs JavaScript. The regions and sectors are described below.</p></div></noscript></div><p class=\"region-legend\"><span class=\"region-key region-key-shade\">Region</span> <span class=\"region-key region-key-line\">Sector boundary</span> <span class=\"region-key region-key-dot\">Facility</span></p><section id=\"regions\"><h2>Regions</h2><p>Defining the boundaries of areas such as Gloucester, Kanata, Orléans, Vanier, Centretown and Westboro is more challenging than it might initially appear. While any person in Ottawa could probably tell you where they are, there isn't any authoritative source clearly defining the boundaries, especially if you don't want the names to be general enough to be useful for someone not already familiar with the area.</p><p>If you break things down by the official <a href=\"https://ottawa.ca/en/city-hall/elections/ward-maps-and-school-board-zones/ward-maps\">ward boundaries</a>, it mostly works. However, what most people would refer to as \"Westboro\" is actually named \"Kitchissippi\", \"Alta Vista\" is spread across multiple, and downtown areas are split across several wards, making them a poor match for intuitive labels.</p><p>If you instead use detailed neighbourhood definitions, the <a href=\"https://ons-sqo.ca/\">Ottawa Neighbourhood Study</a> provides a well-documented set of boundaries with associated demographic data. However, these neighbourhoods are intentionally granular and statistically oriented, resulting in a level of fragmentation that is too fine for it to be used as a high-level grouping mechanism.</p><p>Postal code areas provide another alternative, but they are designed for mail routing rather than geography. As a result, they often produce awkward splits in suburban regions such as Orléans and Barrhaven, and they can vary significantly in spatial size, making them too inconsistent for this purpose.</p><p>I eventually realized that the labels already present on common mapping tools (e.g., <a href=\"https://maps.google.com\">Google Maps</a>, <a href=\"https://www.openstreetmap.org\">OpenStreetMap</a>) were basically what I wanted. However, further investigation revealed that these labels correspond to a point near the centre rather than defined polygons I could use to group facilities.</p><p>A common way to derive regions from such point data is to construct a Voronoi diagram, which partitions space so that every location is assigned to the nearest labelled point. This produces a set of non-overlapping cells that approximate areas around each place name.</p><p>I implemented this approach using OpenStreetMap data (via the <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API\">Overpass API</a>), and it turns out that it classifies almost all facilities the way you'd expect, while remaining deterministic, reproducible, and free from subjective boundary decisions.</p></section><section id=\"sectors\"><h2>Sectors</h2><p>For the more broad central/south/east/west classifications, I just drew some approximate lines.</p></section><section id=\"centrepoints\"><h2>Region centrepoints</h2><p>This is the OpenStreetMap data I use to determine the boundaries.</p><table class=\"region-table\"><thead><tr><th>Name</th><th>Entity Type</th><th class=\"num\">Latitude</th><th class=\"num\">Longitude</th></tr></thead> <tbody>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<main class=\"about-content\"><h1>Ottawa Neighborhoods &amp; Suburbs</h1><section><p>To make it easier to figure out the general location of unknown facilities (the address is kind of unhelpful), I group facilities into central/east/west/south sectors and include a label for the general region.</p><p>This page explains my methodology to determine the grouping.</p></section><div class=\"region-map\" id=\"region-map\"><noscript><div class=\"region-noscript\"><p>The map needs JavaScript. The regions and sectors are described below.</p></div></noscript></div><p class=\"region-legend\"><span class=\"region-key region-key-shade\">Region</span> <span class=\"region-key region-key-line\">Sector boundary</span> <span class=\"region-key region-key-dot\">Facility</span></p><section id=\"regions\"><h2>Regions</h2><p>Defining the boundaries of areas such as Gloucester, Kanata, Orléans, Vanier, Centretown and Westboro is more challenging than it might initially appear. While any person in Ottawa could probably tell you where they are, there isn't any authoritative source clearly defining the boundaries, especially if you don't want the names to be general enough to be useful for someone not already familiar with the area.</p><p>If you break things down by the official <a href=\"https://ottawa.ca/en/city-hall/elections/ward-maps-and-school-board-zones/ward-maps\">ward boundaries</a>, it mostly works. However, what most people would refer to as \"Westboro\" is actually named \"Kitchissippi\", \"Alta Vista\" is spread across multiple, and downtown areas are split across several wards, making them a poor match for intuitive labels.</p><p>If you instead use detailed neighbourhood definitions, the <a href=\"https://ons-sqo.ca/\">Ottawa Neighbourhood Study</a> provides a well-documented set of boundaries with associated demographic data. However, these neighbourhoods are intentionally granular and statistically oriented, resulting in a level of fragmentation that is too fine for it to be used as a high-level grouping mechanism.</p><p>Postal code areas provide another alternative, but they are designed for mail routing rather than geography. As a result, they often produce awkward splits in suburban regions such as Orléans and Barrhaven, and they can vary significantly in spatial size, making them too inconsistent for this purpose.</p><p>I eventually realized that the labels already present on common mapping tools (e.g., <a href=\"https://maps.google.com\">Google Maps</a>, <a href=\"https://www.openstreetmap.org\">OpenStreetMap</a>) were basically what I wanted. However, further investigation revealed that these labels correspond to a point near the centre rather than defined polygons I could use to group facilities.</p><p>A common way to derive regions from such point data is to construct a Voronoi diagram, which partitions space so that every location is assigned to the nearest labelled point. This produces a set of non-overlapping cells that approximate areas around each place name.</p><p>I implemented this approach using OpenStreetMap data (via the <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API\">Overpass API</a>), and it turns out that it classifies almost all facilities the way you'd expect, while remaining deterministic, reproducible, and free from subjective boundary decisions.</p></section><section id=\"sectors\"><h2>Sectors</h2><p>For the more broad central/south/east/west classifications, I just drew some approximate lines.</p></section><section id=\"centrepoints\"><h2>Region centrepoints</h2><p>This is the OpenStreetMap data I use to determine the boundaries.</p><table class=\"region-table\"><thead><tr><th>Name</th><th>Entity Type</th><th class=\"num\">Latitude</th><th class=\"num\">Longitude</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, row := range regionRows() {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<tr><td>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(row.Name)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 95, Col: 23}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</td><td>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<tr><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(row.Class)
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(row.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 96, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 96, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td class=\"num\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(row.Lat)
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(row.Class)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 97, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 97, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -173,7 +173,7 @@ func WebsiteRegionsPage(params WebsiteParams) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(row.Lng)
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(row.Lat)
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 98, Col: 34}
 			}
@@ -181,12 +181,25 @@ func WebsiteRegionsPage(params WebsiteParams) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</td><td class=\"num\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var10 string
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(row.Lng)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 99, Col: 34}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</tbody></table></section></main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</tbody></table></section></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -198,20 +211,20 @@ func WebsiteRegionsPage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue(static.Path(static.RegionsJS))
+		var templ_7745c5c3_Var11 string
+		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(static.Path(static.RegionsJS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 107, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `regions.templ`, Line: 108, Col: 46}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\"></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

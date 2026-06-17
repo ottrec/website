@@ -16,6 +16,7 @@ require (
 	github.com/pgaskin/xmlwriter v0.0.4
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/pflag v1.0.10
+	github.com/yuin/goldmark v1.7.13
 	golang.org/x/image v0.42.0
 	golang.org/x/net v0.56.0
 	golang.org/x/text v0.38.0
