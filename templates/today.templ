@@ -98,6 +98,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 																	<span class="t-region">{ s.Region }</span>
 																}
 																<button type="button" class="fac-star" data-fac-star={ s.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
+																<button type="button" class="t-fullsched" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">Full&nbsp;schedule</button>
 																if s.SourceURL != "" {
 																	<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
 																}

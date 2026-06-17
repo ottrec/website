@@ -612,6 +612,21 @@
 .t-source:hover {
 	background: light-dark(rgb(32 94 166 / .2), rgb(131 173 234 / .26));
 }
+/* small grey "full schedule" button opening the schedule modal */
+.t-fullsched {
+	font-size: .76em;
+	padding: .05rem .45rem;
+	border: none;
+	border-radius: 999px;
+	background: var(--fxki-bg-2);
+	color: var(--fxki-tx-2);
+	cursor: pointer;
+	white-space: nowrap;
+}
+.t-fullsched:hover {
+	background: var(--fxki-ui);
+	color: var(--fxki-tx);
+}
 .t-exclude {
 	display: inline-flex;
 	align-self: center;

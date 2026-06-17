@@ -782,9 +782,26 @@ func (h *websiteMapFacilityHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	w.Header().Add("Vary", "Accept-Encoding")
 	w.Header().Set("Cache-Control", "public, no-cache")
 
-	if r.URL.RawQuery != "" {
+	// the only allowed query param is `group` (a schedule group index, used by
+	// the /today full-schedule modal); canonicalize anything else away so the
+	// URLs stay cacheable.
+	var group *int
+	if g := r.URL.Query().Get("group"); g != "" {
+		if n, err := strconv.Atoi(g); err == nil && n >= 0 {
+			group = &n
+		}
+	}
+	canonicalQuery := ""
+	if group != nil {
+		canonicalQuery = "group=" + strconv.Itoa(*group)
+	}
+	if r.URL.RawQuery != canonicalQuery {
 		w.Header().Set("Cache-Control", "no-store")
-		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		target := r.URL.EscapedPath()
+		if canonicalQuery != "" {
+			target += "?" + canonicalQuery
+		}
+		http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -798,6 +815,7 @@ func (h *websiteMapFacilityHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 			Base:     h.base(r),
 			Slug:     slug,
 			Facility: fac,
+			Group:    group,
 		}), http.StatusOK, nil
 	})
 }

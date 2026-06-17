@@ -228,6 +228,12 @@ feedEl.addEventListener('click', (ev) => {
 		}
 		return
 	}
+	const full = target.closest<HTMLButtonElement>('.t-fullsched')
+	if (full) {
+		ev.preventDefault()
+		openScheduleModal(full)
+		return
+	}
 	const warn = target.closest<HTMLButtonElement>('.t-warn[data-warn]')
 	if (warn) {
 		ev.preventDefault()
@@ -651,15 +657,7 @@ modal.addEventListener('click', (ev) => {
 })
 
 let modalToken = 0
-async function openWarnModal(btn: HTMLElement) {
-	const slug = btn.dataset['slug'] || ''
-	const group = encodeURIComponent(btn.dataset['group'] || '0')
-	const kind = btn.dataset['warn']
-	const url = kind === 'errors'
-		? '/api/errors?facility=' + encodeURIComponent(slug)
-		: kind === 'reservations'
-			? '/api/reservations?facility=' + encodeURIComponent(slug) + '&group=' + group
-			: '/api/changes?facility=' + encodeURIComponent(slug) + '&group=' + group
+async function loadModal(url: string, fallbackSource?: string) {
 	const token = ++modalToken
 	modalContent.innerHTML = '<p class="today-modal-loading">Loading…</p>'
 	if (!modal.open) modal.showModal()
@@ -671,10 +669,29 @@ async function openWarnModal(btn: HTMLElement) {
 		modalContent.innerHTML = html
 	} catch {
 		if (token !== modalToken) return
-		const src = btn.dataset['source']
 		modalContent.innerHTML = '<p class="today-modal-empty">Couldn’t load the details.</p>' +
-			(src ? '<p class="today-modal-source"><a href="' + src + '" target="_blank" rel="noopener">View on the City of Ottawa website</a></p>' : '')
+			(fallbackSource ? '<p class="today-modal-source"><a href="' + fallbackSource + '" target="_blank" rel="noopener">View on the City of Ottawa website</a></p>' : '')
 	}
+}
+
+function openWarnModal(btn: HTMLElement) {
+	const slug = encodeURIComponent(btn.dataset['slug'] || '')
+	const group = encodeURIComponent(btn.dataset['group'] || '0')
+	const kind = btn.dataset['warn']
+	const url = kind === 'errors'
+		? '/api/errors?facility=' + slug
+		: kind === 'reservations'
+			? '/api/reservations?facility=' + slug + '&group=' + group
+			: '/api/changes?facility=' + slug + '&group=' + group
+	loadModal(url, btn.dataset['source'])
+}
+
+// the full-schedule modal reuses the map's facility fragment, scoped to the
+// session's schedule group via ?group.
+function openScheduleModal(btn: HTMLElement) {
+	const slug = encodeURIComponent(btn.dataset['slug'] || '')
+	const group = encodeURIComponent(btn.dataset['group'] || '0')
+	loadModal('/map/facility/' + slug + '?group=' + group, btn.dataset['source'])
 }
 
 // turn the server-rendered "updated at X" timestamp into a relative one

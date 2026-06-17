@@ -48,7 +48,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 		<nav class="facility-links">
 			{ children... }
 		</nav>
-		if !opts.HeaderLinks {
+		if !opts.HeaderLinks && opts.Group == nil {
 			<section class="facility-address">
 				<h2>Address</h2>
 				<address>
@@ -94,40 +94,42 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 		}
 		<section class={ "facility-schedules", templ.KV("facility-schedules-list", opts.List) }>
 			for i, grp := range indexedSeq(fac.ScheduleGroups()) {
-				<section
-					class="schedule-group"
-					if opts.Anchors != "" {
-						id={ facilityAnchorID(opts.Anchors, i) }
-					}
-				>
-					if !opts.List {
-						<h3>{ grp.GetTitle() }</h3>
-					}
-					if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
-						<section class="schedule-group-changes">
-							@facilityBox("Schedule Changes", true, opts.List) {
-								@rawScrapedHTML(h)
-							}
-						</section>
-					}
-					if hasReservationLinks(grp) {
-						<section class="schedule-group-reservation">
-							<h4>Reservation</h4>
-							<ul>
-								for u := range grp.GetReservationLinks() {
-									<li><a href={ templ.URL(u.URL) } target="_blank" rel="noopener">{ u.Label }</a></li>
-								}
-							</ul>
-						</section>
-					}
-					for sch := range grp.Schedules() {
-						if opts.List {
-							@websiteFacilityScheduleList(sch)
-						} else {
-							@websiteFacilitySchedule(sch)
+				if opts.Group == nil || *opts.Group == i {
+					<section
+						class="schedule-group"
+						if opts.Anchors != "" {
+							id={ facilityAnchorID(opts.Anchors, i) }
 						}
-					}
-				</section>
+					>
+						if !opts.List {
+							<h3>{ grp.GetTitle() }</h3>
+						}
+						if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
+							<section class="schedule-group-changes">
+								@facilityBox("Schedule Changes", true, opts.List) {
+									@rawScrapedHTML(h)
+								}
+							</section>
+						}
+						if hasReservationLinks(grp) {
+							<section class="schedule-group-reservation">
+								<h4>Reservation</h4>
+								<ul>
+									for u := range grp.GetReservationLinks() {
+										<li><a href={ templ.URL(u.URL) } target="_blank" rel="noopener">{ u.Label }</a></li>
+									}
+								</ul>
+							</section>
+						}
+						for sch := range grp.Schedules() {
+							if opts.List {
+								@websiteFacilityScheduleList(sch)
+							} else {
+								@websiteFacilitySchedule(sch)
+							}
+						}
+					</section>
+				}
 			}
 		</section>
 	</article>

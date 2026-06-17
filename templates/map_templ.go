@@ -186,6 +186,9 @@ type WebsiteMapPopupParams struct {
 	Base     string
 	Slug     string
 	Facility ottrecidx.FacilityRef
+	// Group, if non-nil, restricts the popup to one schedule group (used by the
+	// /today full-schedule modal); nil shows the whole facility.
+	Group *int
 }
 
 // WebsiteMapPopup is the HTML fragment fetched over XHR for facility popups on
@@ -234,7 +237,7 @@ func WebsiteMapPopup(params WebsiteMapPopupParams) templ.Component {
 			var templ_7745c5c3_Var11 templ.SafeURL
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/schedules/facility/" + params.Slug))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 112, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `map.templ`, Line: 115, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -246,9 +249,15 @@ func WebsiteMapPopup(params WebsiteMapPopupParams) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{Star: params.Slug}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var10), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{Star: params.Slug, Group: params.Group}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var10), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
+		}
+		if params.Group != nil {
+			templ_7745c5c3_Err = todayModalSource(params.Facility.GetSourceURL()).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div>")
 		if templ_7745c5c3_Err != nil {
