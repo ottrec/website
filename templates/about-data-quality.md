@@ -11,9 +11,55 @@ I put a lot of work into ensuring that you can rely on the data from ottrec.ca. 
 
 This article is aimed at technical users or other developers.
 
+## Goals and limitations
+
+Before getting into the details, here's an overview of the limitations of the source data, and what I try to ensure.
+
+### Problems with the source data
+
+The facility pages are hand-written and were never meant to be machine-readable. In practice, this means:
+
+- The layout and formatting change in subtle ways over time.
+- Times, dates, and names frequently contain typos.
+- Dates often aren't fully-qualified (the year is often missing).
+- Schedule titles inconsistently include the facility name, activity, and date range.
+- Reservation requirements are marked inconsistently (sometimes per group, sometimes per activity, sometimes only implied by a link, and often a combination).
+- Times come in many forms (12h, 24h, French, am/pm on only one side, and so on).
+- Times have other junk mixed in (characters, "Play Free" text, etc).
+- Cancellations, notices, and special hours are free-form text with no fixed structure.
+- Holiday schedules don't clearly state which regular schedules they override.
+- Activity names vary in tense and wording.
+
+### Goals
+
+Despite all of that, I try to ensure a few things to make the data usable.
+
+The raw data:
+
+- Parsing is fully deterministic (no LLMs, so the same input always produces the same output).
+- The original structure and un-parsed fields are always preserved as a fallback.
+- Times and dates are never silently dropped, even when malformed.
+- A parsed value is only included when it could be parsed unambiguously; otherwise an error is recorded alongside the original.
+- I never invent information that isn't there, for example, I don't guess a year for a date that doesn't include one.
+- When present, parsed values are always internally consistent (e.g., weekdays are valid up given the day/month, time ranges are positive).
+- The raw dataset is never changed once saved and closely mirrors the original website structure.
+
+The website:
+
+- Filtering only ever uses fields that parsed unambiguously. Anything unparseable is always included rather than hidden, so a filter can never silently exclude a potential match.
+- I flag, but never resolve, anything ambiguous. I don't guess which schedule applies on a given day, and I don't try to interpret cancellation text.
+- Caveats are displayed prominently where relevant. Holiday schedules, overlapping schedules, schedule changes, facility-wide notices, and possible reservation requirements each get a visible warning, with a link to the relevant source.
+- The original cancellation text and schedule dates are always shown as written.
+- Any errors during the data collection are displayed with the data.
+- Every schedule view links back to the official city page so you can double-check it.
+
+Although I used LLMs for the lower-risk website code and styling, I did not use them at all for any of the backend, scraping, or data processing code since those parts are a lot more delicate and require careful consideration and decision-making (and it's more fun to do those parts by hand anyways).
+
 ## Scraping
 
 This is the most delicate part since the facility pages are human-written and frequently change format in subtle ways. It is especially important that I don't accidentally discard possible schedule data, and that I parse things deterministically and precisely (rather than relying on an LLM as some similar projects do) to ensure that the data is accurate.
+
+The scraper runs at least twice per day around noon and midnight. Prior to June 16, 2026, it ran at least once per day.
 
 I do this in three stages: crawling, extraction, and parsing.
 
@@ -116,3 +162,5 @@ Usually this means around 15% of the time/activity entries will include some kin
 I hope this article helps explain some of the design decisions I made when creating this website, and also helps increase your confidence in the quality of the data.
 
 Feel free to send me an email if you have any questions.
+
+The code is available on <a href="https://github.com/ottrec">GitHub</a>.
