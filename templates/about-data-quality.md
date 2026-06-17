@@ -1,11 +1,20 @@
+---
+title: How I ensure the quality of ottrec.ca data
+date: June 17, 2026
+author: Patrick Gaskin
+description: How ottrec.ca's recreation schedule data is scraped, parsed, and verified so it stays accurate and complete.
+
+about_label: data quality
+about_blurb: How the schedule data is scraped, parsed, and verified (for the technically inclined).
+
+home_label: data quality
+home_blurb: how the schedule data is scraped, parsed, and verified
+---
+
 <!--
     Copyright (c) 2026 Patrick Gaskin.
     This content is not under LICENSE, and may not be used anywhere other than ottrec.ca.
 -->
-
-# How I ensure the quality of ottrec.ca data
-
-*June 17, 2026*
 
 I put a lot of work into ensuring that you can rely on the data from ottrec.ca. I designed the process carefully (no LLMs involved), and tested it extensively over multiple years of facility pages. I also manually verified many samples of the data.
 

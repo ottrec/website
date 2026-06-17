@@ -14,33 +14,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/a-h/templ"
-	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottregions"
-	"github.com/ottrec/website/templates"
 )
 
-type websiteRegionsHandler struct {
-	websiteHandlerBase
-}
-
-func (h *websiteRegionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Vary", "Accept-Encoding")
-	w.Header().Set("Cache-Control", "public, no-cache")
-
-	if r.URL.RawQuery != "" {
-		w.Header().Set("Cache-Control", "no-store")
-		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
-		return
-	}
-
-	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
-		return templates.WebsiteRegionsPage(templates.WebsiteParams{
-			Base: h.base(r),
-			Data: data,
-		}), http.StatusOK, nil
-	})
-}
+// The /about/regions page itself is a markdown-backed about page (see
+// templates/about-regions.md and the regions-map/regions-table blocks); this
+// file only renders the region shading overlay served at /api/regions/layer.png.
 
 // same as the facility map, web mercator (L.imageOverlay is EPSG:3857)
 const (

@@ -11,15 +11,10 @@
 		padding: 1rem 1rem 3rem;
 	}
 
-	/* center the article column; the map spans the wider main */
-	.about-content h1,
-	.about-content p,
-	.about-content section {
+	/* center the prose column; the map (and table) span the wider main */
+	.about-content > :is(.about-header, h2, h3, h4, p, ul, ol, blockquote) {
 		max-width: 44rem;
 		margin-inline: auto;
-	}
-	.about-content section {
-		scroll-margin-top: .75rem;
 	}
 }
 

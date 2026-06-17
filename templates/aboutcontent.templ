@@ -32,19 +32,69 @@ templ WebsiteAboutContentPage(params WebsiteAboutContentParams) {
 			if params.Content.Description != "" {
 				<meta name="description" content={ params.Content.Description }/>
 			}
-			@websiteSocialHead(params.Base, canonical, params.Content.Title, params.Content.Description)
+			if params.Content.Author != "" {
+				<meta name="author" content={ params.Content.Author }/>
+			}
+			if params.Content.DateISO != "" {
+				<meta name="date" content={ params.Content.DateISO }/>
+			}
+			@websiteArticleSocialHead(params.Base, canonical, params.Content.Title, params.Content.Description, params.Content.Author, params.Content.DateISO)
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.AboutContentCSS) }/>
+			for _, a := range params.Content.HeadCSS() {
+				<link rel="stylesheet" href={ static.Path(a) }/>
+			}
 			@websiteHeadExtra()
 		</head>
-		<body class="about-content-page">
+		<body class={ params.Content.BodyClass }>
 			@websiteTopNav("about", params.Data.Index().Updated())
 			<main>
 				<article class="about-content">
-					@params.Content.Body
+					<header class="about-header">
+						<h1>{ params.Content.Title }</h1>
+						if params.Content.Author != "" || params.Content.Date != "" {
+							<p class="about-byline">
+								if params.Content.Author != "" {
+									{ params.Content.Author }
+								}
+								if params.Content.Author != "" && params.Content.Date != "" {
+									{ " · " }
+								}
+								if params.Content.Date != "" {
+									if params.Content.DateISO != "" {
+										<time datetime={ params.Content.DateISO }>{ params.Content.Date }</time>
+									} else {
+										<time>{ params.Content.Date }</time>
+									}
+								}
+							</p>
+						}
+					</header>
+					@websiteAboutContentBody(params.Content, params.Data)
 				</article>
 			</main>
 			@websiteFooter()
+			@websiteAboutContentFoot(params.Content, params.Data)
 		</body>
 	</html>
+}
+
+// websiteAboutContentBody renders the page body in document order: static
+// markdown chunks interleaved with the dynamic blocks they surround.
+templ websiteAboutContentBody(content *AboutContent, data ottrecidx.DataRef) {
+	for _, part := range content.parts {
+		if part.block != "" {
+			@aboutBlockBody(part.block, data)
+		} else {
+			@part.html
+		}
+	}
+}
+
+// websiteAboutContentFoot renders the end-of-body content (data islands and
+// scripts) contributed by the page's blocks.
+templ websiteAboutContentFoot(content *AboutContent, data ottrecidx.DataRef) {
+	for _, name := range content.blocks {
+		@aboutBlockFoot(name, data)
+	}
 }

@@ -97,9 +97,6 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /about/ottrecql", &websiteOttrecqlHandler{
 		websiteHandlerBase: base,
 	})
-	mux.Handle("GET /about/regions", &websiteRegionsHandler{
-		websiteHandlerBase: base,
-	})
 	for _, slug := range aboutContentPages {
 		mux.Handle("GET /about/"+slug, &websiteAboutContentHandler{
 			websiteHandlerBase: base,
@@ -299,6 +296,7 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 // registration and the sitemap, so it isn't derived from the embedded directory.
 var aboutContentPages = []string{
 	"data-quality",
+	"regions",
 }
 
 type websiteAboutHandler struct {
@@ -585,7 +583,7 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	paths := []string{"", "today", "map", "schedules", "activities", "about", "about/ottrecql", "about/regions"}
+	paths := []string{"", "today", "map", "schedules", "activities", "about", "about/ottrecql"}
 	for _, slug := range aboutContentPages {
 		paths = append(paths, "about/"+slug)
 	}

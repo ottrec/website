@@ -5,9 +5,25 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottregions"
+	"github.com/ottrec/website/static"
 )
+
+// aboutContentBlocks are the dynamic blocks the /about markdown pages can embed
+// (see aboutContentBlock). Only the regions page uses them today: an
+// interactive map and the centrepoint table.
+var aboutContentBlocks = map[string]aboutContentBlock{
+	"regions-map": {
+		Body: regionsMapBody,
+		Foot: regionsMapFoot,
+		CSS:  []*asset.Asset{static.LeafletCSS, static.RegionsCSS},
+	},
+	"regions-table": {
+		Body: regionsTableBody,
+	},
+}
 
 type regionsData struct {
 	Bounds       [4]float64            `json:"bounds"` // [south, west, north, east]
