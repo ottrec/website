@@ -5,6 +5,8 @@
 
 # How I ensure the quality of ottrec.ca data
 
+*June 17, 2026*
+
 I put a lot of work into ensuring that you can rely on the data from ottrec.ca. I designed the process carefully (no LLMs involved), and tested it extensively over multiple years of facility pages. I also manually verified many samples of the data.
 
 This is article is aimed at technical users or other developers.
