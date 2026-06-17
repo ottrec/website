@@ -18,7 +18,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottrecidx"
 )
 
 var (

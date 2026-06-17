@@ -15,10 +15,10 @@ import (
 
 	"github.com/lmittmann/tint"
 	_ "github.com/ncruces/go-sqlite3/embed"
-	"github.com/pgaskin/ottrec-website/internal/gitsh"
-	"github.com/pgaskin/ottrec-website/internal/pflagx"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecdata"
-	"github.com/pgaskin/ottrec-website/routes"
+	"github.com/ottrec/website/internal/gitsh"
+	"github.com/ottrec/website/internal/pflagx"
+	"github.com/ottrec/website/pkg/ottrecdata"
+	"github.com/ottrec/website/routes"
 	"github.com/spf13/pflag"
 )
 
@@ -29,7 +29,7 @@ var (
 	Addr         = pflag.StringP("addr", "a", ":8082", "listen address")
 	Cache        = pflag.StringP("cache", "c", "/tmp/ottrec-data.db", "cache database path (will be wiped and recreated if doesn't exist or outdated)")
 	Repo         = pflag.StringP("repo", "r", "/tmp/ottrec-data.git", "data git repo path (if not set, db will be treated as read-only) (will be initialized as a bare repo if empty)")
-	RepoRemote   = pflag.String("repo-remote", "https://github.com/pgaskin/ottrec-data.git", "remote to fetch")
+	RepoRemote   = pflag.String("repo-remote", "https://github.com/ottrec/data.git", "remote to fetch")
 	RepoBranch   = pflag.String("repo-branch", "v1", "branch to fetch (will be overwriten in the local repo)")
 	RepoRev      = pflag.String("repo-rev", "", "override the rev to scan (for debugging only)")
 	RepoInterval = pflag.DurationP("repo-interval", "i", time.Minute*15, "poll interval for repo (0 to only pull once at startup)")

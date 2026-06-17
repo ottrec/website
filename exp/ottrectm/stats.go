@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottregions"
 )
 
 // this file computes high-level per-activity-category statistics across

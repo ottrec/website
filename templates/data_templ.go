@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecdata"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecexp"
-	"github.com/pgaskin/ottrec-website/static"
+	"github.com/ottrec/website/pkg/ottrecdata"
+	"github.com/ottrec/website/pkg/ottrecexp"
+	"github.com/ottrec/website/static"
 )
 
 // dataTopNav renders the data site's navbar in the shared style: the brand
@@ -254,7 +254,7 @@ func DataHome(params DataHomeParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<main><header class=\"data-header\"><h1>Ottawa recreation schedule data</h1></header><section id=\"about\"><p>This page provides an unofficial dataset of the City of Ottawa drop-in recreation schedules, updated daily.</p><p>If you encounter any problems or inaccurate data, please <a href=\"https://github.com/pgaskin/ottrec/issues/new\">open an issue</a>.</p><p>The data was last updated on ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<main><header class=\"data-header\"><h1>Ottawa recreation schedule data</h1></header><section id=\"about\"><p>This page provides an unofficial dataset of the City of Ottawa drop-in recreation schedules, updated daily.</p><p>If you encounter any problems or inaccurate data, please <a href=\"https://github.com/ottrec/scraper/issues/new\">open an issue</a>.</p><p>The data was last updated on ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -714,7 +714,7 @@ func DataHome(params DataHomeParams) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "<section id=\"license\"><h2>License</h2><p>This data has been scraped and redistributed with permission from the City of Ottawa, and can be used freely as long as the attribution text in the provided files is displayed where the data is used.</p></section></main><footer class=\"site-footer\"><p>© 2025–2026 Patrick Gaskin.</p><nav><ul><li><a href=\"https://ottrec.ca/\">ottrec.ca</a></li><li><a href=\"#license\">License</a></li><li><a href=\"https://github.com/pgaskin/ottrec\">GitHub</a></li><li><a href=\"https://github.com/pgaskin/ottrec/issues/new\">Report an issue</a></li></ul></nav></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "<section id=\"license\"><h2>License</h2><p>This data has been scraped and redistributed with permission from the City of Ottawa, and can be used freely as long as the attribution text in the provided files is displayed where the data is used.</p></section></main><footer class=\"site-footer\"><p>© 2025–2026 Patrick Gaskin.</p><nav><ul><li><a href=\"https://ottrec.ca/\">ottrec.ca</a></li><li><a href=\"#license\">License</a></li><li><a href=\"https://github.com/ottrec/scraper\">GitHub</a></li><li><a href=\"https://github.com/ottrec/scraper/issues/new\">Report an issue</a></li></ul></nav></footer></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

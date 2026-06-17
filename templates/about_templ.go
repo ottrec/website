@@ -7,7 +7,7 @@ package templates
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/pgaskin/ottrec-website/static"
+import "github.com/ottrec/website/static"
 
 func WebsiteAboutPage(params WebsiteParams) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

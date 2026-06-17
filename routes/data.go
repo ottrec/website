@@ -23,14 +23,14 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/klauspost/compress/zip"
-	"github.com/pgaskin/ottrec-website/internal/httpx"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecdata"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecexp"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecexph"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecql"
-	"github.com/pgaskin/ottrec-website/static"
-	"github.com/pgaskin/ottrec-website/templates"
+	"github.com/ottrec/website/internal/httpx"
+	"github.com/ottrec/website/pkg/ottrecdata"
+	"github.com/ottrec/website/pkg/ottrecexp"
+	"github.com/ottrec/website/pkg/ottrecexph"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottrecql"
+	"github.com/ottrec/website/static"
+	"github.com/ottrec/website/templates"
 	"github.com/pgaskin/xmlwriter"
 )
 

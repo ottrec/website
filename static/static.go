@@ -12,10 +12,10 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/ottrec/website/internal/asset"
+	"github.com/ottrec/website/internal/esbuild"
+	"github.com/ottrec/website/internal/npm"
 	"github.com/pgaskin/go-lightningcss"
-	"github.com/pgaskin/ottrec-website/internal/asset"
-	"github.com/pgaskin/ottrec-website/internal/esbuild"
-	"github.com/pgaskin/ottrec-website/internal/npm"
 )
 
 //go:generate go run fonts.go

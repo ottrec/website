@@ -1,4 +1,4 @@
-module github.com/pgaskin/ottrec-website
+module github.com/ottrec/website
 
 go 1.26.2
 
@@ -11,8 +11,8 @@ require (
 	github.com/klauspost/compress v1.18.6
 	github.com/lmittmann/tint v1.1.3
 	github.com/ncruces/go-sqlite3 v0.35.0
+	github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7
 	github.com/pgaskin/go-lightningcss v0.0.0-20260614010002-b10cc786152c
-	github.com/pgaskin/ottrec v0.0.0-20260615074830-539684fe76b5
 	github.com/pgaskin/xmlwriter v0.0.4
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/spf13/pflag v1.0.10

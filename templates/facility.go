@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottregions"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )

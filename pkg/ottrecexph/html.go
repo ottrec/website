@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/pgaskin/xmlwriter"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"

@@ -46,7 +46,7 @@ const (
 
 const (
 	overpassURL = "https://overpass-api.de/api/interpreter"
-	userAgent   = "ottrec-codegen/1.0 (github.com/pgaskin/ottrec)"
+	userAgent   = "ottrec-codegen/1.0 (github.com/ottrec/scraper)"
 	outFile     = "regions.go"
 )
 

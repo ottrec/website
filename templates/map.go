@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottrecidx"
 )
 
 // mapDays contains the weekday labels for the map filter, starting at Sunday to

@@ -10,9 +10,9 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"strconv"
 
-	"github.com/pgaskin/ottrec-website/exp/ottrectm"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/static"
+	"github.com/ottrec/website/exp/ottrectm"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/static"
 )
 
 // timemachineHead renders the shared <head> for the time machine pages. Only the

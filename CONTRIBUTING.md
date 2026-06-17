@@ -10,16 +10,16 @@ mkdir ottrec
 cd ottrec
 
 # clone the repositories
-git clone https://github.com/pgaskin/ottrec ottrec
-git clone https://github.com/pgaskin/ottrec-website website
-git clone https://github.com/pgaskin/ottrec-data data --filter=blob:none
-git clone https://github.com/pgaskin/ottrec-misc misc
-git clone https://github.com/pgaskin/ottrec-infra infra
+git clone https://github.com/ottrec/scraper scraper
+git clone https://github.com/ottrec/website website
+git clone https://github.com/ottrec/data data --filter=blob:none
+git clone https://github.com/ottrec/misc misc
+git clone https://github.com/ottrec/infra infra
 git -C data worktree add ../cache cache
 
 # set up the go workspace
 go work init
-go work use ./ottrec
+go work use ./scraper
 go work use ./website
 go work use ./misc
 
@@ -73,7 +73,7 @@ alias croot='cd "$(ottrec-root)"'
 #### Running the unit tests
 
 ```bash
-go test -v ./ottrec/...
+go test -v ./scraper/...
 ```
 
 #### Running the scraper locally using cached data
@@ -88,7 +88,7 @@ git -C cache pull
 git -C data pull
 
 # run the scraper
-go run ./ottrec/scraper -cache ./cache -geocodio -scrape -export.pretty -export.proto ./data/data.proto -export.pb ./data/data.pb -export.textpb ./data/data.textpb -export.json ./data/data.json
+go run ./scraper/scraper -cache ./cache -geocodio -scrape -export.pretty -export.proto ./data/data.proto -export.pb ./data/data.pb -export.textpb ./data/data.textpb -export.json ./data/data.json
 
 # inspect the changes
 git -C data diff
@@ -109,9 +109,9 @@ Also run this when updating the protobuf module.
 If backwards-incompatible changes are ever necessary, create a new v2 subdir with the new schema, put stuff in there, create a new v2 api using the v2 schema, and create a new v2 branch in the data repo.
 
 ```bash
-buf lint ./ottrec/schema/schema.proto # ignore the warnings about underscored field names, v1 dir, and the weekday enum
-buf breaking --against ./data/data.proto ./ottrec/schema/schema.proto
-go generate ./ottrec/schema
+buf lint ./scraper/schema/schema.proto # ignore the warnings about underscored field names, v1 dir, and the weekday enum
+buf breaking --against ./data/data.proto ./scraper/schema/schema.proto
+go generate ./scraper/schema
 ```
 
 ### Website

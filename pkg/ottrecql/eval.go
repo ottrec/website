@@ -6,8 +6,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/pkg/ottrecidx"
 )
 
 // TODO: optimize expression by swapping sides of and/or by cost

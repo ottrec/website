@@ -12,10 +12,10 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecdl"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecql"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/pkg/ottrecdl"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottrecql"
 )
 
 func main() {

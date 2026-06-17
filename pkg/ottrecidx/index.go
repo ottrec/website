@@ -11,8 +11,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/pkg/ottregions"
 	"google.golang.org/protobuf/proto"
 )
 

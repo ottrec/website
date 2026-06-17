@@ -9,7 +9,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"cmp"
-	"github.com/pgaskin/ottrec-website/static"
+	"github.com/ottrec/website/static"
 )
 
 func WebsiteSchedulesPage(params WebsiteSchedulesParams) templ.Component {

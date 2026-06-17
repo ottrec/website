@@ -8,8 +8,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/static"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/static"
 	"strings"
 	"time"
 )

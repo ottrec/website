@@ -20,13 +20,13 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/lmittmann/tint"
-	"github.com/pgaskin/ottrec-website/exp/ottrectm"
-	"github.com/pgaskin/ottrec-website/internal/asset"
-	"github.com/pgaskin/ottrec-website/internal/pflagx"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/routes"
-	"github.com/pgaskin/ottrec-website/static"
-	"github.com/pgaskin/ottrec-website/templates"
+	"github.com/ottrec/website/exp/ottrectm"
+	"github.com/ottrec/website/internal/asset"
+	"github.com/ottrec/website/internal/pflagx"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/routes"
+	"github.com/ottrec/website/static"
+	"github.com/ottrec/website/templates"
 	"github.com/spf13/pflag"
 )
 

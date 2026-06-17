@@ -19,7 +19,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
+	"github.com/ottrec/website/pkg/ottregions"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
@@ -31,7 +31,7 @@ const (
 	north, east = 45.7, -75.0
 	zoom        = 11
 	tileURL     = "https://a.basemaps.cartocdn.com/rastertiles/voyager/%d/%d/%d.png"
-	userAgent   = "ottrec-codegen/1.0 (github.com/pgaskin/ottrec)"
+	userAgent   = "ottrec-codegen/1.0 (github.com/ottrec/scraper)"
 	alpha       = 0.42 // overlay opacity over the basemap
 )
 

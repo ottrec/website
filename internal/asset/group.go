@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/pgaskin/ottrec-website/internal/httpx"
+	"github.com/ottrec/website/internal/httpx"
 )
 
 // encodings lists the supported Content-Encodings in negotiation preference

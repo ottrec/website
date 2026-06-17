@@ -17,7 +17,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/klauspost/compress/zstd"
-	"github.com/pgaskin/ottrec-website/internal/httpx"
+	"github.com/ottrec/website/internal/httpx"
 )
 
 //go:generate go tool templ fmt .

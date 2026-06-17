@@ -21,8 +21,8 @@ import (
 	"github.com/klauspost/compress/gzip"
 	"github.com/ncruces/go-sqlite3"
 	"github.com/ncruces/go-sqlite3/driver"
-	"github.com/pgaskin/ottrec-website/internal/gitsh"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/internal/gitsh"
 	"google.golang.org/protobuf/proto"
 )
 

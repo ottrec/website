@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/pgaskin/ottrec-website/internal/npm"
+	"github.com/ottrec/website/internal/npm"
 )
 
 // Downloads the npm packages locked in ../package-lock.json and writes each as

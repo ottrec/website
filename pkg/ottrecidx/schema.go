@@ -3,7 +3,7 @@ package ottrecidx
 import (
 	"time"
 
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
 )
 
 // this file contains the internal representation of data based on the schema

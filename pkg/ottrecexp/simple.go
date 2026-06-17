@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottregions"
 )
 
 type Table[T Row] []*T

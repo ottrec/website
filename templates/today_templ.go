@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/static"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/static"
 )
 
 func WebsiteTodayPage(params WebsiteTodayParams) templ.Component {

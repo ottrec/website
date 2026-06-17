@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecdata"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecexp"
-	"github.com/pgaskin/ottrec-website/static"
+	"github.com/ottrec/website/pkg/ottrecdata"
+	"github.com/ottrec/website/pkg/ottrecexp"
+	"github.com/ottrec/website/static"
 )
 
 // dataTopNav renders the data site's navbar in the shared style: the brand
@@ -79,7 +79,7 @@ templ DataHome(params DataHomeParams) {
 						This page provides an unofficial dataset of the City of Ottawa drop-in recreation schedules, updated daily.
 					</p>
 					<p>
-						If you encounter any problems or inaccurate data, please <a href="https://github.com/pgaskin/ottrec/issues/new">open an issue</a>.
+						If you encounter any problems or inaccurate data, please <a href="https://github.com/ottrec/scraper/issues/new">open an issue</a>.
 					</p>
 					<p>
 						The data was last updated on { params.Latest.Updated.In(ottrecdata.TZ).Format("2006-01-02") }.
@@ -281,8 +281,8 @@ templ DataHome(params DataHomeParams) {
 					<ul>
 						<li><a href="https://ottrec.ca/">ottrec.ca</a></li>
 						<li><a href="#license">License</a></li>
-						<li><a href="https://github.com/pgaskin/ottrec">GitHub</a></li>
-						<li><a href="https://github.com/pgaskin/ottrec/issues/new">Report an issue</a></li>
+						<li><a href="https://github.com/ottrec/scraper">GitHub</a></li>
+						<li><a href="https://github.com/ottrec/scraper/issues/new">Report an issue</a></li>
 					</ul>
 				</nav>
 			</footer>

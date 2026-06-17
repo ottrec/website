@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
 )
 
 // this file implements higher-level operations on schema object iterators

@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	"github.com/pgaskin/ottrec-website/exp/ottrectm"
-	"github.com/pgaskin/ottrec-website/static"
-	"github.com/pgaskin/ottrec-website/templates"
+	"github.com/ottrec/website/exp/ottrectm"
+	"github.com/ottrec/website/static"
+	"github.com/ottrec/website/templates"
 )
 
 type TimemachineConfig struct {

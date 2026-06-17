@@ -15,9 +15,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/lmittmann/tint"
-	"github.com/pgaskin/ottrec-website/internal/pflagx"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/routes"
+	"github.com/ottrec/website/internal/pflagx"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/routes"
 	"github.com/spf13/pflag"
 )
 

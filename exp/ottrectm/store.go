@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecdata"
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottrecdata"
+	"github.com/ottrec/website/pkg/ottrecidx"
 )
 
 // Dataset is one loaded historical snapshot.

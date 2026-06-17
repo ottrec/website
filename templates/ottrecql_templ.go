@@ -7,7 +7,7 @@ package templates
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/pgaskin/ottrec-website/static"
+import "github.com/ottrec/website/static"
 
 // ottrecqlReference renders the ottrecql query-language documentation: an intro,
 // worked examples, and the function/operator reference. It's shared between the

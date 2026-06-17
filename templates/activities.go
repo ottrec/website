@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottregions"
 )
 
 // activityPeriods contains the time-of-day periods for the activities page as

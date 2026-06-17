@@ -3,8 +3,8 @@ package ottrecidx
 import (
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/pkg/ottregions"
 )
 
 // this file contains additional helpers to perform computations on refs, possibly with optimizations

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pgaskin/ottrec-website/pkg/ottrecidx"
-	"github.com/pgaskin/ottrec-website/pkg/ottregions"
-	"github.com/pgaskin/ottrec/schema"
+	"github.com/ottrec/scraper/schema"
+	"github.com/ottrec/website/pkg/ottrecidx"
+	"github.com/ottrec/website/pkg/ottregions"
 )
 
 // todayWindowDays is how many days the chronological feed runs, including
@@ -48,17 +48,17 @@ var todayPeriods = activityPeriods
 // placed by their own date semantics, independently — we never merge or
 // override across them (see PLAN.md "flag, never resolve").
 type todaySession struct {
-	Start    int    // start minutes from midnight (for sorting/filtering)
-	End      int    // end minutes from midnight (may exceed 1440 for overnight)
-	Time     string // human clock-range label
-	Activity string
-	Facility string
-	Slug     string
-	Region   string
-	Sector   string // sector display label ("Central"…/"Other")
-	Cats     int    // bitmask of [mapCategories] indexes (+ Other bit)
-	Weekday  int    // 0 = Sunday, for the weekday filter
-	Qual      string // date-range qualifier, shown only for bounded/seasonal schedules
+	Start      int    // start minutes from midnight (for sorting/filtering)
+	End        int    // end minutes from midnight (may exceed 1440 for overnight)
+	Time       string // human clock-range label
+	Activity   string
+	Facility   string
+	Slug       string
+	Region     string
+	Sector     string // sector display label ("Central"…/"Other")
+	Cats       int    // bitmask of [mapCategories] indexes (+ Other bit)
+	Weekday    int    // 0 = Sunday, for the weekday filter
+	Qual       string // date-range qualifier, shown only for bounded/seasonal schedules
 	Fixed      bool   // a published fixed-date (holiday/special) session
 	SourceURL  string // City of Ottawa facility page (for warning lines + the source link)
 	GroupIndex int    // index of the session's schedule group within the facility (for /api/changes)
@@ -151,11 +151,11 @@ type todayFeed struct {
 // todayDataJSON is embedded into the page as a JSON island and consumed by the
 // filter pills in static/today.ts.
 type todayDataJSON struct {
-	Updated    string             `json:"updated"`
-	Weekdays   []string           `json:"weekdays"`   // Sun..Sat
-	Categories []string           `json:"categories"` // [mapCategories] + Other
-	Periods    []todayPeriodJSON  `json:"periods"`
-	Sectors    []string           `json:"sectors"` // group order for the facility pill
+	Updated    string              `json:"updated"`
+	Weekdays   []string            `json:"weekdays"`   // Sun..Sat
+	Categories []string            `json:"categories"` // [mapCategories] + Other
+	Periods    []todayPeriodJSON   `json:"periods"`
+	Sectors    []string            `json:"sectors"` // group order for the facility pill
 	Facilities []todayFacilityJSON `json:"facilities"`
 }
 
