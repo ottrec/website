@@ -109,6 +109,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 																<span class="t-qual">{ s.Qual }</span>
 															}
 															@todaySessionWarnings(s)
+															@todaySessionReservation(s)
 														</li>
 													}
 												</ol>
@@ -162,6 +163,58 @@ templ todaySessionWarnings(s todaySession) {
 			<span>Some of this facility's times couldn't be read; this may be incomplete.</span>
 		</button>
 	}
+}
+
+// todaySessionReservation renders the grey boxed note shown below the warnings
+// when the session's activity requires (or may require) a reservation. It opens
+// a modal (fetched from /api/reservations) listing the group's reservation
+// links.
+templ todaySessionReservation(s todaySession) {
+	if s.Reservations {
+		<button type="button" class="t-warn t-resv" data-warn="reservations" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			if s.ResvDefinite {
+				<span>A reservation is required for this activity — see the booking options.</span>
+			} else {
+				<span>A reservation may be required for this activity — see the booking options.</span>
+			}
+		</button>
+	}
+}
+
+// WebsiteTodayReservationsParams is the data for the reservations modal fragment.
+type WebsiteTodayReservationsParams struct {
+	Facility ottrecidx.FacilityRef
+	Group    ottrecidx.ScheduleGroupRef
+	HasGroup bool
+}
+
+// WebsiteTodayReservations is the HTML fragment fetched for the "reservation
+// required" modal: the facility/group name and the group's reservation links,
+// with a link to the official page at the bottom.
+templ WebsiteTodayReservations(params WebsiteTodayReservationsParams) {
+	{{ fac := params.Facility }}
+	<div class="today-modal-body">
+		<h2>{ fac.GetName() }</h2>
+		if params.HasGroup {
+			if t := strings.TrimSpace(params.Group.GetTitle()); t != "" {
+				<p class="today-modal-lead">{ t }</p>
+			}
+		}
+		if params.HasGroup && hasReservationLinks(params.Group) {
+			<section>
+				<h3>Reservations</h3>
+				<ul class="today-modal-links">
+					for u := range params.Group.GetReservationLinks() {
+						<li><a href={ templ.URL(u.URL) } target="_blank" rel="noopener">{ u.Label }</a></li>
+					}
+				</ul>
+			</section>
+		} else {
+			<p class="today-modal-empty">No booking links are posted here — check the official page for reservation details.</p>
+		}
+		@todayModalSource(fac.GetSourceURL())
+	</div>
 }
 
 // WebsiteTodayErrors is the HTML fragment fetched for the "possibly incomplete"

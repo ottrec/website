@@ -74,6 +74,7 @@ func main() {
 			'\uf20e', // database
 			'\uf09a', // star
 			'\ue002', // warning
+			'\ue88e', // info
 			'\ue5c5', // arrow_drop_down
 			'\ue518', // light_mode
 			'\ue51c', // dark_mode

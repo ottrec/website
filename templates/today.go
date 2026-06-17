@@ -69,6 +69,11 @@ type todaySession struct {
 	Holiday    bool // facility has a fixed-date schedule near the feed
 	Changes    bool // the session's group has a schedule-changes block
 	Incomplete bool // the facility has scrape errors
+
+	// reservation note (per activity), shown as a grey boxed note below the
+	// warnings opening a modal sourced from /api/reservations
+	Reservations bool // the activity requires or may require a reservation
+	ResvDefinite bool // the requirement is definite (vs. "may be required")
 }
 
 // todayHourGroup is the sessions in a day that start within the same clock
@@ -318,6 +323,7 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 						continue
 					}
 					cats := mapActivityCategoryMask(mapActivityName(act))
+					resvReq, resvDef := act.GuessReservationRequirement()
 					for tm := range act.Times() {
 						r, ok := tm.GetRange()
 						if !ok {
@@ -340,6 +346,9 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 							Holiday:    holiday,
 							Changes:    changes,
 							Incomplete: incomplete,
+
+							Reservations: resvReq,
+							ResvDefinite: resvDef,
 						}
 
 						place := func(i int, wd time.Weekday) {

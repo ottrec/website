@@ -697,6 +697,15 @@ button.t-warn:hover span:last-child {
 .t-warn.changes .t-warn-ico { color: var(--fxki-or); }
 .t-warn.incomplete .t-warn-ico { color: var(--fxki-tx-2); }
 
+/* reservation note (grey box, info icon), below the warnings */
+.t-warn.t-resv {
+	background: light-dark(rgb(0 0 0 / .04), rgb(255 255 255 / .05));
+	border-color: var(--fxki-ui);
+	color: var(--fxki-tx-2);
+}
+.t-warn.t-resv .t-warn-ico { color: var(--fxki-tx-2); }
+.t-warn.t-resv .t-warn-ico::before { content: '\e88e'; /* info */ }
+
 /* "now"/"past" states, set client-side in Ottawa time */
 .today-session.now {
 	background: light-dark(rgb(32 94 166 / .1), rgb(131 173 234 / .16));
@@ -788,6 +797,17 @@ button.t-warn:hover span:last-child {
 }
 .today-modal-errors li {
 	margin: .15rem 0;
+}
+.today-modal-links {
+	margin: 0 0 .5rem;
+	padding-left: 1.2rem;
+	font-size: .85rem;
+}
+.today-modal-links li {
+	margin: .2rem 0;
+}
+.today-modal-links a {
+	color: var(--fxki-bl);
 }
 .today-modal-source {
 	margin: 1rem 0 0;

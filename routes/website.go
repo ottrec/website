@@ -65,6 +65,9 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /api/errors", &websiteTodayErrorsHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /api/reservations", &websiteTodayReservationsHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("GET /schedules", &websiteSchedulesHandler{
 		websiteHandlerBase: base,
 	})
@@ -691,6 +694,33 @@ func (h *websiteTodayErrorsHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
 		}
 		return templates.WebsiteTodayErrors(fac), http.StatusOK, nil
+	})
+}
+
+// websiteTodayReservationsHandler serves the HTML fragment for the today page's
+// "reservation required" modal: the facility/group name and the group's
+// reservation links.
+type websiteTodayReservationsHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteTodayReservationsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	slug := r.URL.Query().Get("facility")
+	group, _ := strconv.Atoi(r.URL.Query().Get("group"))
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		fac, ok := templates.MapFacilityBySlug(data, slug)
+		if !ok {
+			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
+		}
+		grp, hasGroup := templates.FacilityGroupAt(fac, group)
+		return templates.WebsiteTodayReservations(templates.WebsiteTodayReservationsParams{
+			Facility: fac,
+			Group:    grp,
+			HasGroup: hasGroup,
+		}), http.StatusOK, nil
 	})
 }
 

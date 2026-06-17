@@ -653,9 +653,13 @@ modal.addEventListener('click', (ev) => {
 let modalToken = 0
 async function openWarnModal(btn: HTMLElement) {
 	const slug = btn.dataset['slug'] || ''
-	const url = btn.dataset['warn'] === 'errors'
+	const group = encodeURIComponent(btn.dataset['group'] || '0')
+	const kind = btn.dataset['warn']
+	const url = kind === 'errors'
 		? '/api/errors?facility=' + encodeURIComponent(slug)
-		: '/api/changes?facility=' + encodeURIComponent(slug) + '&group=' + encodeURIComponent(btn.dataset['group'] || '0')
+		: kind === 'reservations'
+			? '/api/reservations?facility=' + encodeURIComponent(slug) + '&group=' + group
+			: '/api/changes?facility=' + encodeURIComponent(slug) + '&group=' + group
 	const token = ++modalToken
 	modalContent.innerHTML = '<p class="today-modal-loading">Loading…</p>'
 	if (!modal.open) modal.showModal()
