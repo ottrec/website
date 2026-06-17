@@ -10,6 +10,7 @@ import (
 	"encoding/base32"
 	"fmt"
 	"io/fs"
+	"iter"
 	"mime"
 	"path"
 	"strings"
@@ -69,6 +70,23 @@ type Asset struct {
 type origin struct {
 	fsys fs.FS
 	path string
+}
+
+// All iterates over every asset registered in the set, in arbitrary order.
+func (s *Set) All() iter.Seq[*Asset] {
+	s.mu.Lock()
+	assets := make([]*Asset, 0, len(s.assets))
+	for _, a := range s.assets {
+		assets = append(assets, a)
+	}
+	s.mu.Unlock()
+	return func(yield func(*Asset) bool) {
+		for _, a := range assets {
+			if !yield(a) {
+				return
+			}
+		}
+	}
 }
 
 // Source returns the asset's path within its set's filesystem.

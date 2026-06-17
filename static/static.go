@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"embed"
 	"io/fs"
+	"iter"
 	"net/http"
 	"os"
 	"regexp"
@@ -48,6 +49,10 @@ func must[T any](v T, err error) T {
 	}
 	return v
 }
+
+// Assets iterates over every registered asset, for tooling that builds or
+// inspects them outside of serving (e.g. cmd/ottrec-website-check).
+func Assets() iter.Seq[*asset.Asset] { return assets.All() }
 
 // Path returns the public, content-addressed path at which a is served.
 func Path(a *asset.Asset) string {
