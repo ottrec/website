@@ -159,14 +159,31 @@
 	}
 }
 
-/* base table styling (borders, padding, font) comes from about-content.css; only
-   the centered column width and the right-aligned numeric cells are page-specific */
+/* base table styling (borders, padding, font) comes from about-content.css; the
+   page-specific bits: hold the tables to the same measure as the prose (centered
+   in the column, not the full main width) and right-align the numeric cells */
 .regions-page .region-table {
-	max-width: 44rem;
-	margin: .75rem auto 0;
+	max-width: 38rem;
+	margin: .75rem auto;
 
 	.num {
 		text-align: right;
 		font-variant-numeric: tabular-nums;
 	}
+}
+
+/* the weight table lays each affected facility on its own line with the boundary
+   distance muted to the right */
+.regions-page .region-weight-fac {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+}
+.regions-page .region-weight-fac + .region-weight-fac {
+	margin-top: .15rem;
+}
+.regions-page .region-weight-margin {
+	color: var(--fxki-tx-2);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
 }

@@ -30,6 +30,37 @@ templ regionsMapFoot(data ottrecidx.DataRef) {
 	<script src={ static.Path(static.RegionsJS) }></script>
 }
 
+// regionsWeightBody is the "regions-weight" about block: the hand-tuned boundary
+// weights (overrides.go) and the facilities each one reassigned, listed against
+// the unweighted Voronoi.
+templ regionsWeightBody(data ottrecidx.DataRef) {
+	<table class="region-table region-weight-table">
+		<thead>
+			<tr>
+				<th>Region</th>
+				<th class="num">Weight</th>
+				<th>Reassigned facilities</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, row := range regionWeightRows(data) {
+				<tr>
+					<td>{ row.Region }</td>
+					<td class="num">{ row.Weight }</td>
+					<td>
+						for _, f := range row.Affected {
+							<div class="region-weight-fac">
+								<span>{ f.Name } → { f.To }</span>
+								<span class="region-weight-margin">{ f.Margin }</span>
+							</div>
+						}
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
 // regionsTableBody is the "regions-table" about block: the region centrepoints
 // table (the OpenStreetMap label points the regions are derived from).
 templ regionsTableBody(data ottrecidx.DataRef) {

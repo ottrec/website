@@ -88,6 +88,17 @@ func (r Region) LatLng() (lat, lng float64) {
 	return i.Lat, i.Lng
 }
 
+// DistKm approximates the distance in kilometres from a coordinate to the
+// region's label point, using the same longitude-by-latitude weighting as
+// [RegionAt] (so it matches the distances the classifier compares).
+func (r Region) DistKm(lat, lng float64) float64 {
+	rlat, rlng := r.LatLng()
+	cosLat := math.Cos(lat * math.Pi / 180)
+	dx := (lng - rlng) * cosLat
+	dy := lat - rlat
+	return math.Sqrt(dx*dx+dy*dy) * 111.0
+}
+
 // maxRegionDist is how far (in degrees, ~one part in 111 per km) the nearest
 // place may be before [RegionAt] gives up and returns [RegionUnknown]. ~20 km
 // comfortably covers the gaps between rural villages while rejecting points well
@@ -104,21 +115,46 @@ func MaxRegionDist() float64 { return maxRegionDist }
 // style assignment: OSM place labels are points, not areas, so a coordinate
 // belongs to the closest one (longitude weighted by latitude so the comparison
 // is in real distance, not raw degrees).
-func RegionAt(lat, lng float64) Region {
-	best, bestDist := RegionUnknown, math.Inf(1)
+//
+// The comparison is additively weighted: a region's hand-tuned weight (see
+// overrides.go) is subtracted from its distance before picking the nearest, so
+// a positive weight enlarges the region's cell and a negative weight shrinks it.
+// This corrects boundaries where the bare label anchors fall in the wrong place.
+// The ~20 km cutoff is always measured on the true distance, never the weight.
+func RegionAt(lat, lng float64) Region { return regionAt(lat, lng, regionWeightDeg) }
+
+// RegionAtUnweighted is [RegionAt] without the overrides.go weights: the bare
+// nearest-anchor Voronoi. Exposed so the weight tweaks can be shown against the
+// unweighted baseline.
+func RegionAtUnweighted(lat, lng float64) Region { return regionAt(lat, lng, nil) }
+
+// regionAt is the shared classifier. weights, if non-nil, is a per-region offset
+// in degrees subtracted from each distance before choosing the nearest.
+func regionAt(lat, lng float64, weights []float64) Region {
+	best, bestScore, bestDist := RegionUnknown, math.Inf(1), math.Inf(1)
 	cosLat := math.Cos(lat * math.Pi / 180)
 	for r := 1; r < len(regions); r++ { // skip RegionUnknown (index 0)
 		dx := (lng - regions[r].Lng) * cosLat
 		dy := lat - regions[r].Lat
-		if d := dx*dx + dy*dy; d < bestDist {
-			best, bestDist = Region(r), d
+		dist := math.Sqrt(dx*dx + dy*dy)
+		score := dist
+		if weights != nil {
+			score -= weights[r]
+		}
+		if score < bestScore {
+			best, bestScore, bestDist = Region(r), score, dist
 		}
 	}
-	if bestDist > maxRegionDist*maxRegionDist {
+	if bestDist > maxRegionDist {
 		return RegionUnknown
 	}
 	return best
 }
+
+// RegionWeight returns the hand-tuned boundary weight applied to the region in
+// [RegionAt], in kilometres (positive enlarges the cell, negative shrinks it),
+// or 0 if the region has none. See overrides.go.
+func RegionWeight(r Region) float64 { return regionWeights[r.info().Name] }
 
 // Sector is a coarse part of the city used as a rough hint alongside a
 // [Region]. The zero value is [SectorUnknown].

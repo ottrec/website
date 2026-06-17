@@ -40,6 +40,8 @@ A common way to derive regions from such point data is to construct a Voronoi di
 
 I implemented this approach using OpenStreetMap data (via the [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API)), and it turns out that it classifies almost all facilities the way you'd expect, while remaining deterministic, reproducible, and free from subjective boundary decisions.
 
+There were a few edge cases for facilities within a few hundred meters of the computed boundaries, but these were fixable by adding a weight mechanism so I could bump them slightly.
+
 ## Sectors
 
 For the more broad central/south/east/west classifications, I just drew some approximate lines.
@@ -49,4 +51,13 @@ For the more broad central/south/east/west classifications, I just drew some app
 This is the OpenStreetMap data I use to determine the boundaries.
 
 ```block regions-table
+```
+
+## Weight tweaks
+
+To fix the classification of a few facilities near the edges, I added a weight mechanism to tweak the boundaries of some of the regions. Each weight is a distance added to (or, when negative, subtracted from) a region's reach, so a positive value grows its cell and a negative value shrinks it. A few facilities sit just over a region's edge but clearly belong to its neighbour; a small weight nudges the boundary past them.
+
+The table below lists each weight and the facilities it reassigned, against the unweighted result. The distance is how far past the unweighted boundary the facility sat, which is the gap the weights had to close. A couple of facilities needed a pair of tweaks: one to shrink the region they were wrongly in, and one to grow the neighbour that should have them.
+
+```block regions-weight
 ```

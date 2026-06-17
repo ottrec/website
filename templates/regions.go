@@ -23,6 +23,9 @@ var aboutContentBlocks = map[string]aboutContentBlock{
 	"regions-table": {
 		Body: regionsTableBody,
 	},
+	"regions-weight": {
+		Body: regionsWeightBody,
+	},
 }
 
 type regionsData struct {
@@ -105,5 +108,71 @@ func regionRows() []regionRow {
 		})
 	}
 	sort.Slice(rows, func(i, j int) bool { return rows[i].Name < rows[j].Name })
+	return rows
+}
+
+// regionWeightRow is one weighted region in the "regions-weight" table: the
+// weight and the facilities its tweak reassigned (see overrides.go).
+type regionWeightRow struct {
+	Region   string
+	Weight   string // signed, e.g. "+0.45 km" / "-0.40 km"
+	Affected []regionWeightFacility
+}
+
+// regionWeightFacility is a facility a weight reassigned: its name, the region it
+// was moved to, and how far past the unweighted boundary it sat (the gap the
+// weights had to close). It is listed under the region it was moved from.
+type regionWeightFacility struct {
+	Name   string
+	To     string
+	Margin string
+}
+
+// regionWeightRows lists the boundary weights and the facilities each one moved,
+// computed by comparing the weighted assignment against the unweighted Voronoi.
+// Each reassigned facility is listed once, under the region it was moved from
+// (the unweighted assignment); the To field gives where it ended up. A grown
+// (positive) region that only receives facilities therefore lists none of its
+// own, but still appears so every weight is documented.
+func regionWeightRows(data ottrecidx.DataRef) []regionWeightRow {
+	type aff struct {
+		name, to string
+		margin   float64
+	}
+	byRegion := map[ottregions.Region][]aff{}
+	for fac := range data.Facilities() {
+		lng, lat, ok := fac.GetLngLat()
+		if !ok {
+			continue
+		}
+		flat, flng := float64(lat), float64(lng)
+		uw := ottregions.RegionAtUnweighted(flat, flng)
+		w := ottregions.RegionAt(flat, flng)
+		if uw == w {
+			continue
+		}
+		margin := w.DistKm(flat, flng) - uw.DistKm(flat, flng)
+		byRegion[uw] = append(byRegion[uw], aff{fac.GetName(), w.Name(), margin})
+	}
+
+	var rows []regionWeightRow
+	for _, r := range ottregions.Regions() {
+		wt := ottregions.RegionWeight(r)
+		if wt == 0 {
+			continue
+		}
+		affs := byRegion[r]
+		sort.Slice(affs, func(i, j int) bool { return affs[i].name < affs[j].name })
+		row := regionWeightRow{Region: r.Name(), Weight: fmt.Sprintf("%+.2f km", wt)}
+		for _, a := range affs {
+			row.Affected = append(row.Affected, regionWeightFacility{
+				Name:   a.name,
+				To:     a.to,
+				Margin: fmt.Sprintf("%.2f km", a.margin),
+			})
+		}
+		rows = append(rows, row)
+	}
+	sort.Slice(rows, func(i, j int) bool { return rows[i].Region < rows[j].Region })
 	return rows
 }

@@ -12,8 +12,9 @@
 	color: var(--fxki-tx);
 
 	/* Hold the flowing prose to a comfortable reading measure (~68ch) while
-	   letting wide blocks like the regions map and centrepoints table use the
-	   full main width. */
+	   letting wide blocks like the regions map use the full main width. (The
+	   regions page narrows its own tables back to the prose measure; see
+	   regions.css.) */
 	h1, h2, h3, h4,
 	p, ul, ol, blockquote, hr {
 		max-width: 38rem;
