@@ -644,6 +644,7 @@ a.tm-fac-card:focus {
 .tm-cat-pill[data-icon="sports_basketball"]::before { content: '\ea26'; }
 .tm-cat-pill[data-icon="sports_volleyball"]::before { content: '\ea31'; }
 .tm-cat-pill[data-icon="pickleball"]::before { content: '\f2a6'; }
+.tm-cat-pill[data-icon="sports_tennis"]::before { content: '\ea32'; }
 
 /* methodology / caveat note */
 .tm-trend-caveat {

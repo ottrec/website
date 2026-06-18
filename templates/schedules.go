@@ -34,6 +34,8 @@ var ScheduleCategories = []ScheduleCategory{
 	{"basketball", "Basketball", "Basketball.", "sports_basketball", []string{"basketball"}},
 	{"volleyball", "Volleyball", "Volleyball.", "sports_volleyball", []string{"volleyball"}},
 	{"pickleball", "Pickleball", "Pickleball.", "pickleball", []string{"pickleball"}},
+	{"squash", "Squash", "Squash.", "sports_tennis", []string{"squash"}},
+	{"racquetball", "Racquetball", "Racquetball.", "sports_tennis", []string{"racquetball"}},
 }
 
 // ScheduleCategoryBySlug resolves a slug from a schedules page path.

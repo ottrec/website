@@ -71,6 +71,7 @@ func main() {
 			'\uea31', // sports_volleyball
 			'\uf2a8', // badminton
 			'\uf2a6', // pickleball
+			'\uea32', // sports_tennis
 			'\uf20e', // database
 			'\uf09a', // star
 			'\ue002', // warning

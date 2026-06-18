@@ -37,6 +37,7 @@ body.home-page {
 .home-page [data-icon="sports_basketball"]::before { content: '\ea26'; }
 .home-page [data-icon="sports_volleyball"]::before { content: '\ea31'; }
 .home-page [data-icon="pickleball"]::before { content: '\f2a6'; }
+.home-page [data-icon="sports_tennis"]::before { content: '\ea32'; }
 
 /* hero */
 

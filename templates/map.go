@@ -73,6 +73,8 @@ var mapCategories = []struct {
 	{"Basketball", regexp.MustCompile(`basketball`)},
 	{"Volleyball", regexp.MustCompile(`volleyball`)},
 	{"Pickleball", regexp.MustCompile(`pickleball`)},
+	{"Squash", regexp.MustCompile(`squash`)},
+	{"Racquetball", regexp.MustCompile(`racquetball`)},
 }
 
 const mapCategoryOther = "Other"

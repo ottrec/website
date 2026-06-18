@@ -36,6 +36,8 @@ var Categories = []Category{
 	{"basketball", "Basketball", regexp.MustCompile(`basketball`)},
 	{"volleyball", "Volleyball", regexp.MustCompile(`volleyball`)},
 	{"pickleball", "Pickleball", regexp.MustCompile(`pickleball`)},
+	{"squash", "Squash", regexp.MustCompile(`squash`)},
+	{"racquetball", "Racquetball", regexp.MustCompile(`racquetball`)},
 }
 
 // CategoryBySlug returns the category index for a slug, or -1.
