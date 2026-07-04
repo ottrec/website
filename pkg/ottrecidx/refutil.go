@@ -312,11 +312,11 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (er schema.DateRange, ok bool
 	return er, true
 }
 
-// SingleDate returns true and a date if the activity date represents a single
-// date rather than a weekday. This should be given more precedence than
-// [ScheduleRef.ComputeEffectiveDateRange], as they sometimes make mistakes in
-// the date range for the special short-term schedules, but still put the
-// correct date in the day header.
+// SingleDayDate returns true and a date if the [ScheduleRef.GetDayDate] index
+// represents a single date rather than a weekday. This should be given more
+// precedence than [ScheduleRef.ComputeEffectiveDateRange], as they sometimes
+// make mistakes in the date range for the special short-term schedules, but
+// still put the correct date in the day header.
 //
 // This is intended for more accurate filtering. If you just want to display the
 // day date header for all times in a day, you probably want to use
@@ -325,18 +325,19 @@ func (ref ScheduleRef) ComputeEffectiveDateRange() (er schema.DateRange, ok bool
 //
 // The returned date will be valid with all components set (year, month, day,
 // weekday) if ok is true.
-func (ref TimeRef) SingleDate() (schema.Date, bool) {
-	if idx := ref.index(); idx.cached_TimeRef_SingleDate {
-		i := ref.nthOfType()
-		t := ref.idx.cached_TimeRef_SingleDate_t[i]
-		return t, !t.IsZero()
-	}
-
-	sch := ref.Schedule()
-
-	d, ok := sch.GetDayDate(ref.GetScheduleDayIndex())
+func (ref ScheduleRef) SingleDayDate(i int) (schema.Date, bool) {
+	d, ok := ref.GetDayDate(i)
 	if !ok {
 		return -1, false
+	}
+
+	if idx := ref.index(); idx.cached_ScheduleRef_SingleDayDate {
+		j := ref.nthOfType()
+		t := ref.idx.cached_ScheduleRef_SingleDayDate_t[j][i] // GetDayDate already checked the index
+		if t <= 0 {
+			return -1, false
+		}
+		return t, true
 	}
 
 	month, hasMonth := d.Month()
@@ -351,7 +352,7 @@ func (ref TimeRef) SingleDate() (schema.Date, bool) {
 
 	year, hasYear := d.Year()
 	if !hasYear {
-		if er, ok := sch.ComputeEffectiveDateRange(); ok {
+		if er, ok := ref.ComputeEffectiveDateRange(); ok {
 			if er.From.IsZero() || er.To.IsZero() || expectOK(er.From.Year()) == expectOK(er.To.Year()) {
 				// assume whichever year we have
 				if er.From.IsZero() {
@@ -379,6 +380,12 @@ func (ref TimeRef) SingleDate() (schema.Date, bool) {
 	}
 
 	return schema.MakeDate(year, month, day, weekday(year, month, day, TZ)), true
+}
+
+// SingleDate is a helper for getting [ScheduleRef.SingleDayDate] for the time.
+// See the documentation for [ScheduleRef.SingleDayDate] for more information.
+func (ref TimeRef) SingleDate() (schema.Date, bool) {
+	return ref.Schedule().SingleDayDate(ref.GetScheduleDayIndex())
 }
 
 func expectOK[T any](x T, ok bool) T {

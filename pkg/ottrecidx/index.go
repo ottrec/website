@@ -88,9 +88,9 @@ type Index struct {
 	cached_ScheduleRef_ComputeEffectiveDateRange    bool
 	cached_ScheduleRef_ComputeEffectiveDateRange_er []schema.DateRange
 
-	// precomputed: TimeRef.SingleDate
-	cached_TimeRef_SingleDate   bool
-	cached_TimeRef_SingleDate_t []schema.Date
+	// precomputed: ScheduleRef.SingleDayDate
+	cached_ScheduleRef_SingleDayDate   bool
+	cached_ScheduleRef_SingleDayDate_t [][]schema.Date
 
 	// precomputed: FacilityRef.Region / FacilityRef.Sector
 	cached_FacilityRef_RegionSector   bool
@@ -210,7 +210,7 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 
 		cached_ScheduleRef_ComputeEffectiveDateRange_er: arenaMakeSlice[schema.DateRange](dxr.ia, nSch, nSch),
 
-		cached_TimeRef_SingleDate_t: arenaMakeSlice[schema.Date](dxr.ia, nTm, nTm),
+		cached_ScheduleRef_SingleDayDate_t: arenaMakeSlice[[]schema.Date](dxr.ia, nSch, nSch),
 
 		cached_FacilityRef_RegionSector_r: arenaMakeSlice[ottregions.Region](dxr.ia, nFac, nFac),
 		cached_FacilityRef_RegionSector_s: arenaMakeSlice[ottregions.Sector](dxr.ia, nFac, nFac),
@@ -271,16 +271,21 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 	}
 	idx.cached_ScheduleRef_ComputeEffectiveDateRange = true
 
-	for tm := range idx.Data().Times() {
-		i := tm.nthOfType()
-		t, ok := tm.SingleDate()
-		if ok {
-			idx.cached_TimeRef_SingleDate_t[i] = t
-		} else {
-			idx.cached_TimeRef_SingleDate_t[i] = 0
+	for sch := range idx.Data().Schedules() {
+		j := sch.nthOfType()
+		n := sch.NumDays()
+		v := arenaMakeSlice[schema.Date](dxr.ia, n, n)
+		for i := range v {
+			t, ok := sch.SingleDayDate(i)
+			if ok {
+				v[i] = t
+			} else {
+				v[i] = 0
+			}
 		}
+		idx.cached_ScheduleRef_SingleDayDate_t[j] = v
 	}
-	idx.cached_TimeRef_SingleDate = true
+	idx.cached_ScheduleRef_SingleDayDate = true
 
 	for fac := range idx.Data().Facilities() {
 		i := fac.nthOfType()
