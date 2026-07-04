@@ -23,7 +23,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 			}
 			<title>Today - Ottawa Recreation Schedules</title>
 			<meta name="description" content="A chronological feed of City of Ottawa drop-in recreation sessions happening now and over the next week, including schedule changes, filterable by facility, activity, weekday, and time."/>
-			@websiteSocialHead(params.Base, params.Base+"today", "Today - Ottawa Recreation Schedules", "City of Ottawa drop-in recreation sessions on now and over the next week, including schedule changes, as a plain chronological feed.")
+			@websiteSocialHead(params.Base, params.Base+"today", "Today - Ottawa Recreation Schedules", "City of Ottawa drop-in recreation sessions on now and over the next week, including schedule changes and special hours.")
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
 			<link rel="stylesheet" href={ static.Path(static.TodayCSS) }/>
@@ -37,11 +37,11 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 			<main class="today-main">
 				<header class="today-header">
 					<h1>What's on</h1>
-					<p>Drop-in recreation across the City of Ottawa, on now and over the next week. Pick a day, then narrow it down. Times are Ottawa time; only facilities with sessions in this period are shown.</p>
+					<p>Browse upcoming drop-in recreation sessions for the current week. Select a day to view all drop-in sessions, and use the filters to narrow it down. Times are shown in Ottawa time. Only facilities with sessions during the current week are included.</p>
 				</header>
 				{{ updated := params.Data.Index().Updated().In(ottrecidx.TZ) }}
 				<p class="today-updated" role="note">
-					Schedule data was last updated <time id="today-updated-time" datetime={ updated.Format(time.RFC3339) }>at { updated.Format("Jan 2, 3:04 PM") }</time>. Check the official facility page before heading out.
+					This data was last updated <time id="today-updated-time" datetime={ updated.Format(time.RFC3339) }>at { updated.Format("Jan 2, 3:04 PM") }</time>. Check the official facility page before you go.
 				</p>
 				if params.Advanced {
 					<form class="today-search today-search-advanced" action="/today" method="get">
@@ -146,22 +146,22 @@ templ todaySessionWarnings(s todaySession) {
 		<span class="t-warn holiday">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			if s.SourceURL != "" {
-				<a href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">Hours may differ around holidays or special dates — see the official facility page.</a>
+				<a href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">This time may be affected by holiday or special event schedules. Click here to check the official facility page.</a>
 			} else {
-				<span>Hours may differ around holidays or special dates — see the official facility page.</span>
+				<span>This time may be affected by holiday or special event schedules. Check the facility's official page.</span>
 			}
 		</span>
 	}
 	if s.Changes {
 		<button type="button" class="t-warn changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>There are schedule changes posted for this facility — see the details.</span>
+			<span>There are schedule changes posted for this facility. Click here for more information.</span>
 		</button>
 	}
 	if s.Incomplete {
 		<button type="button" class="t-warn incomplete" data-warn="errors" data-slug={ s.Slug } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>Some of this facility's times couldn't be read; this may be incomplete.</span>
+			<span>Some data this facility could not be processed, so the times listed here may be incomplete. Click here for more information.</span>
 		</button>
 	}
 }
@@ -175,9 +175,9 @@ templ todaySessionReservation(s todaySession) {
 		<button type="button" class="t-warn t-resv" data-warn="reservations" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			if s.ResvDefinite {
-				<span>A reservation is required for this activity — see the booking options.</span>
+				<span>This activity requires a reservation. Click here to register.</span>
 			} else {
-				<span>A reservation may be required for this activity — see the booking options.</span>
+				<span>This activity may require a reservation. Click here to register.</span>
 			}
 		</button>
 	}
@@ -212,7 +212,7 @@ templ WebsiteTodayReservations(params WebsiteTodayReservationsParams) {
 				</ul>
 			</section>
 		} else {
-			<p class="today-modal-empty">No booking links are posted here — check the official page for reservation details.</p>
+			<p class="today-modal-empty">No registration links were found on the facility page. Check the official facility page for more details.</p>
 		}
 		@todayModalSource(fac.GetSourceURL())
 	</div>
@@ -223,7 +223,7 @@ templ WebsiteTodayReservations(params WebsiteTodayReservationsParams) {
 templ WebsiteTodayErrors(fac ottrecidx.FacilityRef) {
 	<div class="today-modal-body">
 		<h2>{ fac.GetName() }</h2>
-		<p class="today-modal-lead">Some information for this facility couldn't be read automatically, so the listing here may be incomplete. The official page is authoritative.</p>
+		<p class="today-modal-lead">Some information for this facility couldn't be read automatically, so the listing here may be incomplete. Check the official facility page for more details.</p>
 		if hasFacilityErrors(fac) {
 			<ul class="today-modal-errors">
 				for e := range fac.GetErrors() {
@@ -282,6 +282,6 @@ templ WebsiteTodayChanges(params WebsiteTodayChangesParams) {
 // today modal.
 templ todayModalSource(sourceURL string) {
 	if sourceURL != "" {
-		<p class="today-modal-source"><a href={ templ.URL(sourceURL) } target="_blank" rel="noopener">View on the City of Ottawa website</a></p>
+		<p class="today-modal-source"><a href={ templ.URL(sourceURL) } target="_blank" rel="noopener">View the official facility page on the City of Ottawa website</a></p>
 	}
 }
