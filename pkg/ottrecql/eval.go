@@ -447,10 +447,10 @@ func (n *cSchDate) eval1(fac ottrecidx.FacilityRef) result { return rUnknown }
 func (n *cSchDate) eval2(sch ottrecidx.ScheduleRef) result {
 	r := n.evalScheduleOnly(sch)
 	if r == rFalse {
-		// if the schedule date doesn't match but we have a activity time
+		// if the schedule date doesn't match but we have a weekday column
 		// exactly for the requested date, include it
-		for tm := range sch.Times() {
-			if t, ok := tm.SingleDate(); ok {
+		for i := range sch.NumDays() {
+			if t, ok := sch.SingleDayDate(i); ok {
 				// it's all going to be full dates, so no need to check ok
 				y1, _ := n.t.Year()
 				m1, _ := n.t.Month()
