@@ -34,6 +34,7 @@ import (
 //go:generate go run fetch.go https://github.com/adobe-fonts/source-sans/raw/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/VF/SourceSans3VF-Upright.ttf fonts/sourcesans3.ttf
 //go:generate go run fetch.go https://github.com/adobe-fonts/source-sans/raw/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/VF/SourceSans3VF-Italic.ttf fonts/sourcesans3it.ttf
 //go:generate go run fetch.go https://github.com/google/material-design-icons/raw/fe742c4072d4e3b8b899170109d9f710e89f082e/variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf fonts/materialsymbolsoutlined.ttf
+//go:generate go run fetch.go https://github.com/google/material-design-icons/raw/fe742c4072d4e3b8b899170109d9f710e89f082e/variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.codepoints fonts/materialsymbolsoutlined.codepoints
 
 // Base is the path prefix under which assets are served.
 const Base = "/static/"
