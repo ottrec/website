@@ -176,27 +176,6 @@ type todayFacilityJSON struct {
 	Sector string `json:"sector"`
 }
 
-// isFixedDate reports whether a schedule's columns are concrete calendar dates
-// (a one-off / holiday-week schedule) rather than recurring weekdays. Mirrors
-// the heuristic in misc/qc/schedule-date-ambiguity and exp/ottrectm.
-func isFixedDate(s ottrecidx.ScheduleRef) bool {
-	n := s.NumDays()
-	if n == 0 {
-		return false
-	}
-	var dated int
-	for i := range n {
-		if d, ok := s.GetDayDate(i); ok {
-			_, hasMonth := d.Month()
-			_, hasDay := d.Day()
-			if hasMonth && hasDay {
-				dated++
-			}
-		}
-	}
-	return dated*2 >= n
-}
-
 // FacilityGroupAt returns the i'th schedule group of a facility (document
 // order), for resolving the /api/changes group parameter.
 func FacilityGroupAt(fac ottrecidx.FacilityRef, i int) (ottrecidx.ScheduleGroupRef, bool) {
@@ -289,7 +268,7 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 		// we can't rule out). Computed once for the whole facility.
 		holiday := false
 		for s := range fac.Schedules() {
-			if !isFixedDate(s) {
+			if !s.LikelyHolidaySchedule() {
 				continue
 			}
 			er, ok := s.ComputeEffectiveDateRange()
@@ -305,15 +284,12 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 			gi++
 			changes := grp.GetScheduleChangesHTML() != ""
 			for sch := range grp.Schedules() {
-				fixed := isFixedDate(sch)
 				er, erOK := sch.ComputeEffectiveDateRange()
 
 				// the seasonal/bounded qualifier carried with each session, so
-				// the date semantics aren't flattened away. Only shown for
-				// bounded recurring schedules (a fixed-date session is already
-				// pinned to its day, and plain recurring needs no note).
+				// the date semantics aren't flattened away
 				var qual string
-				if !fixed && erOK && (!er.From.IsZero() || !er.To.IsZero()) {
+				if erOK && (!er.From.IsZero() || !er.To.IsZero()) {
 					qual = scheduleDateRangeLabel(sch)
 				}
 
@@ -340,7 +316,6 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 							Sector:     meta.sector,
 							Cats:       cats,
 							Qual:       qual,
-							Fixed:      fixed,
 							SourceURL:  sourceURL,
 							GroupIndex: gi,
 							Holiday:    holiday,
@@ -358,21 +333,27 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 							facHasSession = true
 						}
 
-						if fixed {
-							// published special-date times: pin to the concrete
-							// date the column lists.
-							if d, ok := tm.SingleDate(); ok {
-								if i, in := dayIndex[d/10]; in {
-									wd, _ := d.Weekday()
-									place(i, wd)
-								}
+						// published non-recurring special-date times
+						if d, ok := tm.SingleDate(); ok {
+							// a fixed-date session is already pinned to its day
+							base.Fixed = true
+							base.Qual = ""
+
+							// pin to the concrete date the column lists.
+							if i, in := dayIndex[d/10]; in {
+								wd, _ := d.Weekday()
+								place(i, wd)
 							}
 							continue
 						}
 
 						// recurring: show on every matching weekday the
 						// schedule covers, without suppressing it because some
-						// holiday schedule exists.
+						// holiday schedule exists (note: this is signaled to
+						// the user by the warnings we add for all times where a
+						// possible holiday schedule exists, and we don't want
+						// to accidentally exclude a non-overridden time
+						// incorrectly, so we leave it to the user to decide).
 						wd, ok := tm.GetWeekday()
 						if !ok {
 							continue
