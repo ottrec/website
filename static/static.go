@@ -6,21 +6,34 @@ package static
 import (
 	"bytes"
 	"embed"
+	"fmt"
 	"io/fs"
 	"iter"
+	"log/slog"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
+	"unicode"
 
 	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/internal/esbuild"
 	"github.com/ottrec/website/internal/npm"
+	"github.com/pgaskin/go-gfsubsets"
+	"github.com/pgaskin/go-hbsubset"
 	"github.com/pgaskin/go-lightningcss"
+	"github.com/pgaskin/go-woff2"
+	"golang.org/x/text/unicode/rangetable"
 )
 
-//go:generate go run fonts.go
 //go:generate go run vendor.go
+//go:generate go run fetch.go https://github.com/Omnibus-Type/Asap/raw/ca471c0ccf90a5c66155d4bcaa020859804ffd00/fonts/variable/Asap%5Bwdth%2Cwght%5D.ttf fonts/asap.ttf
+//go:generate go run fetch.go https://github.com/Omnibus-Type/Asap/raw/ca471c0ccf90a5c66155d4bcaa020859804ffd00/fonts/variable/Asap-Italic%5Bwdth%2Cwght%5D.ttf fonts/asapit.ttf
+//go:generate go run fetch.go https://github.com/adobe-fonts/source-serif/raw/5f220b17d27ed64873f22cde0dd593685387bd19/VAR/SourceSerif4Variable-Roman.ttf fonts/sourceserif4.ttf
+//go:generate go run fetch.go https://github.com/adobe-fonts/source-serif/raw/5f220b17d27ed64873f22cde0dd593685387bd19/VAR/SourceSerif4Variable-Italic.ttf fonts/sourceserif4it.ttf
+//go:generate go run fetch.go https://github.com/adobe-fonts/source-sans/raw/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/VF/SourceSans3VF-Upright.ttf fonts/sourcesans3.ttf
+//go:generate go run fetch.go https://github.com/adobe-fonts/source-sans/raw/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/VF/SourceSans3VF-Italic.ttf fonts/sourcesans3it.ttf
+//go:generate go run fetch.go https://github.com/google/material-design-icons/raw/fe742c4072d4e3b8b899170109d9f710e89f082e/variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf fonts/materialsymbolsoutlined.ttf
 
 // Base is the path prefix under which assets are served.
 const Base = "/static/"
@@ -151,16 +164,213 @@ func compileTS(name string, data []byte, _ func(string) (string, error)) ([]byte
 	return []byte(js), ".js", nil
 }
 
+func webfont(u *unicode.RangeTable) asset.Option {
+	return asset.Compile(func(name string, data []byte, _ func(string) (string, error)) ([]byte, string, error) {
+		if noop, _ := strconv.ParseBool(os.Getenv("DEBUG_WEBFONT_NOOP")); noop {
+			return data, ".ttf", nil
+		}
+
+		slog.Info("static: subsetting font", "name", name)
+		sub, err := hbsubset.Subset(data, 0, &hbsubset.Options{
+			UnicodeRanges:       u,
+			PinAllAxesToDefault: true,
+			AxisRanges: map[hbsubset.Tag]hbsubset.AxisRange{
+				hbsubset.MakeTag("wght"): {Min: 100, Max: 900, Default: 400},
+			},
+			LayoutFeatures: []hbsubset.Tag{
+				hbsubset.MakeTag("kern"),
+				hbsubset.MakeTag("mkmk"),
+				hbsubset.MakeTag("size"),
+				hbsubset.MakeTag("liga"),
+			},
+			NameIDs: []hbsubset.NameID{
+				hbsubset.NameUniqueID,
+				hbsubset.NameCopyright,
+				hbsubset.NameFontFamily,
+				hbsubset.NameFontSubfamily,
+				hbsubset.NameTypographicFamily,
+				hbsubset.NameTypographicSubfamily,
+				hbsubset.NameFullName,
+				hbsubset.NameMacFullName,
+				hbsubset.NamePostscriptName,
+				hbsubset.NameManufacturer,
+				hbsubset.NameDescription,
+				hbsubset.NameVariationsPSPrefix,
+			},
+			LayoutScripts: []hbsubset.Tag{
+				hbsubset.MakeTag("latn"), // latin
+			},
+			NameLanguages: []uint32{
+				1033, // english
+			},
+		})
+		if err != nil {
+			return nil, "", fmt.Errorf("subset: %w", err)
+		}
+
+		if os.Getenv("DEBUG_WEBFONT_NOOP") == "2" {
+			slog.Info("static: finished font", "name", name, slog.Group("size", "sfnt", len(data), "sub", len(sub)))
+			return sub, ".ttf", nil
+		}
+
+		slog.Info("static: compressing font", "name", name)
+		enc, err := woff2.Encode(sub, nil)
+		if err != nil {
+			return nil, "", fmt.Errorf("woff2: %w", err)
+		}
+
+		slog.Info("static: finished font", "name", name, slog.Group("size", "sfnt", len(data), "sub", len(sub), "woff2", len(enc)))
+		return enc, ".woff2", nil
+	})
+}
+
+func iconfont(a map[hbsubset.Tag]hbsubset.AxisRange, p map[hbsubset.Tag]float32, r []rune) asset.Option {
+	return asset.Compile(func(name string, data []byte, _ func(string) (string, error)) ([]byte, string, error) {
+		if noop, _ := strconv.ParseBool(os.Getenv("DEBUG_WEBFONT_NOOP")); noop {
+			return data, ".ttf", nil
+		}
+
+		slog.Info("static: subsetting font", "name", name)
+		sub, err := hbsubset.Subset(data, 0, &hbsubset.Options{
+			Unicodes:            r,
+			PinAllAxesToDefault: true,
+			AxisRanges:          a,
+			PinAxes:             p,
+			DropTables: []hbsubset.Tag{
+				hbsubset.MakeTag("GSUB"),
+			},
+			NameIDs: []hbsubset.NameID{
+				hbsubset.NameUniqueID,
+				hbsubset.NameCopyright,
+				hbsubset.NameFontFamily,
+				hbsubset.NameFontSubfamily,
+				hbsubset.NameTypographicFamily,
+				hbsubset.NameTypographicSubfamily,
+				hbsubset.NameFullName,
+				hbsubset.NameMacFullName,
+				hbsubset.NamePostscriptName,
+				hbsubset.NameManufacturer,
+				hbsubset.NameDescription,
+				hbsubset.NameVariationsPSPrefix,
+			},
+			NameLanguages: []uint32{
+				1033, // english
+			},
+		})
+		if err != nil {
+			return nil, "", fmt.Errorf("subset: %w", err)
+		}
+
+		if os.Getenv("DEBUG_WEBFONT_NOOP") == "2" {
+			slog.Info("static: finished font", "name", name, slog.Group("size", "sfnt", len(data), "sub", len(sub)))
+			return sub, ".ttf", nil
+		}
+
+		slog.Info("static: compressing font", "name", name)
+		enc, err := woff2.Encode(sub, nil)
+		if err != nil {
+			return nil, "", fmt.Errorf("woff2: %w", err)
+		}
+
+		slog.Info("static: finished font", "name", name, slog.Group("size", "sfnt", len(data), "sub", len(sub), "woff2", len(enc)))
+		return enc, ".woff2", nil
+	})
+}
+
 // Assets and the groups they are served in. Top-level stylesheets and scripts
 // are compiled; vendored files under a subdirectory are served as-is.
 var (
 	css = asset.Compile(compileCSS)
 	ts  = asset.Compile(compileTS)
 
-	AsapWOFF2         = assets.Register("fonts/asap.woff2")
-	SourceSans3WOFF2  = assets.Register("fonts/source_sans_3.woff2")
-	SourceSerif4WOFF2 = assets.Register("fonts/source_serif_4.woff2")
-	SymbolsWOFF2      = assets.Register("fonts/symbols.woff2")
+	scheduleFontSubset = rangetable.Merge(
+		&unicode.RangeTable{
+			R16: []unicode.Range16{
+				{Stride: 1, Lo: 33, Hi: 126},            // ascii printable
+				{Stride: 1, Lo: 0xC0, Hi: 0xFF},         // latin-1 accented letters (é, à, ç, ô, ...)
+				{Stride: 1, Lo: 'Œ', Hi: 'œ'},           // Œ œ
+				{Stride: 1, Lo: 'Ÿ', Hi: 'Ÿ'},           // Ÿ
+				{Stride: 1, Lo: '\u2002', Hi: '\u201E'}, // spaces, smart punctuation
+				{Stride: 1, Lo: '\u2022', Hi: '\u2022'}, // bullet
+				{Stride: 1, Lo: '\u2026', Hi: '\u2026'}, // ellipsis
+			},
+		},
+	)
+
+	textFontSubset = rangetable.Merge(
+		gfsubsets.Latin,
+		&unicode.RangeTable{
+			R16: []unicode.Range16{
+				{Stride: 1, Lo: 0xC0, Hi: 0xFF},         // latin-1 accented letters (é, à, ç, ô, ...)
+				{Stride: 1, Lo: 'Œ', Hi: 'œ'},           // Œ œ
+				{Stride: 1, Lo: 'Ÿ', Hi: 'Ÿ'},           // Ÿ
+				{Stride: 1, Lo: '\u2002', Hi: '\u201E'}, // spaces, smart punctuation
+				{Stride: 1, Lo: '\u2022', Hi: '\u2022'}, // bullet
+				{Stride: 1, Lo: '\u2026', Hi: '\u2026'}, // ellipsis
+			},
+		},
+	)
+
+	AsapWOFF2                    = assets.Register("fonts/asap.ttf", webfont(scheduleFontSubset))
+	AsapItalicWOFF2              = assets.Register("fonts/asapit.ttf", webfont(scheduleFontSubset))
+	SourceSans3WOFF2             = assets.Register("fonts/sourcesans3.ttf", webfont(textFontSubset))
+	SourceSans3ItalicWOFF2       = assets.Register("fonts/sourcesans3it.ttf", webfont(textFontSubset))
+	SourceSerif4WOFF2            = assets.Register("fonts/sourceserif4.ttf", webfont(textFontSubset))
+	SourceSerif4ItalicWOFF2      = assets.Register("fonts/sourceserif4it.ttf", webfont(textFontSubset))
+	MaterialSymbolsOutlinedWOFF2 = assets.Register("fonts/materialsymbolsoutlined.ttf", iconfont(
+		map[hbsubset.Tag]hbsubset.AxisRange{
+			hbsubset.MakeTag("FILL"): {Min: 0, Max: 1, Default: 0},
+		},
+		map[hbsubset.Tag]float32{
+			hbsubset.MakeTag("opsz"): 24,
+			hbsubset.MakeTag("wght"): 300,
+			hbsubset.MakeTag("GRAD"): 0,
+		},
+		[]rune{
+			'\ue8b6', // search
+			'\ueb48', // pool
+			'\ue566', // directions_run
+			'\ue192', // schedule
+			'\ue55f', // location_on
+			'\ue152', // filter_list
+			'\ueb57', // filter_list_off
+			'\ue55b', // map
+			'\ue87a', // explore
+			'\ue538', // explore_nearby
+			'\ue5cd', // close
+			'\uf508', // close_small
+			'\uf1be', // table_view
+			'\ue8ec', // view_column
+			'\ue5d2', // menu
+			'\ue80d', // share
+			'\ue89e', // open_in_new
+			'\ue4a7', // overview
+			'\ue50b', // ice_skating
+			'\uf084', // water
+			'\uefb8', // sports_and_outdoors
+			'\ueb43', // fitness_center
+			'\ue5d4', // more_vert
+			'\ue5d3', // more_horiz
+			'\ue889', // history
+			'\ue8e5', // trending_up
+			'\uf84d', // code_blocks
+			'\uebcc', // calendar_month
+			'\uea2b', // sports_hockey
+			'\uea26', // sports_basketball
+			'\uea31', // sports_volleyball
+			'\uf2a8', // badminton
+			'\uf2a6', // pickleball
+			'\uea32', // sports_tennis
+			'\uf20e', // database
+			'\uf09a', // star
+			'\ue002', // warning
+			'\ue88e', // info
+			'\ue5c5', // arrow_drop_down
+			'\ue518', // light_mode
+			'\ue51c', // dark_mode
+			'\ue1ab', // brightness_auto
+		},
+	))
 
 	// leaflet's JS is imported and bundled by map.ts; only its stylesheet is
 	// served, read straight from the vendored package
@@ -224,9 +434,12 @@ var Website = assets.
 		ThemeJS,
 		StarredJS,
 		SourceSans3WOFF2,
+		SourceSans3ItalicWOFF2,
 		SourceSerif4WOFF2,
-		SymbolsWOFF2,
+		SourceSerif4ItalicWOFF2,
+		MaterialSymbolsOutlinedWOFF2,
 		AsapWOFF2,
+		AsapItalicWOFF2,
 		LeafletCSS,
 		FaviconSVG,
 		FaviconICO,
@@ -244,9 +457,12 @@ var Data = assets.
 		DataCSS,
 		ThemeJS,
 		SourceSans3WOFF2,
+		SourceSans3ItalicWOFF2,
 		SourceSerif4WOFF2,
+		SourceSerif4ItalicWOFF2,
+		MaterialSymbolsOutlinedWOFF2,
 		AsapWOFF2,
-		SymbolsWOFF2,
+		AsapItalicWOFF2,
 		FaviconSVG,
 		FaviconICO,
 		AppleTouchIconPNG,

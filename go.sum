@@ -45,8 +45,14 @@ github.com/ncruces/julianday v1.0.0 h1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt
 github.com/ncruces/julianday v1.0.0/go.mod h1:Dusn2KvZrrovOMJuOt0TNXL6tB7U2E8kvza5fFc9G7g=
 github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7 h1:8AxbCJOV2J75BOjmOWTzvoPJqPOy51OtrEV5jPd1LxI=
 github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7/go.mod h1:axOX9DkOQAdWiwOjC9+PTFG1corxutSFNlHMWjYWUtM=
+github.com/pgaskin/go-gfsubsets v0.0.1 h1:eEELSmWxsmljDZK9gONr7Lq0y9mXcDcVGeHW+I2fWLU=
+github.com/pgaskin/go-gfsubsets v0.0.1/go.mod h1:B397O2l3XrUnuGBDsGAGJFCgeGvCmjCNz5aZHkQjJ68=
+github.com/pgaskin/go-hbsubset v0.0.0-20260704174742-f7034cef92b9 h1:3Qcp7prPCiiPM1aahwuC1DDZnH9iIv8mtAX0LYV2Hsk=
+github.com/pgaskin/go-hbsubset v0.0.0-20260704174742-f7034cef92b9/go.mod h1:OpdTblVd4x2/ac7gL229nRveyrli0ex+lNK8GnTo84M=
 github.com/pgaskin/go-lightningcss v0.0.0-20260614010002-b10cc786152c h1:LjWjWfmV4jlBciycIOqVBaOkUgpp/xttEqDfPK7r9ME=
 github.com/pgaskin/go-lightningcss v0.0.0-20260614010002-b10cc786152c/go.mod h1:PMbaYff5HA1TRadydzbLkH+LiFp9a/32m651PKpsL/c=
+github.com/pgaskin/go-woff2 v0.0.2 h1:LY/bLkGKYbYMjJQMi1UQEhzriOdAvevL1m7FoIynGKs=
+github.com/pgaskin/go-woff2 v0.0.2/go.mod h1:N0+TnYZ+1V+zquEePJ4gnZWIIEBOn5BG3U+OOtum5ds=
 github.com/pgaskin/xmlwriter v0.0.4 h1:lERCWcbECQXAHwCMpGcoCo9xEJDJ1NFikUmXXmtLlc4=
 github.com/pgaskin/xmlwriter v0.0.4/go.mod h1:deYcrlgx3MXg0eHPF2pmX8PWqny+6ZyQ3kxFe3IpfOU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
