@@ -388,6 +388,20 @@ func (ref TimeRef) SingleDate() (schema.Date, bool) {
 	return ref.Schedule().SingleDayDate(ref.GetScheduleDayIndex())
 }
 
+// LikelyHolidaySchedule returns true (on a best-effort basis) if this schedule
+// contains at least one single date rather than a weekday name. This heuristic
+// is usually pretty good for detecting holiday schedules, but does not catch
+// all of them (e.g., some holiday schedules will use regular weekdays over a
+// short time range rather than explicit dates).
+func (ref ScheduleRef) LikelyHolidaySchedule() bool {
+	for i := range ref.NumDays() {
+		if _, ok := ref.SingleDayDate(i); ok {
+			return true
+		}
+	}
+	return false
+}
+
 func expectOK[T any](x T, ok bool) T {
 	if !ok {
 		panic("wtf")
