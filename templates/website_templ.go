@@ -1109,7 +1109,7 @@ func TempWarning(dismissable bool) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<div class=\"temp-warn-head\"><span class=\"temp-warn-ico\" aria-hidden=\"true\"></span><h2>Temporary schedule inaccuracies (July 2026)</h2></div><div class=\"temp-warn-body\"><p>As of July 5, 2026, there are a bunch of facilities where the City of Ottawa website for swimming and skating is completely incorrect on some days.</p><p>Since ottrec.ca gets information from the facility webpages, this also affects the times displayed here.</p><p>It is unusual for there to be so many inaccuracies, and I have written to the city about it.</p><p>I strongly recommend calling the facility to confirm skating or swimming hours.</p><p>Some of the corrections for facilities I've been to:</p><ul><li>Bob MacQuarrie has no skating on Sunday, likely for the rest of the summer.</li><li>Splash Wave Pool was unexpectedly closed on Friday, July 3. It is not clear whether this is a one-off occurrence.</li><li>The skating at Ray Friel on Sunday is from 3-5pm, not 5-6.</li></ul><p>If you notice any other completely incorrect times, please report it to the city. You can also use the feedback button on the bottom-right of this page to send me a message so I can note it here too.</p></div></aside>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<div class=\"temp-warn-head\"><span class=\"temp-warn-ico\" aria-hidden=\"true\"></span><h2>Temporary schedule inaccuracies (July 2026)</h2></div><div class=\"temp-warn-body\"><p>As of July 5, 2026, there are a bunch of facilities where the City of Ottawa website for swimming and skating is completely incorrect on some days.</p><p>Since ottrec.ca gets information from the facility webpages, this also affects the times displayed here.</p><p>It is unusual for there to be so many inaccuracies, and I have written to the city about it.</p><p>I strongly recommend calling the facility to confirm skating or swimming hours.</p><p>Some of the corrections for facilities I've been to:</p><ul><li>Bob MacQuarrie has no skating on Sunday, likely for the rest of the summer. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5.</span></li><li>Splash Wave Pool was unexpectedly closed on Friday, July 3. It is not clear whether this is a one-off occurrence. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 3.</span></li><li>The skating at Ray Friel on Sunday is from 3-5pm, not 5-6. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5.</span></li></ul><p>If you notice any other completely incorrect times, please report it to the city. You can also use the feedback button on the bottom-right of this page to send me a message so I can note it here too.</p></div></aside>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1156,6 +1156,7 @@ const tempWarnCSS = `<style>
 .temp-warn-body p { margin: .5rem 0; }
 .temp-warn-body ul { margin: .5rem 0; padding-left: 1.25rem; }
 .temp-warn-body li { margin: .15rem 0; }
+.temp-warn-note { display: block; font-size: .8rem; color: var(--fxki-tx-2); }
 .temp-warn-close {
 	position: absolute;
 	top: .35rem;
