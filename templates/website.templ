@@ -183,6 +183,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 					<p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p>
 					<p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current.</p>
 				</section>
+				@TempWarning(false)
 				<section class="home-other" aria-labelledby="home-other-heading">
 					<h2 id="home-other-heading">More stuff</h2>
 					<ul>
@@ -249,3 +250,103 @@ templ WebsiteErrorPage(title, message string) {
 		</body>
 	</html>
 }
+
+// TODO: remove this later, also make it configurable at runtime
+templ TempWarning(dismissable bool) {
+	<aside class={ "temp-warn", templ.KV("temp-warn-dismissable", dismissable) }>
+		@templ.Raw(tempWarnCSS)
+		if dismissable {
+			<button type="button" class="temp-warn-close" aria-label="Dismiss" onclick="this.closest('.temp-warn').remove()">&times;</button>
+		}
+		<div class="temp-warn-head">
+			<span class="temp-warn-ico" aria-hidden="true"></span>
+			<h2>Temporary schedule inaccuracies (July 2026)</h2>
+		</div>
+		<div class="temp-warn-body">
+			<p>As of July 5, 2026, there are a bunch of facilities where the City of Ottawa website for swimming and skating is completely incorrect on some days.</p>
+			<p>Since ottrec.ca gets information from the facility webpages, this also affects the times displayed here.</p>
+			<p>It is unusual for there to be so many inaccuracies, and I have written to the city about it.</p>
+			<p>I strongly recommend calling the facility to confirm skating or swimming hours.</p>
+			<p>Some of the corrections for facilities I've been to:</p>
+			<ul>
+				<li>Bob MacQuarrie has no skating on Sunday, likely for the rest of the summer.</li>
+				<li>Splash Wave Pool was unexpectedly closed on Friday, July 3. It is not clear whether this is a one-off occurrence.</li>
+				<li>The skating at Ray Friel on Sunday is from 3-5pm, not 5-6.</li>
+			</ul>
+			<p>If you notice any other completely incorrect times, please report it to the city. You can also use the feedback button on the bottom-right of this page to send me a message so I can note it here too.</p>
+		</div>
+	</aside>
+}
+
+const tempWarnCSS = `<style>
+.temp-warn {
+	position: relative;
+	max-width: 44rem;
+	margin: 1rem 0;
+	padding: .75rem 1rem;
+	border: 1px solid light-dark(rgb(32 94 166 / .35), rgb(131 173 234 / .35));
+	border-radius: .5rem;
+	background: light-dark(rgb(32 94 166 / .08), rgb(131 173 234 / .12));
+	color: var(--fxki-tx);
+	font-size: .9rem;
+	line-height: 1.4;
+}
+.temp-warn-head {
+	display: flex;
+	align-items: center;
+	gap: .4rem;
+}
+.temp-warn-head h2 {
+	margin: 0;
+	font-size: .95rem;
+	font-weight: 600;
+	color: var(--fxki-bl);
+}
+.temp-warn-ico {
+	flex: none;
+	color: var(--fxki-bl);
+}
+.temp-warn-ico::before {
+	font-family: 'Material Symbols Outlined';
+	content: '\e88e'; /* info */
+	font-size: 1.2rem;
+	line-height: 1;
+}
+.temp-warn-body > :first-child { margin-top: .5rem; }
+.temp-warn-body > :last-child { margin-bottom: 0; }
+.temp-warn-body p { margin: .5rem 0; }
+.temp-warn-body ul { margin: .5rem 0; padding-left: 1.25rem; }
+.temp-warn-body li { margin: .15rem 0; }
+.temp-warn-close {
+	position: absolute;
+	top: .35rem;
+	right: .5rem;
+	padding: .1rem .35rem;
+	border: none;
+	background: none;
+	color: var(--fxki-tx-2);
+	font: inherit;
+	font-size: 1.3rem;
+	line-height: 1;
+	cursor: pointer;
+}
+.temp-warn-close:hover { color: var(--fxki-tx); }
+.temp-warn-dismissable {
+	position: absolute;
+	left: .65rem;
+	right: .65rem;
+	bottom: .65rem;
+	z-index: 1000;
+	max-width: 30rem;
+	margin: 0;
+	padding-right: 2rem;
+	max-height: 45%;
+	overflow-y: auto;
+	background: linear-gradient(light-dark(rgb(32 94 166 / .08), rgb(131 173 234 / .12)), light-dark(rgb(32 94 166 / .08), rgb(131 173 234 / .12))), var(--fxki-bg);
+}
+/* on mobile, clear the collapsed facilities sheet toggle at the bottom (when
+ * the sheet is open it covers the map bottom and hides this anyway) */
+@media (max-width: 900px) {
+	.temp-warn-dismissable { bottom: 2.9rem; }
+}
+</style>`

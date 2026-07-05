@@ -128,6 +128,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 								if params.Active == "all" && params.Query == "" && !params.Advanced && !params.List {
 									<p class="schedules-about">Every City of Ottawa recreation facility's drop-in schedules on one page, instead of clicking through each facility's own page. Search by activity or facility name above, or build a <a href="/schedules?advanced=1">custom query</a>. Automatically validated and updated daily.</p>
 								}
+								@TempWarning(false)
 							</header>
 						}
 						if params.QueryError != "" {
