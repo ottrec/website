@@ -316,7 +316,7 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 func addObj[T schemaObj](idx *Index, x *T) refObj {
 	i := refObj(len(idx.obj))
 	idx.obj = append(idx.obj, objRef(x))
-	bm := typeBitmap[T](idx)
+	bm := idx.typeBitmap[T]()
 	if bm.IsNil() {
 		panic("wtf: cannot add special object to array")
 	}

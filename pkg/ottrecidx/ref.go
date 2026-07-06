@@ -147,7 +147,7 @@ type typedRef[T schemaObj] struct {
 
 // typeBitmap returns the index bitmap for objects of the specified type, or a nil
 // bitmap if it's a special object.
-func typeBitmap[T schemaObj](idx *Index) bitmap[refObj] {
+func (idx *Index) typeBitmap[T schemaObj]() bitmap[refObj] {
 	switch any((*T)(nil)).(type) {
 	case *xData:
 		return idx.bData
@@ -167,7 +167,7 @@ func typeBitmap[T schemaObj](idx *Index) bitmap[refObj] {
 
 // typeNotChildBitmap returns the bitmap of all objects at or above the
 // specified type..
-func typeNotChildBitmap[T schemaObj](idx *Index) bitmap[refObj] {
+func (idx *Index) typeNotChildBitmap[T schemaObj]() bitmap[refObj] {
 	switch any((*T)(nil)).(type) {
 	case *xData:
 		return idx.bDataNotChild
@@ -216,13 +216,13 @@ func (ref typedRef[T]) deref() *T {
 
 // typeBitmap returns the bitmap of all other objects of the current type.
 func (ref typedRef[T]) typeBitmap() bitmap[refObj] {
-	return typeBitmap[T](ref.index())
+	return ref.index().typeBitmap[T]()
 }
 
 // typeNotChildBitmap returns the bitmap of all objects at or above the
 // current type..
 func (ref typedRef[T]) typeNotChildBitmap() bitmap[refObj] {
-	return typeNotChildBitmap[T](ref.index())
+	return ref.index().typeNotChildBitmap[T]()
 }
 
 // withFilter returns a copy of ref with a clone of the filter, or a new filter
@@ -395,7 +395,7 @@ func (ref TimeRef) GetRange() (schema.ClockRange, bool) {
 // parentRef returns a ref to the parent of the specified object. It assumes
 // that T is a child of U, and will silently misbehave if it isn't.
 func (ref typedRef[T]) parentRef[U schemaObj]() typedRef[U] {
-	if bm := typeBitmap[U](ref.index()); !bm.IsNil() {
+	if bm := ref.index().typeBitmap[U](); !bm.IsNil() {
 		return reference[U](ref, mustOK(bm.Prev(ref.object())))
 	}
 	panic("cannot get parent reference of special object")
@@ -499,7 +499,7 @@ func (ref typedRef[T]) childRefSeq[U schemaObj]() iter.Seq[typedRef[U]] {
 		} else {
 			until = refObj(len(ref.idx.obj)) // end
 		}
-		if mask := typeBitmap[U](ref.index()); !mask.IsNil() {
+		if mask := ref.index().typeBitmap[U](); !mask.IsNil() {
 			for obj := range mask.RangeBetweenAnd(start, until, ref.flt) {
 				if !yield(reference[U](ref, obj)) {
 					return
