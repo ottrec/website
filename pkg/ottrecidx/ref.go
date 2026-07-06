@@ -394,7 +394,7 @@ func (ref TimeRef) GetRange() (schema.ClockRange, bool) {
 
 // parentRef returns a ref to the parent of the specified object. It assumes
 // that T is a child of U, and will silently misbehave if it isn't.
-func parentRef[T, U schemaObj](ref typedRef[T]) typedRef[U] {
+func (ref typedRef[T]) parentRef[U schemaObj]() typedRef[U] {
 	if bm := typeBitmap[U](ref.index()); !bm.IsNil() {
 		return reference[U](ref, mustOK(bm.Prev(ref.object())))
 	}
@@ -403,89 +403,89 @@ func parentRef[T, U schemaObj](ref typedRef[T]) typedRef[U] {
 
 // Data returns the direct parent data.
 func (ref FacilityRef) Data() DataRef {
-	return DataRef{parentRef[xFacility, xData](ref.typedRef)}
+	return DataRef{ref.parentRef[xData]()}
 }
 
 // Data returns the ancestor data (skipping over the facility).
 func (ref ScheduleGroupRef) Data() DataRef {
-	return DataRef{parentRef[xScheduleGroup, xData](ref.typedRef)}
+	return DataRef{ref.parentRef[xData]()}
 }
 
 // Facility returns the direct parent facility.
 func (ref ScheduleGroupRef) Facility() FacilityRef {
-	return FacilityRef{parentRef[xScheduleGroup, xFacility](ref.typedRef)}
+	return FacilityRef{ref.parentRef[xFacility]()}
 }
 
 // Data returns the ancestor data (skipping over the facility and schedule
 // group).
 func (ref ScheduleRef) Data() DataRef {
-	return DataRef{parentRef[xSchedule, xData](ref.typedRef)}
+	return DataRef{ref.parentRef[xData]()}
 }
 
 // Facility returns the ancestor facility (skipping over the schedule group).
 func (ref ScheduleRef) Facility() FacilityRef {
-	return FacilityRef{parentRef[xSchedule, xFacility](ref.typedRef)}
+	return FacilityRef{ref.parentRef[xFacility]()}
 }
 
 // ScheduleGroup returns the direct parent schedule group.
 func (ref ScheduleRef) ScheduleGroup() ScheduleGroupRef {
-	return ScheduleGroupRef{parentRef[xSchedule, xScheduleGroup](ref.typedRef)}
+	return ScheduleGroupRef{ref.parentRef[xScheduleGroup]()}
 }
 
 // Data returns the ancestor data (skipping over the facility, schedule group,
 // and schedule).
 func (ref ActivityRef) Data() DataRef {
-	return DataRef{parentRef[xActivity, xData](ref.typedRef)}
+	return DataRef{ref.parentRef[xData]()}
 }
 
 // Facility returns the ancestor facility (skipping over the schedule group and
 // schedule).
 func (ref ActivityRef) Facility() FacilityRef {
-	return FacilityRef{parentRef[xActivity, xFacility](ref.typedRef)}
+	return FacilityRef{ref.parentRef[xFacility]()}
 }
 
 // ScheduleGroup returns the ancestor schedule group (skipping over the
 // schedule).
 func (ref ActivityRef) ScheduleGroup() ScheduleGroupRef {
-	return ScheduleGroupRef{parentRef[xActivity, xScheduleGroup](ref.typedRef)}
+	return ScheduleGroupRef{ref.parentRef[xScheduleGroup]()}
 }
 
 // Schedule returns the direct parent schedule.
 func (ref ActivityRef) Schedule() ScheduleRef {
-	return ScheduleRef{parentRef[xActivity, xSchedule](ref.typedRef)}
+	return ScheduleRef{ref.parentRef[xSchedule]()}
 }
 
 // Data returns the ancestor data (skipping over the facility, schedule group,
 // schedule, and activity).
 func (ref TimeRef) Data() DataRef {
-	return DataRef{parentRef[xTime, xData](ref.typedRef)}
+	return DataRef{ref.parentRef[xData]()}
 }
 
 // Facility returns the ancestor facility (skipping over the schedule group,
 // schedule, and activity).
 func (ref TimeRef) Facility() FacilityRef {
-	return FacilityRef{parentRef[xTime, xFacility](ref.typedRef)}
+	return FacilityRef{ref.parentRef[xFacility]()}
 }
 
 // ScheduleGroup returns the ancestor schedule group (skipping over the
 // schedule and activity).
 func (ref TimeRef) ScheduleGroup() ScheduleGroupRef {
-	return ScheduleGroupRef{parentRef[xTime, xScheduleGroup](ref.typedRef)}
+	return ScheduleGroupRef{ref.parentRef[xScheduleGroup]()}
 }
 
 // Schedule returns the ancestor schedule (skipping over the activity).
 func (ref TimeRef) Schedule() ScheduleRef {
-	return ScheduleRef{parentRef[xTime, xSchedule](ref.typedRef)}
+	return ScheduleRef{ref.parentRef[xSchedule]()}
 }
 
 // Activity returns the direct parent activity.
 func (ref TimeRef) Activity() ActivityRef {
-	return ActivityRef{parentRef[xTime, xActivity](ref.typedRef)}
+	return ActivityRef{ref.parentRef[xActivity]()}
 }
 
 // childRefSeq yields filtered references for objects of type U up to the next
 // T.
-func childRefSeq[T, U schemaObj](ref typedRef[T]) iter.Seq[typedRef[U]] {
+func (ref typedRef[T]) childRefSeq[U schemaObj]() iter.Seq[typedRef[U]] {
 	return func(yield func(typedRef[U]) bool) {
 		// check and start at ref
 		start := ref.object()
@@ -513,87 +513,87 @@ func childRefSeq[T, U schemaObj](ref typedRef[T]) iter.Seq[typedRef[U]] {
 
 // Facilities returns the direct child facilities.
 func (ref DataRef) Facilities() FacilitySeq {
-	return facilitySeq(childRefSeq[xData, xFacility](ref.typedRef))
+	return facilitySeq(ref.childRefSeq[xFacility]())
 }
 
 // ScheduleGroups returns all schedule groups nested within this data
 // (across all facilities).
 func (ref DataRef) ScheduleGroups() ScheduleGroupSeq {
-	return scheduleGroupSeq(childRefSeq[xData, xScheduleGroup](ref.typedRef))
+	return scheduleGroupSeq(ref.childRefSeq[xScheduleGroup]())
 }
 
 // Schedules returns all schedules nested within this data (across all
 // facilities and schedule groups).
 func (ref DataRef) Schedules() ScheduleSeq {
-	return scheduleSeq(childRefSeq[xData, xSchedule](ref.typedRef))
+	return scheduleSeq(ref.childRefSeq[xSchedule]())
 }
 
 // Activities returns all activities nested within this data (across all
 // facilities, schedule groups, and schedules).
 func (ref DataRef) Activities() ActivitySeq {
-	return activitySeq(childRefSeq[xData, xActivity](ref.typedRef))
+	return activitySeq(ref.childRefSeq[xActivity]())
 }
 
 // Times returns all time entries nested within this data (across all
 // facilities, schedule groups, schedules, and activities).
 func (ref DataRef) Times() TimeSeq {
-	return timeSeq(childRefSeq[xData, xTime](ref.typedRef))
+	return timeSeq(ref.childRefSeq[xTime]())
 }
 
 // ScheduleGroups returns the direct child schedule groups.
 func (ref FacilityRef) ScheduleGroups() ScheduleGroupSeq {
-	return scheduleGroupSeq(childRefSeq[xFacility, xScheduleGroup](ref.typedRef))
+	return scheduleGroupSeq(ref.childRefSeq[xScheduleGroup]())
 }
 
 // Schedules returns all schedules nested within this facility (across all
 // schedule groups).
 func (ref FacilityRef) Schedules() ScheduleSeq {
-	return scheduleSeq(childRefSeq[xFacility, xSchedule](ref.typedRef))
+	return scheduleSeq(ref.childRefSeq[xSchedule]())
 }
 
 // Activities returns all activities nested within this facility (across all
 // schedule groups and schedules).
 func (ref FacilityRef) Activities() ActivitySeq {
-	return activitySeq(childRefSeq[xFacility, xActivity](ref.typedRef))
+	return activitySeq(ref.childRefSeq[xActivity]())
 }
 
 // Times returns all time entries nested within this facility (across all
 // schedule groups, schedules, and activities).
 func (ref FacilityRef) Times() TimeSeq {
-	return timeSeq(childRefSeq[xFacility, xTime](ref.typedRef))
+	return timeSeq(ref.childRefSeq[xTime]())
 }
 
 // Schedules returns the direct child schedules.
 func (ref ScheduleGroupRef) Schedules() ScheduleSeq {
-	return scheduleSeq(childRefSeq[xScheduleGroup, xSchedule](ref.typedRef))
+	return scheduleSeq(ref.childRefSeq[xSchedule]())
 }
 
 // Activities returns all activities nested within this schedule group (across
 // all schedules).
 func (ref ScheduleGroupRef) Activities() ActivitySeq {
-	return activitySeq(childRefSeq[xScheduleGroup, xActivity](ref.typedRef))
+	return activitySeq(ref.childRefSeq[xActivity]())
 }
 
 // Times returns all time entries nested within this schedule group (across all
 // schedules and activities).
 func (ref ScheduleGroupRef) Times() TimeSeq {
-	return timeSeq(childRefSeq[xScheduleGroup, xTime](ref.typedRef))
+	return timeSeq(ref.childRefSeq[xTime]())
 }
 
 // Activities returns the direct child activities.
 func (ref ScheduleRef) Activities() ActivitySeq {
-	return activitySeq(childRefSeq[xSchedule, xActivity](ref.typedRef))
+	return activitySeq(ref.childRefSeq[xActivity]())
 }
 
 // Times returns all time entries nested within this schedule (across all
 // activities).
 func (ref ScheduleRef) Times() TimeSeq {
-	return timeSeq(childRefSeq[xSchedule, xTime](ref.typedRef))
+	return timeSeq(ref.childRefSeq[xTime]())
 }
 
 // Times returns the direct child time entries.
 func (ref ActivityRef) Times() TimeSeq {
-	return timeSeq(childRefSeq[xActivity, xTime](ref.typedRef))
+	return timeSeq(ref.childRefSeq[xTime]())
 }
 
 // GetScheduleDay calls [ScheduleRef.GetDay] for the schedule day corresponding
