@@ -1,6 +1,6 @@
 module github.com/ottrec/website
 
-go 1.26.3
+go 1.27rc1
 
 tool github.com/a-h/templ/cmd/templ
 
