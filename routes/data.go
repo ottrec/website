@@ -136,6 +136,10 @@ type dataRobotsHandler struct{}
 
 func (dataRobotsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body := "User-agent: *\n" +
+		"Allow: /export/latest.json\n" +
+		"Allow: /export/schema.json\n" +
+		"Allow: /export/latest.csv.zip\n" +
+		"Allow: /export/schema.csv\n" +
 		"Disallow: /preview\n" +
 		"Disallow: /v1/\n" +
 		"Disallow: /export/\n" +
