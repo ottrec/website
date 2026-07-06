@@ -71,13 +71,13 @@ type ReservationLink struct {
 }
 
 func newData(a *arena, sa *stringInterner, data *schema.Data) *xData {
-	x := arenaNew[xData](a)
+	x := a.New[xData]()
 	x.Attribution = mapSlice(a, data.GetAttribution(), sa.InternFast)
 	return x
 }
 
 func newFacility(a *arena, sa *stringInterner, fac *schema.Facility) *xFacility {
-	x := arenaNew[xFacility](a)
+	x := a.New[xFacility]()
 	x.Name = sa.Intern(fac.GetName())
 	x.Description = sa.InternFast(fac.GetDescription())
 	if src := fac.GetSource(); src != nil {
@@ -98,7 +98,7 @@ func newFacility(a *arena, sa *stringInterner, fac *schema.Facility) *xFacility 
 }
 
 func newScheduleGroup(a *arena, sa *stringInterner, grp *schema.ScheduleGroup) *xScheduleGroup {
-	x := arenaNew[xScheduleGroup](a)
+	x := a.New[xScheduleGroup]()
 	x.Label = sa.Intern(grp.GetLabel())
 	x.Title = sa.Intern(grp.GetXTitle())
 	x.ReservationLinks = mapSlice(a, grp.GetReservationLinks(), func(lnk *schema.ReservationLink) ReservationLink {
@@ -110,7 +110,7 @@ func newScheduleGroup(a *arena, sa *stringInterner, grp *schema.ScheduleGroup) *
 }
 
 func newSchedule(a *arena, sa *stringInterner, grp *schema.Schedule) *xSchedule {
-	x := arenaNew[xSchedule](a)
+	x := a.New[xSchedule]()
 	x.Caption = sa.Intern(grp.GetCaption())
 	x.Name = sa.Intern(grp.GetXName())
 	x.Date = sa.Intern(grp.GetXDate())
@@ -147,7 +147,7 @@ func (c *activityInterner) newActivity(act *schema.Schedule_Activity) *xActivity
 		}
 	}
 
-	x := arenaNew[xActivity](c.a)
+	x := c.a.New[xActivity]()
 	x.Label = c.sa.Intern(act.GetLabel())
 	x.Name = c.sa.Intern(act.GetXName())
 	x.Resv = act.GetXResv()
@@ -191,7 +191,7 @@ func (c *timeInterner) newTime(scheduleDay int, tm *schema.TimeRange) *xTime {
 		}
 	}
 
-	x := arenaNew[xTime](c.a)
+	x := c.a.New[xTime]()
 	x.ScheduleDay = scheduleDay
 	x.Label = c.sa.Intern(tm.GetLabel())
 	x.Weekday = wkday
@@ -218,7 +218,7 @@ func mapSlice[T, U any](a *arena, s []T, fn func(T) U) []U {
 	if s == nil {
 		return nil
 	}
-	x := arenaMakeSlice[U](a, len(s), cap(s))
+	x := a.MakeSlice[U](len(s), cap(s))
 	for i, v := range s {
 		x[i] = fn(v)
 	}

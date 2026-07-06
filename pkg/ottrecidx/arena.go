@@ -21,13 +21,13 @@ func newArena() *arena {
 	return a
 }
 
-func arenaNew[T any](a *arena) *T {
+func (a *arena) New[T any]() *T {
 	v := goarena.New[T](a.arena)
 	a.alloc.Add(uint64(unsafe.Sizeof(*v)))
 	return v
 }
 
-func arenaMakeSlice[T any](a *arena, len, cap int) []T {
+func (a *arena) MakeSlice[T any](len, cap int) []T {
 	v := goarena.MakeSlice[T](a.arena, len, cap)
 	a.alloc.Add(uint64(unsafeSizeofSlice(v)))
 	return v

@@ -190,30 +190,30 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 		hash:     hash,
 		hashCode: hashCode,
 
-		obj:            arenaMakeSlice[objRef](dxr.ia, 0, n),
-		bData:          arenaMakeBitmap[refObj](dxr.ia, n),
-		bFacility:      arenaMakeBitmap[refObj](dxr.ia, n),
-		bScheduleGroup: arenaMakeBitmap[refObj](dxr.ia, n),
-		bSchedule:      arenaMakeBitmap[refObj](dxr.ia, n),
-		bActivity:      arenaMakeBitmap[refObj](dxr.ia, n),
-		bTime:          arenaMakeBitmap[refObj](dxr.ia, n),
+		obj:            dxr.ia.MakeSlice[objRef](0, n),
+		bData:          dxr.ia.MakeBitmap[refObj](n),
+		bFacility:      dxr.ia.MakeBitmap[refObj](n),
+		bScheduleGroup: dxr.ia.MakeBitmap[refObj](n),
+		bSchedule:      dxr.ia.MakeBitmap[refObj](n),
+		bActivity:      dxr.ia.MakeBitmap[refObj](n),
+		bTime:          dxr.ia.MakeBitmap[refObj](n),
 
-		bDataNotChild:          arenaMakeBitmap[refObj](dxr.ia, n),
-		bFacilityNotChild:      arenaMakeBitmap[refObj](dxr.ia, n),
-		bScheduleGroupNotChild: arenaMakeBitmap[refObj](dxr.ia, n),
-		bScheduleNotChild:      arenaMakeBitmap[refObj](dxr.ia, n),
-		bActivityNotChild:      arenaMakeBitmap[refObj](dxr.ia, n),
-		bTimeNotChild:          arenaMakeBitmap[refObj](dxr.ia, n),
+		bDataNotChild:          dxr.ia.MakeBitmap[refObj](n),
+		bFacilityNotChild:      dxr.ia.MakeBitmap[refObj](n),
+		bScheduleGroupNotChild: dxr.ia.MakeBitmap[refObj](n),
+		bScheduleNotChild:      dxr.ia.MakeBitmap[refObj](n),
+		bActivityNotChild:      dxr.ia.MakeBitmap[refObj](n),
+		bTimeNotChild:          dxr.ia.MakeBitmap[refObj](n),
 
-		cached_ActivityRef_GuessReservationRequirement_required: arenaMakeBitmap[refObj](dxr.ia, n),
-		cached_ActivityRef_GuessReservationRequirement_definite: arenaMakeBitmap[refObj](dxr.ia, n),
+		cached_ActivityRef_GuessReservationRequirement_required: dxr.ia.MakeBitmap[refObj](n),
+		cached_ActivityRef_GuessReservationRequirement_definite: dxr.ia.MakeBitmap[refObj](n),
 
-		cached_ScheduleRef_ComputeEffectiveDateRange_er: arenaMakeSlice[schema.DateRange](dxr.ia, nSch, nSch),
+		cached_ScheduleRef_ComputeEffectiveDateRange_er: dxr.ia.MakeSlice[schema.DateRange](nSch, nSch),
 
-		cached_ScheduleRef_SingleDayDate_t: arenaMakeSlice[[]schema.Date](dxr.ia, nSch, nSch),
+		cached_ScheduleRef_SingleDayDate_t: dxr.ia.MakeSlice[[]schema.Date](nSch, nSch),
 
-		cached_FacilityRef_RegionSector_r: arenaMakeSlice[ottregions.Region](dxr.ia, nFac, nFac),
-		cached_FacilityRef_RegionSector_s: arenaMakeSlice[ottregions.Sector](dxr.ia, nFac, nFac),
+		cached_FacilityRef_RegionSector_r: dxr.ia.MakeSlice[ottregions.Region](nFac, nFac),
+		cached_FacilityRef_RegionSector_s: dxr.ia.MakeSlice[ottregions.Sector](nFac, nFac),
 	}
 
 	idx.durScan, now = time.Since(now), time.Now()
@@ -274,7 +274,7 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 	for sch := range idx.Data().Schedules() {
 		j := sch.nthOfType()
 		n := sch.NumDays()
-		v := arenaMakeSlice[schema.Date](dxr.ia, n, n)
+		v := dxr.ia.MakeSlice[schema.Date](n, n)
 		for i := range v {
 			t, ok := sch.SingleDayDate(i)
 			if ok {

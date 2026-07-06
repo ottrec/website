@@ -78,7 +78,7 @@ func (a *stringInterner) allocate(n int) (int, int) {
 	}
 	var b []byte
 	if a.arena != nil {
-		b = arenaMakeSlice[byte](a.arena, n, max(n, defaultChunkSize))
+		b = a.arena.MakeSlice[byte](n, max(n, defaultChunkSize))
 	} else {
 		b = make([]byte, n, max(n, defaultChunkSize))
 	}
@@ -138,8 +138,8 @@ func makeBitmap[T ~uint32](n int) bitmap[T] {
 	return bitmap[T]{make(kbitmap.Bitmap, (n>>6)+1)}
 }
 
-func arenaMakeBitmap[T ~uint32](a *arena, n int) bitmap[T] {
-	return bitmap[T]{kbitmap.Bitmap(arenaMakeSlice[uint64](a, (n>>6)+1, (n>>6)+1))} // note: if the bitmap is grown, it will no longer be in the arena
+func (a *arena) MakeBitmap[T ~uint32](n int) bitmap[T] {
+	return bitmap[T]{kbitmap.Bitmap(a.MakeSlice[uint64]((n>>6)+1, (n>>6)+1))} // note: if the bitmap is grown, it will no longer be in the arena
 }
 
 func nilBitmap[T ~uint32]() bitmap[T] {
