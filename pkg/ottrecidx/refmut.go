@@ -23,10 +23,10 @@ func (mut MutableDataRef) Data() DataRef {
 	return DataRef{mut.unsafe.withFilter()}
 }
 
-// mutRemoveRef clears filter bits in mut from the start of ref up to and not
+// removeRef clears filter bits in mut from the start of ref up to and not
 // including the next of its type or any parent type, returning true if ref was
 // present to be removed.
-func mutRemoveRef[T schemaObj](mut *MutableDataRef, ref typedRef[T]) bool {
+func (mut *MutableDataRef) removeRef[T schemaObj](ref typedRef[T]) bool {
 	if mut.unsafe.idx != ref.idx {
 		return false // different indexes, or ref is nil
 	}
@@ -54,19 +54,19 @@ func mutRemoveRef[T schemaObj](mut *MutableDataRef, ref typedRef[T]) bool {
 	return true
 }
 func (mut *MutableDataRef) RemoveFacility(ref FacilityRef) bool {
-	return mutRemoveRef(mut, ref.typedRef)
+	return mut.removeRef(ref.typedRef)
 }
 func (mut *MutableDataRef) RemoveScheduleGroup(ref ScheduleGroupRef) bool {
-	return mutRemoveRef(mut, ref.typedRef)
+	return mut.removeRef(ref.typedRef)
 }
 func (mut *MutableDataRef) RemoveSchedule(ref ScheduleRef) bool {
-	return mutRemoveRef(mut, ref.typedRef)
+	return mut.removeRef(ref.typedRef)
 }
 func (mut *MutableDataRef) RemoveActivity(ref ActivityRef) bool {
-	return mutRemoveRef(mut, ref.typedRef)
+	return mut.removeRef(ref.typedRef)
 }
 func (mut *MutableDataRef) RemoveTime(ref TimeRef) bool {
-	return mutRemoveRef(mut, ref.typedRef)
+	return mut.removeRef(ref.typedRef)
 }
 
 // note: this in-place removal during iteration is only safe since we're only
