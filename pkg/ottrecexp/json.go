@@ -2,6 +2,7 @@ package ottrecexp
 
 import (
 	"bytes"
+	"encoding/json/jsontext"
 	"fmt"
 	"io"
 	"reflect"
@@ -447,7 +448,7 @@ func (w *stickyBufferedWriter) StringJSON(s string) {
 	if w.e != nil {
 		return
 	}
-	buf, err := appendQuoteJSON(w.AvailableBuffer(), s)
+	buf, err := jsontext.AppendQuote(w.AvailableBuffer(), s)
 	if err != nil {
 		w.e = fmt.Errorf("encoding json string: %w", err)
 		return
@@ -456,5 +457,5 @@ func (w *stickyBufferedWriter) StringJSON(s string) {
 }
 
 func (w *stickyBufferedWriter) FloatJSON(v float64, bits int) {
-	w.Write(appendFloatJSON(w.AvailableBuffer(), v, bits))
+	w.Write(jsontext.AppendFloat(w.AvailableBuffer(), v, bits))
 }
