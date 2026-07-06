@@ -218,18 +218,18 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 
 	idx.durScan, now = time.Since(now), time.Now()
 
-	addObj(idx, newData(dxr.a, &dxr.sa, data))
+	idx.addObj(newData(dxr.a, &dxr.sa, data))
 	for _, fac := range data.GetFacilities() {
-		addObj(idx, newFacility(dxr.a, &dxr.sa, fac))
+		idx.addObj(newFacility(dxr.a, &dxr.sa, fac))
 		for _, grp := range fac.GetScheduleGroups() {
-			addObj(idx, newScheduleGroup(dxr.a, &dxr.sa, grp))
+			idx.addObj(newScheduleGroup(dxr.a, &dxr.sa, grp))
 			for _, sch := range grp.GetSchedules() {
-				addObj(idx, newSchedule(dxr.a, &dxr.sa, sch))
+				idx.addObj(newSchedule(dxr.a, &dxr.sa, sch))
 				for _, act := range sch.GetActivities() {
-					addObj(idx, dxr.ac.newActivity(act))
+					idx.addObj(dxr.ac.newActivity(act))
 					for i, day := range act.GetDays() {
 						for _, tm := range day.GetTimes() {
-							addObj(idx, dxr.tc.newTime(i, tm))
+							idx.addObj(dxr.tc.newTime(i, tm))
 						}
 					}
 				}
@@ -313,7 +313,7 @@ func (dxr *Indexer) index(hash string, hashCode uint64, data *schema.Data) *Inde
 	return idx
 }
 
-func addObj[T schemaObj](idx *Index, x *T) refObj {
+func (idx *Index) addObj[T schemaObj](x *T) refObj {
 	i := refObj(len(idx.obj))
 	idx.obj = append(idx.obj, objRef(x))
 	bm := idx.typeBitmap[T]()
