@@ -327,12 +327,8 @@ func addObj[T schemaObj](idx *Index, x *T) refObj {
 // Data returns a reference to the data.
 func (idx *Index) Data() DataRef {
 	return DataRef{
-		typedRef: typedRef[xData]{
-			baseRef: baseRef{
-				idx: idx,
-				obj: 0,
-			},
-		},
+		idx: idx,
+		obj: 0,
 	}
 }
 

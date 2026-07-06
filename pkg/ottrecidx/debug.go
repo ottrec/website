@@ -82,7 +82,7 @@ func (ref baseRef) dbgType() string {
 
 // debug
 func (ref typedRef[T]) dbgType() string {
-	t, ok := strings.CutPrefix(reflect.TypeOf((*T)(nil)).Elem().Name(), "x")
+	t, ok := strings.CutPrefix(reflect.TypeFor[T]().Name(), "x")
 	if !ok {
 		panic("wtf")
 	}
@@ -139,7 +139,7 @@ func (mut MutableDataRef) GoString() string {
 // debug
 func (a stringInterner) String() string {
 	var s strings.Builder
-	s.WriteString(reflect.TypeOf(a).String())
+	s.WriteString(reflect.TypeFor[stringInterner]().String())
 	s.WriteString("{n:")
 	s.WriteString(strconv.Itoa(len(a.buf)))
 	var tlen, tcap int

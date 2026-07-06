@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"iter"
 	"math/bits"
+	"slices"
 	"unsafe"
 
 	kbitmap "github.com/kelindar/bitmap"
@@ -226,9 +227,8 @@ func (dst bitmap[T]) Min() (T, bool) {
 }
 
 func (dst bitmap[T]) Max() (T, bool) {
-	var blk uint64
-	for blkAt := len(dst.kb) - 1; blkAt >= 0; blkAt-- {
-		if blk = dst.kb[blkAt]; blk != 0x0 {
+	for blkAt, blk := range slices.Backward(dst.kb) {
+		if blk != 0x0 {
 			return T(blkAt<<6 + (63 - bits.LeadingZeros64(blk))), true
 		}
 	}
