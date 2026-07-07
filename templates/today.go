@@ -26,6 +26,12 @@ const todayBadgeWindow = 7
 // timeNow is the wall clock used to anchor "today", overridable in tests.
 var timeNow = time.Now
 
+// TodayFeedDate is the date (in the dataset timezone) the today feed is
+// anchored to, for mixing into the /today ETag.
+func TodayFeedDate() string {
+	return timeNow().In(ottrecidx.TZ).Format(time.DateOnly)
+}
+
 // WebsiteTodayParams parameterizes the "what's on" feed page. The simple filters
 // are client-side (the pills in today.ts); the advanced mode is server-side: it
 // runs an ottrecql query and builds the feed from the filtered data, replacing

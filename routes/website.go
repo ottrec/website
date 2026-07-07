@@ -157,6 +157,12 @@ func (h *websiteHandlerBase) enrich(data ottrecidx.DataRef) enrichidx.Ref {
 }
 
 func (h *websiteHandlerBase) render(w http.ResponseWriter, r *http.Request, fn func(data ottrecidx.DataRef) (c templ.Component, status int, err error)) {
+	h.renderETag(w, r, "", fn)
+}
+
+// renderETag is render with an extra etag mixin for pages whose output depends
+// on more than the dataset (e.g. the current date).
+func (h *websiteHandlerBase) renderETag(w http.ResponseWriter, r *http.Request, etagMixin string, fn func(data ottrecidx.DataRef) (c templ.Component, status int, err error)) {
 	var (
 		data ottrecidx.DataRef
 		ok   bool
@@ -169,7 +175,7 @@ func (h *websiteHandlerBase) render(w http.ResponseWriter, r *http.Request, fn f
 		templates.RenderError(w, r, templates.WebsiteErrorPage, "Data Unavailable", "data not available, try again later", http.StatusServiceUnavailable)
 		return
 	}
-	if err := templates.Render(w, r, templates.WebsiteErrorPage, data.Index().Hash(), func() (c templ.Component, status int, err error) {
+	if err := templates.Render(w, r, templates.WebsiteErrorPage, data.Index().Hash()+"\x00"+etagMixin, func() (c templ.Component, status int, err error) {
 		return fn(data)
 	}); err != nil {
 		slog.Error("website: failed to render page", "url", r.URL.String(), "error", err)
@@ -693,7 +699,8 @@ func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+	// the feed is anchored to the current date, so the etag must change with it
+	h.renderETag(w, r, templates.TodayFeedDate(), func(data ottrecidx.DataRef) (templ.Component, int, error) {
 		params := templates.WebsiteTodayParams{
 			Base:     h.base(r),
 			Data:     data,
