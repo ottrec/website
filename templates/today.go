@@ -75,11 +75,12 @@ type todaySession struct {
 	// the session opening a modal sourced from /api/changes or
 	// /api/holiday-schedules. Enriched-prefixed flags are solely
 	// enrichment-derived and stay false without enrichment.
-	Holiday             bool // facility has a fixed-date schedule near the feed
-	EnrichedSeeSchedule bool // posted changes defer to a separate holiday/event schedule (shown instead of Holiday)
-	Changes             bool // posted changes/special hours may affect this group during the feed
-	EnrichedNotice      bool // facility-wide notices apply, but nothing schedule-affecting
-	Incomplete          bool // the facility has scrape errors
+	Holiday              bool // facility has a fixed-date schedule near the feed
+	EnrichedSeeSchedule  bool // posted changes defer to a separate holiday/event schedule (shown instead of Holiday)
+	Changes              bool // posted changes/special hours may affect this group during the feed
+	EnrichedNotice       bool // facility-wide notices apply, but nothing schedule-affecting
+	EnrichedOtherChanges bool // posted changes/notices exist, but enrichment placed none in the feed window
+	Incomplete           bool // the facility has scrape errors
 
 	// enrichment-derived session states (see enrichidx). EnrichedCancelled
 	// wins over EnrichedScopeCancelled and EnrichedTimeChanged;
@@ -346,6 +347,12 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 				seeSched = true
 			}
 
+			// posted content exists but enrichment placed none of it in the
+			// feed window: offer a muted link to the changes modal in place of
+			// the warning line it suppressed
+			otherChanges := enOK && warn == enrichidx.WarnNone && !seeSched &&
+				todayHasChangesContent(fac, grp, true)
+
 			var added []enrichidx.AddedSession
 			var actByLabel map[string]ottrecidx.ActivityRef
 			if enOK {
@@ -395,11 +402,12 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							Qual:        qual,
 							SourceURL:   sourceURL,
 							GroupIndex:  gi,
-							Holiday:             holiday,
-							EnrichedSeeSchedule: seeSched,
-							Changes:             changes,
-							EnrichedNotice:      notice,
-							Incomplete:          incomplete,
+							Holiday:              holiday,
+							EnrichedSeeSchedule:  seeSched,
+							Changes:              changes,
+							EnrichedNotice:       notice,
+							EnrichedOtherChanges: otherChanges,
+							Incomplete:           incomplete,
 
 							Reservations: resvReq,
 							ResvDefinite: resvDef,
@@ -428,6 +436,10 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 										s.Start, s.End = m.NewStart, m.NewEnd
 										s.Time = todayClockLabel(schema.ClockRange{Start: schema.ClockTime(m.NewStart), End: schema.ClockTime(m.NewEnd)})
 									}
+								}
+								if s.EnrichedCancelled || s.EnrichedScopeCancelled || s.EnrichedTimeChanged {
+									// those warning lines already open the modal
+									s.EnrichedOtherChanges = false
 								}
 							}
 							daySessions[i] = append(daySessions[i], s)

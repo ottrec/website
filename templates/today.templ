@@ -111,8 +111,15 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 																	<button type="button" class="t-exclude" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden></button>
 																}
 															</span>
-															if s.Qual != "" {
-																<span class="t-qual">{ s.Qual }</span>
+															if s.Qual != "" || s.EnrichedOtherChanges {
+																<span class="t-qual">
+																	{ s.Qual }
+																	if s.EnrichedOtherChanges {
+																		// enrichment-derived: posted changes exist, but none were
+																		// placed in the feed window; links to the same changes modal
+																		<button type="button" class="t-other-changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">(schedule changes for other dates)</button>
+																	}
+																</span>
 															}
 															@todaySessionWarnings(s)
 															@todaySessionReservation(s)

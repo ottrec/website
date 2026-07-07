@@ -234,7 +234,7 @@ feedEl.addEventListener('click', (ev) => {
 		openScheduleModal(full)
 		return
 	}
-	const warn = target.closest<HTMLButtonElement>('.t-warn[data-warn]')
+	const warn = target.closest<HTMLButtonElement>('[data-warn]')
 	if (warn) {
 		ev.preventDefault()
 		openWarnModal(warn)

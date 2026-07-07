@@ -663,6 +663,19 @@
 	color: var(--fxki-tx-2);
 	font-style: italic;
 }
+/* muted link beside the date qualifier when posted changes exist but
+   enrichment placed none of them in the feed window */
+.t-other-changes {
+	border: none;
+	background: none;
+	padding: 0;
+	font: inherit;
+	color: var(--fxki-tx-2);
+	cursor: pointer;
+}
+.t-other-changes:hover {
+	text-decoration: underline;
+}
 
 /* warning lines */
 .t-warn {
