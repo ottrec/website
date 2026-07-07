@@ -68,10 +68,11 @@ type todaySession struct {
 	// warning flags (per facility/group), each shown as a warning line under
 	// the session opening a modal sourced from /api/changes or
 	// /api/holiday-schedules
-	Holiday    bool // facility has a fixed-date schedule near the feed
-	Changes    bool // posted changes/special hours may affect this group during the feed
-	Notice     bool // facility-wide notices apply, but nothing schedule-affecting
-	Incomplete bool // the facility has scrape errors
+	Holiday     bool // facility has a fixed-date schedule near the feed
+	SeeSchedule bool // posted changes defer to a separate holiday/event schedule (shown instead of Holiday)
+	Changes     bool // posted changes/special hours may affect this group during the feed
+	Notice      bool // facility-wide notices apply, but nothing schedule-affecting
+	Incomplete  bool // the facility has scrape errors
 
 	// enrichment-derived session states (see enrichidx)
 	Cancelled bool // a validated notice cancels/closes this exact session
@@ -303,6 +304,10 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 				break
 			}
 		}
+		// posted "See <holiday> schedule" notices are the same signal, stated
+		// outright by the city even when the schedule itself isn't published;
+		// same nearby window as the badge
+		facSee := enOK && enFac.SeeSchedule(winStart, winEnd)
 
 		facHasSession := false
 		gi := -1
@@ -322,6 +327,11 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 			}
 			changes := warn == enrichidx.WarnChanges
 			notice := warn == enrichidx.WarnNotice
+
+			seeSched := facSee
+			if enOK && !seeSched && enGrp.SeeSchedule(winStart, winEnd) {
+				seeSched = true
+			}
 
 			var added []enrichidx.AddedSession
 			var actByLabel map[string]ottrecidx.ActivityRef
@@ -360,22 +370,23 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							continue // can't place on a timeline
 						}
 						base := todaySession{
-							Start:      int(r.Start),
-							End:        int(r.End),
-							Time:       todayClockLabel(r),
-							Activity:   label,
-							Facility:   fac.GetName(),
-							Slug:       meta.slug,
-							Region:     meta.region,
-							Sector:     meta.sector,
-							Cats:       cats,
-							Qual:       qual,
-							SourceURL:  sourceURL,
-							GroupIndex: gi,
-							Holiday:    holiday,
-							Changes:    changes,
-							Notice:     notice,
-							Incomplete: incomplete,
+							Start:       int(r.Start),
+							End:         int(r.End),
+							Time:        todayClockLabel(r),
+							Activity:    label,
+							Facility:    fac.GetName(),
+							Slug:        meta.slug,
+							Region:      meta.region,
+							Sector:      meta.sector,
+							Cats:        cats,
+							Qual:        qual,
+							SourceURL:   sourceURL,
+							GroupIndex:  gi,
+							Holiday:     holiday,
+							SeeSchedule: seeSched,
+							Changes:     changes,
+							Notice:      notice,
+							Incomplete:  incomplete,
 
 							Reservations: resvReq,
 							ResvDefinite: resvDef,
@@ -456,21 +467,22 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 					continue
 				}
 				daySessions[i] = append(daySessions[i], todaySession{
-					Start:      ad.Start,
-					End:        ad.End,
-					Time:       todayClockLabel(schema.ClockRange{Start: schema.ClockTime(ad.Start), End: schema.ClockTime(ad.End)}),
-					Activity:   label,
-					Facility:   fac.GetName(),
-					Slug:       meta.slug,
-					Region:     meta.region,
-					Sector:     meta.sector,
-					Cats:       cats,
-					Weekday:    int(dates[i].Weekday()),
-					SourceURL:  sourceURL,
-					GroupIndex: gi,
-					Holiday:    holiday,
-					Incomplete: incomplete,
-					Added:      true,
+					Start:       ad.Start,
+					End:         ad.End,
+					Time:        todayClockLabel(schema.ClockRange{Start: schema.ClockTime(ad.Start), End: schema.ClockTime(ad.End)}),
+					Activity:    label,
+					Facility:    fac.GetName(),
+					Slug:        meta.slug,
+					Region:      meta.region,
+					Sector:      meta.sector,
+					Cats:        cats,
+					Weekday:     int(dates[i].Weekday()),
+					SourceURL:   sourceURL,
+					GroupIndex:  gi,
+					Holiday:     holiday,
+					SeeSchedule: seeSched,
+					Incomplete:  incomplete,
+					Added:       true,
 				})
 				facHasSession = true
 			}

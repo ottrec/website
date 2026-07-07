@@ -139,10 +139,11 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 }
 
 // todaySessionWarnings renders a warning line under a session for each caveat.
-// The holiday warning links straight to the official facility page; the others
-// are buttons that open a modal (fetched from /api/changes and /api/errors).
-// The added note, cancelled, changes, and notice lines all open the same
-// changes modal showing the posted text as written.
+// The see-schedule and holiday warnings (the former, stated outright by the
+// city, takes precedence) link straight to the official facility page; the
+// others are buttons that open a modal (fetched from /api/changes and
+// /api/errors). The added note, cancelled, changes, and notice lines all open
+// the same changes modal showing the posted text as written.
 templ todaySessionWarnings(s todaySession) {
 	if s.Added {
 		<button type="button" class="t-warn added" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
@@ -150,7 +151,16 @@ templ todaySessionWarnings(s todaySession) {
 			<span>This session was added based on posted special hours or schedule changes. Click here for more information.</span>
 		</button>
 	}
-	if s.Holiday {
+	if s.SeeSchedule {
+		<span class="t-warn holiday">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			if s.SourceURL != "" {
+				<a href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">A separate holiday or special event schedule is posted for this facility and may affect this time. Click here to check the official facility page.</a>
+			} else {
+				<span>A separate holiday or special event schedule is posted for this facility and may affect this time. Check the facility's official page.</span>
+			}
+		</span>
+	} else if s.Holiday {
 		<span class="t-warn holiday">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			if s.SourceURL != "" {
