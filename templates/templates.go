@@ -3,14 +3,10 @@ package templates
 
 import (
 	"compress/gzip"
-	"crypto/sha1"
-	"encoding/base32"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -50,30 +46,15 @@ func Render(w http.ResponseWriter, r *http.Request, errp ErrorPageFunc, etagMixi
 		w.Header().Set("Content-Encoding", encoding)
 	}
 
-	// compute the etag from the server hash, data hash, vary header, and content encoding
-	var etag strings.Builder
-	etag.WriteString(exehash)
-	etag.WriteString(etagMixin)
-	etag.WriteByte(0)
-	etag.WriteString(r.URL.String())
-	for _, k := range w.Header().Values("Vary") {
-		etag.WriteByte(0)
-		etag.WriteString(k)
-		for _, v := range r.Header.Values(k) {
-			etag.Write(binary.LittleEndian.AppendUint64(nil, uint64(len(v))))
-			etag.WriteString(v)
-		}
-	}
-	sum := sha1.Sum([]byte(etag.String()))
-	etag.Reset()
-	etag.WriteString(`W/"`)
-	etag.WriteString(base32.StdEncoding.EncodeToString(sum[:]))
-	if encoding != "" {
-		etag.WriteByte('-')
-		etag.WriteString(encoding)
-	}
-	etag.WriteString(`"`)
-	w.Header().Set("ETag", etag.String())
+	// compute the etag from the server hash, data hash, url, varied request
+	// headers, and content encoding
+	etag := httpx.NewETag().
+		MixExe().
+		Mix(etagMixin, r.URL.String()).
+		MixVary(w.Header(), r.Header).
+		Encoding(encoding).
+		ETag().
+		Weaken() // weak: built from the render inputs, not the response bytes
 
 	// if a caching policy isn't already set, allow it to be cached with revalidation
 	if w.Header().Get("Cache-Control") == "" {
@@ -81,8 +62,7 @@ func Render(w http.ResponseWriter, r *http.Request, errp ErrorPageFunc, etagMixi
 	}
 
 	// check etag match
-	if slices.Contains(r.Header.Values("If-None-Match"), etag.String()) {
-		w.WriteHeader(http.StatusNotModified)
+	if etag.Handled(w, r) {
 		return nil
 	}
 
@@ -213,8 +193,7 @@ func SetHeadExtra(html string) {
 		return
 	}
 	headExtra = templ.Raw(html)
-	sum := sha1.Sum([]byte(html))
-	exehash += base32.StdEncoding.EncodeToString(sum[:])
+	httpx.AddExeExtra(html)
 }
 
 var aboutExtra templ.Component
@@ -227,8 +206,7 @@ func SetAboutExtra(html string) {
 		return
 	}
 	aboutExtra = templ.Raw(html)
-	sum := sha1.Sum([]byte(html))
-	exehash += base32.StdEncoding.EncodeToString(sum[:])
+	httpx.AddExeExtra(html)
 }
 
 // homeExtra is raw HTML injected at the bottom of the homepage's main content.
@@ -243,23 +221,8 @@ func SetHomeExtra(html string) {
 		return
 	}
 	homeExtra = templ.Raw(html)
-	sum := sha1.Sum([]byte(html))
-	exehash += base32.StdEncoding.EncodeToString(sum[:])
+	httpx.AddExeExtra(html)
 }
-
-// exehash is a hash of the current binary for use in etags.
-var exehash = func() string {
-	exe, err := os.Executable()
-	if err != nil {
-		panic(fmt.Errorf("exehash: %w", err))
-	}
-	buf, err := os.ReadFile(exe)
-	if err != nil {
-		panic(fmt.Errorf("exehash: %w", err))
-	}
-	sum := sha1.Sum(buf)
-	return base32.StdEncoding.EncodeToString(sum[:])
-}()
 
 func cutBefore(s, sep string) string {
 	before, _, _ := strings.Cut(s, sep)

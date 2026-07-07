@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ottrec/website/internal/httpx"
 	"github.com/ottrec/website/pkg/ottregions"
 )
 
@@ -65,7 +66,7 @@ var regionPalettes = map[bool][4]color.RGBA{
 
 type regionImage struct {
 	png  []byte
-	etag string
+	etag httpx.ETag
 }
 
 type regionOverlayResult struct {
@@ -110,7 +111,7 @@ var regionOverlay = sync.OnceValue(func() regionOverlayResult {
 			panic(err) // wtf lol
 		}
 		sum := sha256.Sum256(buf.Bytes())
-		return regionImage{png: buf.Bytes(), etag: `"` + hex.EncodeToString(sum[:8]) + `"`}
+		return regionImage{png: buf.Bytes(), etag: httpx.MakeETag(hex.EncodeToString(sum[:8]), "")}
 	}
 	res := regionOverlayResult{light: encode(false), dark: encode(true)}
 
@@ -189,9 +190,7 @@ func (h *websiteRegionsLayerHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "public, no-cache")
-	w.Header().Set("ETag", img.etag)
-	if r.Header.Get("If-None-Match") == img.etag {
-		w.WriteHeader(http.StatusNotModified)
+	if img.etag.Handled(w, r) {
 		return
 	}
 	w.Write(img.png)

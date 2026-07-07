@@ -3,12 +3,8 @@ package routes
 
 import (
 	"bytes"
-	"crypto/sha1"
-	"encoding/base32"
-	"fmt"
 	"iter"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -87,17 +83,6 @@ func sitemapXML(lastmod string, urls []string) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-// etagWeak makes a weak etag from the exehash and the provided parts.
-func etagWeak(parts ...string) string {
-	h := sha1.New()
-	h.Write([]byte(exehash))
-	for _, p := range parts {
-		h.Write([]byte{0})
-		h.Write([]byte(p))
-	}
-	return `W/"` + base32.StdEncoding.EncodeToString(h.Sum(nil)) + `"`
-}
-
 type serverTiming []serverTimingEntry
 
 type serverTimingEntry struct {
@@ -121,17 +106,3 @@ func (st serverTiming) String() string {
 	}
 	return string(b)
 }
-
-// exehash is a hash of the current binary for use in etags.
-var exehash = func() string {
-	exe, err := os.Executable()
-	if err != nil {
-		panic(fmt.Errorf("exehash: %w", err))
-	}
-	buf, err := os.ReadFile(exe)
-	if err != nil {
-		panic(fmt.Errorf("exehash: %w", err))
-	}
-	sum := sha1.Sum(buf)
-	return base32.StdEncoding.EncodeToString(sum[:])
-}()

@@ -175,12 +175,14 @@ func (h *dataSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	etag := etagWeak(id)
+	etag := httpx.NewETag().
+		MixExe().
+		Mix(id).
+		ETag().
+		Weaken() // weak: built from the data id, not the response bytes
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, no-cache")
-	w.Header().Set("ETag", etag)
-	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
-		w.WriteHeader(http.StatusNotModified)
+	if etag.Handled(w, r) {
 		return
 	}
 	w.Write(buf)
@@ -293,21 +295,20 @@ func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hw := sha1.New()
-	io.WriteString(hw, blobHash)
-	io.WriteString(hw, exehash)
+	eb := httpx.NewETag().
+		MixExe().
+		Mix(blobHash)
 	if raw {
-		hw.Write([]byte{1})
+		eb.MixBytes(1)
 	}
 	if all {
-		hw.Write([]byte{2})
+		eb.MixBytes(2)
 	}
-	io.WriteString(hw, q)
-	etag := `"` + base32.StdEncoding.EncodeToString(hw.Sum(nil)) + `"`
+	etag := eb.
+		Mix(q).
+		ETag()
 
-	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
-		w.Header().Set("ETag", etag)
-		w.WriteHeader(http.StatusNotModified)
+	if etag.Handled(w, r) {
 		return
 	}
 
@@ -461,7 +462,6 @@ func (h *dataPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	d := w.Header()
 	d.Set("Content-Length", strconv.Itoa(len(buf)))
 	d.Set("Content-Type", "application/xhtml+xml; charset=utf-8")
-	d.Set("ETag", etag)
 	d.Set("Server-Timing", timing.String())
 	w.WriteHeader(http.StatusOK)
 	if r.Method != http.MethodHead {
@@ -495,10 +495,10 @@ type dataExportData struct {
 
 	err      error
 	csv      []byte
-	csvETag  string
+	csvETag  httpx.ETag
 	csvErr   error
 	json     []byte
-	jsonETag string
+	jsonETag httpx.ETag
 	jsonErr  error
 }
 
@@ -613,7 +613,7 @@ func (h *dataExportHandler) serveCSV(w http.ResponseWriter, r *http.Request, spe
 	}
 
 	w.Header().Set("Cache-Control", "public, no-cache")
-	w.Header().Set("ETag", etag)
+	w.Header().Set("ETag", string(etag))
 	w.Header().Set("Content-Type", "application/zip")
 	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf))
 }
@@ -647,7 +647,7 @@ func (h *dataExportHandler) serveJSON(w http.ResponseWriter, r *http.Request, sp
 
 	// TODO: negotiate and cache compression
 
-	w.Header().Set("ETag", etag)
+	w.Header().Set("ETag", string(etag))
 	w.Header().Set("Content-Type", "application/json")
 	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(buf))
 }
@@ -804,10 +804,9 @@ func (h *dataExportHandler) prepare(id string, cachedOnly bool) *dataExportData 
 			} else {
 				sum := sha1.Sum(buf.Bytes())
 				d.csv = slices.Clone(buf.Bytes())
-				d.csvETag = `W/"` + base32.StdEncoding.EncodeToString(sum[:]) + `"`
+				d.csvETag = httpx.MakeETag(base32.StdEncoding.EncodeToString(sum[:]), "").
+					Weaken() // weak: the export isn't guaranteed byte-stable across rebuilds
 			}
-			d.csvErr = exportCSV(buf, exp)
-
 			buf.Reset()
 
 			if err := ottrecexp.WriteJSON(exp, buf); err != nil {
@@ -815,7 +814,8 @@ func (h *dataExportHandler) prepare(id string, cachedOnly bool) *dataExportData 
 			} else {
 				sum := sha1.Sum(buf.Bytes())
 				d.json = slices.Clone(buf.Bytes())
-				d.jsonETag = `W/"` + base32.StdEncoding.EncodeToString(sum[:]) + `"`
+				d.jsonETag = httpx.MakeETag(base32.StdEncoding.EncodeToString(sum[:]), "").
+					Weaken() // weak: the export isn't guaranteed byte-stable across rebuilds
 			}
 			buf.Reset()
 
@@ -826,7 +826,7 @@ func (h *dataExportHandler) prepare(id string, cachedOnly bool) *dataExportData 
 	return d
 }
 
-func (h *dataExportHandler) resolveCSV(ctx context.Context, spec string) ([]byte, string, string, error) {
+func (h *dataExportHandler) resolveCSV(ctx context.Context, spec string) ([]byte, httpx.ETag, string, error) {
 	d, err := h.resolve(spec)
 	if err != nil {
 		return nil, "", "", err
@@ -845,7 +845,7 @@ func (h *dataExportHandler) resolveCSV(ctx context.Context, spec string) ([]byte
 	}
 }
 
-func (h *dataExportHandler) resolveJSON(ctx context.Context, spec string) ([]byte, string, string, error) {
+func (h *dataExportHandler) resolveJSON(ctx context.Context, spec string) ([]byte, httpx.ETag, string, error) {
 	d, err := h.resolve(spec)
 	if err != nil {
 		return nil, "", "", err
@@ -1142,20 +1142,10 @@ func (h *dataAPIv1) serveFile(w http.ResponseWriter, r *http.Request, spec, form
 	// just in case we have bugs somewhere)
 	w.Header().Set("Cache-Control", "public, max-age=604800")
 
-	// build etag from content hash and encoding
-	var etag strings.Builder
-	etag.WriteString(`W/"`)
-	etag.WriteString(hash)
-	if encoding != "" {
-		etag.WriteByte('-')
-		etag.WriteString(encoding)
-	}
-	etag.WriteString(`"`)
-	w.Header().Set("ETag", etag.String())
-
-	// check etag match
-	if slices.Contains(r.Header.Values("If-None-Match"), etag.String()) {
-		w.WriteHeader(http.StatusNotModified)
+	// check etag match (the content hash is the tag, qualified by the encoding)
+	etag := httpx.MakeETag(hash, encoding).
+		Weaken() // weak: the tag hashes the identity content, not the encoded bytes
+	if etag.Handled(w, r) {
 		return
 	}
 

@@ -3,7 +3,6 @@ package asset
 import (
 	"errors"
 	"net/http"
-	"slices"
 	"strconv"
 	"sync"
 
@@ -168,16 +167,10 @@ func (g *Group) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", g.cache)
 	}
 
-	// weak etag, qualified by the encoding so representations validate
-	// independently
-	etag := `W/"` + b.Hash
-	if encoding != "" {
-		etag += "-" + encoding
-	}
-	etag += `"`
-	w.Header().Set("ETag", etag)
-	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
-		w.WriteHeader(http.StatusNotModified)
+	// etag qualified by the encoding so representations validate independently
+	etag := httpx.MakeETag(b.Hash, encoding).
+		Weaken() // weak: the tag hashes the identity content, not the encoded bytes
+	if etag.Handled(w, r) {
 		return
 	}
 

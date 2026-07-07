@@ -14,6 +14,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/ottrec/data-enrichment/enrichidx"
 	"github.com/ottrec/data-enrichment/report"
+	"github.com/ottrec/website/internal/httpx"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottrecql"
 	"github.com/ottrec/website/static"
@@ -474,12 +475,14 @@ func (h *websiteOttrecqlNamesHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	etag := etagWeak(data.Index().Hash())
+	etag := httpx.NewETag().
+		MixExe().
+		Mix(data.Index().Hash()).
+		ETag().
+		Weaken() // weak: built from the data hash, not the response bytes
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, no-cache")
-	w.Header().Set("ETag", etag)
-	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
-		w.WriteHeader(http.StatusNotModified)
+	if etag.Handled(w, r) {
 		return
 	}
 	w.Write(buf)
@@ -629,12 +632,14 @@ func (h *websiteSitemapHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	etag := etagWeak(data.Index().Hash())
+	etag := httpx.NewETag().
+		MixExe().
+		Mix(data.Index().Hash()).
+		ETag().
+		Weaken() // weak: built from the data hash, not the response bytes
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, no-cache")
-	w.Header().Set("ETag", etag)
-	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
-		w.WriteHeader(http.StatusNotModified)
+	if etag.Handled(w, r) {
 		return
 	}
 	w.Write(buf)
@@ -827,11 +832,13 @@ func (h *websiteEnrichReportHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	etag := etagWeak(data.Index().Hash())
-	w.Header().Set("ETag", etag)
+	etag := httpx.NewETag().
+		MixExe().
+		Mix(data.Index().Hash()).
+		ETag().
+		Weaken() // weak: built from the data hash, not the response bytes
 	w.Header().Set("Cache-Control", "public, no-cache")
-	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
-		w.WriteHeader(http.StatusNotModified)
+	if etag.Handled(w, r) {
 		return
 	}
 
