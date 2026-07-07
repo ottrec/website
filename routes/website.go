@@ -671,6 +671,7 @@ func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
 	advanced := r.URL.Query().Get("advanced") != ""
+	noEnrich, _ := strconv.ParseBool(r.URL.Query().Get("noenrich")) // hidden switch to disable the change enrichment
 
 	// keep the advanced search params and the client-side f-* filter params (the
 	// latter don't affect the rendered output) for shareable links, but
@@ -681,8 +682,10 @@ func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		for k := range qq {
 			// advanced search params, plus the client-side f-* filter params
 			// (which don't affect the rendered output); q only matters in
-			// advanced mode, where the feed is filtered server-side.
-			if k == "advanced" || (k == "q" && advanced) || strings.HasPrefix(k, "f-") {
+			// advanced mode, where the feed is filtered server-side. a truthy
+			// noenrich stays since it changes the rendered output (and thus
+			// must stay in the url for the etag); other values are the default.
+			if k == "advanced" || (k == "q" && advanced) || (k == "noenrich" && noEnrich) || strings.HasPrefix(k, "f-") {
 				continue
 			}
 			delete(qq, k)
@@ -705,9 +708,11 @@ func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			Base:     h.base(r),
 			Data:     data,
 			Filtered: data,
-			Enrich:   h.enrich(data),
 			Advanced: advanced,
 			Query:    q,
+		}
+		if !noEnrich {
+			params.Enrich = h.enrich(data)
 		}
 		if advanced && q != "" {
 			node, err := templates.SchedulesParseQuery(q)
