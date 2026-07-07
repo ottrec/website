@@ -85,7 +85,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 												<ol class="today-sessions">
 													for _, s := range hr.Sessions {
 														<li
-															class={ "today-session", templ.KV("fixed", s.Fixed), templ.KV("cancelled", s.Cancelled), templ.KV("added", s.Added) }
+															class={ "today-session", templ.KV("fixed", s.Fixed), templ.KV("cancelled", s.EnrichedCancelled), templ.KV("added", s.EnrichedAdded) }
 															data-slug={ s.Slug }
 															data-cats={ strconv.Itoa(s.Cats) }
 															data-start={ strconv.Itoa(s.Start) }
@@ -93,6 +93,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 														>
 															<span class="t-time">{ s.Time }</span>
 															if s.OldTime != "" {
+																// enrichment-derived: the published time struck out under a trimmed one
 																<span class="t-time-old">{ s.OldTime }</span>
 															}
 															<span class="t-act">{ s.Activity }</span>
@@ -152,19 +153,22 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 // softly and without the strike since the scope phrase was matched against
 // the group, not each activity.
 templ todaySessionWarnings(s todaySession) {
-	if s.Added {
+	if s.EnrichedAdded {
+		// enrichment-derived
 		<button type="button" class="t-warn added" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>This session was added based on posted special hours or schedule changes. Click here for more information.</span>
 		</button>
 	}
-	if s.TimeChanged {
+	if s.EnrichedTimeChanged {
+		// enrichment-derived
 		<button type="button" class="t-warn changed" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>The time for this session was changed based on posted special hours or schedule changes. Click here for more information.</span>
 		</button>
 	}
-	if s.SeeSchedule {
+	if s.EnrichedSeeSchedule {
+		// enrichment-derived
 		<span class="t-warn holiday">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			if s.SourceURL != "" {
@@ -174,6 +178,8 @@ templ todaySessionWarnings(s todaySession) {
 			}
 		</span>
 	} else if s.Holiday {
+		// partly enrichment-affected: schema-derived, but suppressed when the
+		// enriched see-schedule warning shows instead
 		<span class="t-warn holiday">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			if s.SourceURL != "" {
@@ -183,22 +189,27 @@ templ todaySessionWarnings(s todaySession) {
 			}
 		</span>
 	}
-	if s.Cancelled {
+	if s.EnrichedCancelled {
+		// enrichment-derived
 		<button type="button" class="t-warn cancelled" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>This session is marked as cancelled in the posted schedule changes. Click here for more information.</span>
 		</button>
-	} else if s.ScopeCancelled {
+	} else if s.EnrichedScopeCancelled {
+		// enrichment-derived
 		<button type="button" class="t-warn scope-cancelled" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>This session may be affected by posted special hours or schedule changes. Click here for more information.</span>
 		</button>
 	} else if s.Changes {
+		// partly enrichment-affected: enrichment scopes it to the feed window;
+		// without it, any posted schedule-changes block sets it
 		<button type="button" class="t-warn changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>There are schedule changes posted for this facility. Click here for more information.</span>
 		</button>
-	} else if s.Notice {
+	} else if s.EnrichedNotice {
+		// enrichment-derived
 		<button type="button" class="t-warn notice" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>A notice is posted for this facility. Click here for more information.</span>

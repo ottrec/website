@@ -73,22 +73,23 @@ type todaySession struct {
 
 	// warning flags (per facility/group), each shown as a warning line under
 	// the session opening a modal sourced from /api/changes or
-	// /api/holiday-schedules
-	Holiday     bool // facility has a fixed-date schedule near the feed
-	SeeSchedule bool // posted changes defer to a separate holiday/event schedule (shown instead of Holiday)
-	Changes     bool // posted changes/special hours may affect this group during the feed
-	Notice      bool // facility-wide notices apply, but nothing schedule-affecting
-	Incomplete  bool // the facility has scrape errors
+	// /api/holiday-schedules. Enriched-prefixed flags are solely
+	// enrichment-derived and stay false without enrichment.
+	Holiday             bool // facility has a fixed-date schedule near the feed
+	EnrichedSeeSchedule bool // posted changes defer to a separate holiday/event schedule (shown instead of Holiday)
+	Changes             bool // posted changes/special hours may affect this group during the feed
+	EnrichedNotice      bool // facility-wide notices apply, but nothing schedule-affecting
+	Incomplete          bool // the facility has scrape errors
 
-	// enrichment-derived session states (see enrichidx). Cancelled wins over
-	// ScopeCancelled and TimeChanged; Time/Start/End hold the trimmed
-	// effective time when one was derived, with the published one kept in
-	// OldTime.
-	Cancelled      bool   // a validated notice cancels/closes this exact session
-	ScopeCancelled bool   // a whole-scope (group/facility) cancellation may apply on this date
-	Added          bool   // this session comes from a notice, not the published schedule
-	TimeChanged    bool   // a time-change notice affects this session
-	OldTime        string // the published clock label when the time was trimmed (struck out below)
+	// enrichment-derived session states (see enrichidx). EnrichedCancelled
+	// wins over EnrichedScopeCancelled and EnrichedTimeChanged;
+	// Time/Start/End hold the trimmed effective time when one was derived,
+	// with the published one kept in OldTime.
+	EnrichedCancelled      bool   // a validated notice cancels/closes this exact session
+	EnrichedScopeCancelled bool   // a whole-scope (group/facility) cancellation may apply on this date
+	EnrichedAdded          bool   // this session comes from a notice, not the published schedule
+	EnrichedTimeChanged    bool   // a time-change notice affects this session
+	OldTime                string // the published clock label when the time was trimmed (struck out below)
 
 	// reservation note (per activity), shown as a grey boxed note below the
 	// warnings opening a modal sourced from /api/reservations
@@ -394,11 +395,11 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							Qual:        qual,
 							SourceURL:   sourceURL,
 							GroupIndex:  gi,
-							Holiday:     holiday,
-							SeeSchedule: seeSched,
-							Changes:     changes,
-							Notice:      notice,
-							Incomplete:  incomplete,
+							Holiday:             holiday,
+							EnrichedSeeSchedule: seeSched,
+							Changes:             changes,
+							EnrichedNotice:      notice,
+							Incomplete:          incomplete,
 
 							Reservations: resvReq,
 							ResvDefinite: resvDef,
@@ -409,7 +410,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							s.Weekday = int(wd)
 							if enOK {
 								m := enGrp.Session(rawLabel, day, s.Start, s.End)
-								s.Cancelled = m.Cancelled
+								s.EnrichedCancelled = m.Cancelled
 								if !m.Cancelled {
 									// group/facility-wide cancellations ("All
 									// drop-in skating, cancelled"): the scope
@@ -417,9 +418,9 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 									// not each activity, so these get the
 									// softer likely-cancelled warning, not
 									// the strike
-									s.ScopeCancelled = enFac.ScopeCancelled(day, s.Start, s.End) ||
+									s.EnrichedScopeCancelled = enFac.ScopeCancelled(day, s.Start, s.End) ||
 										enGrp.ScopeCancelled(day, s.Start, s.End)
-									s.TimeChanged = m.TimeChange
+									s.EnrichedTimeChanged = m.TimeChange
 									if m.NewTime {
 										// the trimmed effective time, with the
 										// published one struck out below
@@ -510,10 +511,10 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 					Weekday:     int(dates[i].Weekday()),
 					SourceURL:   sourceURL,
 					GroupIndex:  gi,
-					Holiday:     holiday,
-					SeeSchedule: seeSched,
-					Incomplete:  incomplete,
-					Added:       true,
+					Holiday:             holiday,
+					EnrichedSeeSchedule: seeSched,
+					Incomplete:          incomplete,
+					EnrichedAdded:       true,
 				})
 				facHasSession = true
 			}
