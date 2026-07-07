@@ -831,20 +831,12 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "</time>.</p></header><nav class=\"home-tiles\" aria-label=\"Sections\"><a href=\"/today\" data-icon=\"schedule\"><h2>Today</h2><p>What's on now and over the next week, as a simple day-by-day feed.</p></a> <a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>Schedules</h2><p>Browse or search the full drop-in schedules on a single page.</p></a> <a href=\"/activities\" data-icon=\"overview\"><h2>Activities</h2><p>Find facilities offering each activity, by area, weekday, and time of day.</p></a></nav><section class=\"home-about\"><p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p><p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current.</p></section>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = TempWarning(false).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "<section class=\"home-other\" aria-labelledby=\"home-other-heading\"><h2 id=\"home-other-heading\">More stuff</h2><ul><li><a href=\"https://data.ottrec.ca\">dataset</a> &mdash; use the schedule data to build something yourself.</li><li><a href=\"/about/ottrecql\">ottrecql</a> &mdash; info about the advanced search query syntax, for building your own filtered page.</li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "</time>.</p></header><nav class=\"home-tiles\" aria-label=\"Sections\"><a href=\"/today\" data-icon=\"schedule\"><h2>Today</h2><p>What's on now and over the next week, as a simple day-by-day feed.</p></a> <a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>Schedules</h2><p>Browse or search the full drop-in schedules on a single page.</p></a> <a href=\"/activities\" data-icon=\"overview\"><h2>Activities</h2><p>Find facilities offering each activity, by area, weekday, and time of day.</p></a></nav><section class=\"home-about\"><p>The City of Ottawa posts its drop-in schedules one facility at a time, behind collapsible menus, with no way to browse or compare them. Worse, its own lists of which facilities offer a given activity are often incomplete or out of date.</p><p>ottrec.ca gathers the schedules from every City of Ottawa recreation facility into one place, automatically validated and updated daily so the listings stay complete and current.</p></section><section class=\"home-other\" aria-labelledby=\"home-other-heading\"><h2 id=\"home-other-heading\">More stuff</h2><ul><li><a href=\"https://data.ottrec.ca\">dataset</a> &mdash; use the schedule data to build something yourself.</li><li><a href=\"/about/ottrecql\">ottrecql</a> &mdash; info about the advanced search query syntax, for building your own filtered page.</li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if page, ok := AboutContentBySlug("regions"); ok {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "<li><a href=\"/about/regions\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "<li><a href=\"/about/regions\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -857,7 +849,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "</a> &mdash; ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "</a> &mdash; ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -870,13 +862,13 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "</li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "</li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
 		if page, ok := AboutContentBySlug("data-quality"); ok {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<li><a href=\"/about/data-quality\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "<li><a href=\"/about/data-quality\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -889,7 +881,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "</a> &mdash; ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "</a> &mdash; ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -902,12 +894,12 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "</li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "</li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "</ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "</ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -920,7 +912,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, ".</p></li><li><time datetime=\"2026-06-13\">Jun 13, 2026</time><p>Star facilities to bring them to the top of the page and highlight them on the map.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Filter schedules with <a href=\"/about/ottrecql\">custom queries</a> to build your own page with only the facilities and activities you care about.</p></li></ul></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, ".</p></li><li><time datetime=\"2026-06-13\">Jun 13, 2026</time><p>Star facilities to bring them to the top of the page and highlight them on the map.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Filter schedules with <a href=\"/about/ottrecql\">custom queries</a> to build your own page with only the facilities and activities you care about.</p></li></ul></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -928,7 +920,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "</main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "</main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -936,7 +928,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "</body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "</body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -967,7 +959,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 			templ_7745c5c3_Var48 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -979,7 +971,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "<meta name=\"robots\" content=\"noindex\"><title>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<meta name=\"robots\" content=\"noindex\"><title>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -992,7 +984,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "</title><link rel=\"stylesheet\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "</title><link rel=\"stylesheet\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1005,7 +997,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 65, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1013,7 +1005,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "</head><body class=\"error-page\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 65, "</head><body class=\"error-page\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1021,7 +1013,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "<main class=\"error-page\"><h1>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<main class=\"error-page\"><h1>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1034,7 +1026,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "</h1><p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "</h1><p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1047,7 +1039,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "</p><p><a href=\"/\">Go to the homepage</a></p></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "</p><p><a href=\"/\">Go to the homepage</a></p></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1082,7 +1074,7 @@ func TempWarning(dismissable bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<aside class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "<aside class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1095,7 +1087,7 @@ func TempWarning(dismissable bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1104,12 +1096,12 @@ func TempWarning(dismissable bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if dismissable {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "<button type=\"button\" class=\"temp-warn-close\" aria-label=\"Dismiss\" onclick=\"this.closest('.temp-warn').remove()\">&times;</button>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "<button type=\"button\" class=\"temp-warn-close\" aria-label=\"Dismiss\" onclick=\"this.closest('.temp-warn').remove()\">&times;</button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "<div class=\"temp-warn-head\"><span class=\"temp-warn-ico\" aria-hidden=\"true\"></span><h2>Temporary schedule inaccuracies (July 2026)</h2></div><div class=\"temp-warn-body\"><p>As of July 5, 2026, there are a bunch of facilities where the City of Ottawa website for swimming and skating is completely incorrect on some days.</p><p>Since ottrec.ca gets information from the facility webpages, this also affects the times displayed here.</p><p>It is unusual for there to be so many inaccuracies, and I have written to the city about it.</p><p>I strongly recommend calling the facility to confirm skating or swimming hours.</p><p>Some of the corrections for facilities I've been to:</p><ul><li>Bob MacQuarrie has no skating on Sunday, likely for the rest of the summer. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li><li>Splash Wave Pool was unexpectedly closed on Friday, July 3. It is not clear whether this is a one-off occurrence. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 3. Fixed July 6.</span></li><li>The skating at Ray Friel on Sunday is from 3-5pm, not 5-6. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li></ul><p>If you notice any other completely incorrect times, please report it to the city. You can also use the feedback button on the bottom-right of this page to send me a message so I can note it here too.</p></div></aside>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "<div class=\"temp-warn-head\"><span class=\"temp-warn-ico\" aria-hidden=\"true\"></span><h2>Temporary schedule inaccuracies (July 2026)</h2></div><div class=\"temp-warn-body\"><p>As of July 5, 2026, there are a bunch of facilities where the City of Ottawa website for swimming and skating is completely incorrect on some days.</p><p>Since ottrec.ca gets information from the facility webpages, this also affects the times displayed here.</p><p>It is unusual for there to be so many inaccuracies, and I have written to the city about it.</p><p>I strongly recommend calling the facility to confirm skating or swimming hours.</p><p>Some of the corrections for facilities I've been to:</p><ul><li>Bob MacQuarrie has no skating on Sunday, likely for the rest of the summer. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li><li>Splash Wave Pool was unexpectedly closed on Friday, July 3. It is not clear whether this is a one-off occurrence. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 3. Fixed July 6.</span></li><li>The skating at Ray Friel on Sunday is from 3-5pm, not 5-6. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li></ul><p>If you notice any other completely incorrect times, please report it to the city. You can also use the feedback button on the bottom-right of this page to send me a message so I can note it here too.</p></div></aside>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

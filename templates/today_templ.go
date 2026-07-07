@@ -177,10 +177,6 @@ func WebsiteTodayPage(params WebsiteTodayParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = TempWarning(false).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		updated := params.Data.Index().Updated().In(ottrecidx.TZ)
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<p class=\"today-updated\" role=\"note\">This data was last updated <time id=\"today-updated-time\" datetime=\"")
 		if templ_7745c5c3_Err != nil {
