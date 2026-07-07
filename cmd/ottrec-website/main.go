@@ -28,7 +28,7 @@ var (
 	Addr         = pflag.StringP("addr", "a", ":8083", "listen address")
 	Data         = pflag.StringP("data", "d", "http://localhost:8082/v1/latest/pb", "url or path to data protobuf")
 	DataInterval = pflag.DurationP("data-interval", "i", time.Minute*15, "poll interval for data")
-	Enrich       = pflag.Bool("enrich", true, "derive schedule-change enrichment from the data for the today page")
+	NoEnrich     = pflag.Bool("no-enrich", false, "don't derive schedule-change enrichment from the data for the today page")
 	HeadHTML     = pflag.String("head-html", "", "raw html to inject at the bottom of <head> on every page")
 	AboutHTML    = pflag.String("about-html", "", "raw html to inject in the about page")
 	HomeHTML     = pflag.String("home-html", "", "raw html to inject at the bottom of the homepage main content")
@@ -108,7 +108,7 @@ func run() error {
 					}
 
 					snap := &snapshot{idx: db}
-					if *Enrich {
+					if !*NoEnrich {
 						snap.enrich = buildEnrichment(db)
 					}
 
