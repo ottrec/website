@@ -10,7 +10,7 @@ import (
 )
 
 templ WebsiteTodayPage(params WebsiteTodayParams) {
-	{{ feed := buildTodayFeed(params.Filtered, MapFacilitySlugger(params.Data), timeNow()) }}
+	{{ feed := buildTodayFeed(params.Filtered, params.Enrich, MapFacilitySlugger(params.Data), timeNow()) }}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -85,7 +85,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 												<ol class="today-sessions">
 													for _, s := range hr.Sessions {
 														<li
-															class={ "today-session", templ.KV("fixed", s.Fixed) }
+															class={ "today-session", templ.KV("fixed", s.Fixed), templ.KV("cancelled", s.Cancelled), templ.KV("added", s.Added) }
 															data-slug={ s.Slug }
 															data-cats={ strconv.Itoa(s.Cats) }
 															data-start={ strconv.Itoa(s.Start) }
@@ -139,10 +139,17 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 }
 
 // todaySessionWarnings renders a warning line under a session for each caveat.
-// The holiday warning links straight to the official facility page; the changes
-// and incomplete warnings are buttons that open a modal (fetched from
-// /api/changes and /api/errors).
+// The holiday warning links straight to the official facility page; the others
+// are buttons that open a modal (fetched from /api/changes and /api/errors).
+// The added note, cancelled, changes, and notice lines all open the same
+// changes modal showing the posted text as written.
 templ todaySessionWarnings(s todaySession) {
+	if s.Added {
+		<button type="button" class="t-warn added" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span>This session was added based on posted special hours or schedule changes. Click here for more information.</span>
+		</button>
+	}
 	if s.Holiday {
 		<span class="t-warn holiday">
 			<span class="t-warn-ico" aria-hidden="true"></span>
@@ -153,10 +160,20 @@ templ todaySessionWarnings(s todaySession) {
 			}
 		</span>
 	}
-	if s.Changes {
+	if s.Cancelled {
+		<button type="button" class="t-warn cancelled" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span>This session is marked as cancelled in the posted schedule changes. Click here for more information.</span>
+		</button>
+	} else if s.Changes {
 		<button type="button" class="t-warn changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>There are schedule changes posted for this facility. Click here for more information.</span>
+		</button>
+	} else if s.Notice {
+		<button type="button" class="t-warn notice" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span>A notice is posted for this facility. Click here for more information.</span>
 		</button>
 	}
 	if s.Incomplete {

@@ -11,6 +11,7 @@ require (
 	github.com/klauspost/compress v1.18.6
 	github.com/lmittmann/tint v1.1.3
 	github.com/ncruces/go-sqlite3 v0.35.0
+	github.com/ottrec/data-enrichment v0.0.0-20260707065819-a4f7e21e2c56
 	github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7
 	github.com/pgaskin/go-gfsubsets v0.0.1
 	github.com/pgaskin/go-hbsubset v0.0.0-20260704174742-f7034cef92b9
@@ -22,7 +23,7 @@ require (
 	github.com/yuin/goldmark v1.7.13
 	golang.org/x/image v0.42.0
 	golang.org/x/net v0.56.0
-	golang.org/x/text v0.38.0
+	golang.org/x/text v0.39.0
 	google.golang.org/protobuf v1.36.11
 )
 
@@ -41,8 +42,8 @@ require (
 	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/ncruces/go-sqlite3-wasm/v3 v3.1.35302 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect
-	golang.org/x/mod v0.36.0 // indirect
+	golang.org/x/mod v0.37.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/tools v0.45.0 // indirect
+	golang.org/x/tools v0.47.0 // indirect
 )

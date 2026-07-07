@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
+	"github.com/ottrec/data-enrichment/enrichidx"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottrecql"
 	"github.com/ottrec/website/static"
@@ -20,6 +21,10 @@ import (
 
 type WebsiteConfig struct {
 	Data func() (ottrecidx.DataRef, bool)
+	// Enrich returns the schedule-change enrichment derived from the given
+	// data, or a zero Ref if none is available (enrichment is a progressive
+	// enhancement; nil is fine).
+	Enrich func(ottrecidx.DataRef) enrichidx.Ref
 	// HeadHTML is raw HTML injected at the bottom of <head> on every page.
 	HeadHTML string
 	// AboutHTML is raw HTML injected at the bottom of the /about page.
@@ -37,7 +42,8 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	templates.SetHomeExtra(cfg.HomeHTML)
 
 	base := websiteHandlerBase{
-		Data: cfg.Data,
+		Data:   cfg.Data,
+		Enrich: cfg.Enrich,
 	}
 	mux := http.NewServeMux()
 
@@ -136,8 +142,18 @@ func redirectTrailingSlash(next http.Handler) http.Handler {
 }
 
 type websiteHandlerBase struct {
-	Host string
-	Data func() (ottrecidx.DataRef, bool)
+	Host   string
+	Data   func() (ottrecidx.DataRef, bool)
+	Enrich func(ottrecidx.DataRef) enrichidx.Ref
+}
+
+// enrich returns the enrichment for the given data, or a zero Ref when
+// unavailable.
+func (h *websiteHandlerBase) enrich(data ottrecidx.DataRef) enrichidx.Ref {
+	if h.Enrich == nil {
+		return enrichidx.Ref{}
+	}
+	return h.Enrich(data)
 }
 
 func (h *websiteHandlerBase) render(w http.ResponseWriter, r *http.Request, fn func(data ottrecidx.DataRef) (c templ.Component, status int, err error)) {
@@ -682,6 +698,7 @@ func (h *websiteTodayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			Base:     h.base(r),
 			Data:     data,
 			Filtered: data,
+			Enrich:   h.enrich(data),
 			Advanced: advanced,
 			Query:    q,
 		}

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ottrec/data-enrichment/enrichidx"
 	"github.com/ottrec/scraper/schema"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottregions"
@@ -33,6 +34,7 @@ type WebsiteTodayParams struct {
 	Base       string
 	Data       ottrecidx.DataRef // full data, for slugs and the updated timestamp
 	Filtered   ottrecidx.DataRef // data to build the feed from (== Data unless advanced)
+	Enrich     enrichidx.Ref     // schedule-change enrichment (zero = unavailable)
 	Advanced   bool              // advanced (ottrecql) search mode
 	Query      string            // current query box contents
 	QueryError string            // query parse/limit error to show instead of the feed
@@ -67,8 +69,13 @@ type todaySession struct {
 	// the session opening a modal sourced from /api/changes or
 	// /api/holiday-schedules
 	Holiday    bool // facility has a fixed-date schedule near the feed
-	Changes    bool // the session's group has a schedule-changes block
+	Changes    bool // posted changes/special hours may affect this group during the feed
+	Notice     bool // facility-wide notices apply, but nothing schedule-affecting
 	Incomplete bool // the facility has scrape errors
+
+	// enrichment-derived session states (see enrichidx)
+	Cancelled bool // a validated notice cancels/closes this exact session
+	Added     bool // this session comes from a notice, not the published schedule
 
 	// reservation note (per activity), shown as a grey boxed note below the
 	// warnings opening a modal sourced from /api/reservations
@@ -229,7 +236,12 @@ func todaySectorLabel(s ottregions.Sector) string {
 // slug assigns each facility its page slug; pass [MapFacilitySlugger] over the
 // full (unfiltered) data so slugs stay stable when data is an ottrecql-filtered
 // subset (the advanced search), matching the schedules pages.
-func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.Time) todayFeed {
+//
+// enrich (optional; zero = unavailable) narrows the changes warning to groups
+// where posted content may actually apply during the feed, adds the milder
+// facility-notice warning, marks validated per-session cancellations, and
+// injects sessions added by notices.
+func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(string) string, now time.Time) todayFeed {
 	loc := ottrecidx.TZ
 	now = now.In(loc)
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
@@ -244,6 +256,12 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 	}
 	winStart := schema.MakeDateFromGo(today.AddDate(0, 0, -todayBadgeWindow))
 	winEnd := schema.MakeDateFromGo(today.AddDate(0, 0, todayWindowDays-1+todayBadgeWindow))
+
+	// the feed window itself; enrichment warnings and lookups key off these,
+	// not the wider badge window
+	feedFrom := schema.MakeDateFromGo(dates[0])
+	feedTo := schema.MakeDateFromGo(dates[len(dates)-1])
+	enOK := enrich.OK()
 
 	daySessions := make([][]todaySession, todayWindowDays)
 
@@ -262,6 +280,14 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 		sourceURL := fac.GetSourceURL()
 
 		incomplete := hasFacilityErrors(fac)
+
+		// facility-scoped notices (special hours/notifications) apply to
+		// every group's sessions
+		enFac := enrich.Facility(fac.GetName())
+		facWarn := enrichidx.WarnNone
+		if enOK {
+			facWarn = enFac.Warning(feedFrom, feedTo)
+		}
 
 		// strong (holiday/special-date) badge: the facility has a fixed-date
 		// schedule whose dates fall near the feed (or one we can't place, which
@@ -282,7 +308,29 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 		gi := -1
 		for grp := range fac.ScheduleGroups() {
 			gi++
-			changes := grp.GetScheduleChangesHTML() != ""
+
+			// with enrichment, warn only when posted content may actually
+			// apply during the feed window (the milder notice tier covers
+			// content that shouldn't affect the times); without it, fall
+			// back to warning whenever a schedule-changes block exists
+			enGrp := enFac.Group(grp.GetLabel())
+			warn := facWarn
+			if enOK {
+				warn = max(warn, enGrp.Warning(feedFrom, feedTo))
+			} else if grp.GetScheduleChangesHTML() != "" {
+				warn = enrichidx.WarnChanges
+			}
+			changes := warn == enrichidx.WarnChanges
+			notice := warn == enrichidx.WarnNotice
+
+			var added []enrichidx.AddedSession
+			var actByLabel map[string]ottrecidx.ActivityRef
+			if enOK {
+				if added = enGrp.Added(feedFrom, feedTo); len(added) > 0 {
+					actByLabel = map[string]ottrecidx.ActivityRef{}
+				}
+			}
+
 			for sch := range grp.Schedules() {
 				er, erOK := sch.ComputeEffectiveDateRange()
 
@@ -297,6 +345,12 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 					label := activityLabel(act)
 					if label == "" {
 						continue
+					}
+					rawLabel := act.GetLabel() // the enrichment join key
+					if actByLabel != nil {
+						if _, ok := actByLabel[rawLabel]; !ok {
+							actByLabel[rawLabel] = act
+						}
 					}
 					cats := mapActivityCategoryMask(mapActivityName(act))
 					resvReq, resvDef := act.GuessReservationRequirement()
@@ -320,15 +374,19 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 							GroupIndex: gi,
 							Holiday:    holiday,
 							Changes:    changes,
+							Notice:     notice,
 							Incomplete: incomplete,
 
 							Reservations: resvReq,
 							ResvDefinite: resvDef,
 						}
 
-						place := func(i int, wd time.Weekday) {
+						place := func(i int, wd time.Weekday, day schema.Date) {
 							s := base
 							s.Weekday = int(wd)
+							if enOK && enGrp.Cancelled(rawLabel, day, s.Start, s.End) {
+								s.Cancelled = true
+							}
 							daySessions[i] = append(daySessions[i], s)
 							facHasSession = true
 						}
@@ -342,7 +400,7 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 							// pin to the concrete date the column lists.
 							if i, in := dayIndex[d/10]; in {
 								wd, _ := d.Weekday()
-								place(i, wd)
+								place(i, wd, d)
 							}
 							continue
 						}
@@ -362,19 +420,59 @@ func buildTodayFeed(data ottrecidx.DataRef, slug func(string) string, now time.T
 							if d.Weekday() != wd {
 								continue
 							}
+							dd := schema.MakeDateFromGo(d)
 							if erOK {
-								dd := schema.MakeDateFromGo(d) / 10
-								if !er.From.IsZero() && int(er.From)/10 > int(dd) {
+								if !er.From.IsZero() && int(er.From)/10 > int(dd)/10 {
 									continue
 								}
-								if !er.To.IsZero() && int(er.To)/10 < int(dd) {
+								if !er.To.IsZero() && int(er.To)/10 < int(dd)/10 {
 									continue
 								}
 							}
-							place(i, wd)
+							place(i, wd, dd)
 						}
 					}
 				}
+			}
+
+			// inject sessions added by notices (rendered with the green
+			// note); non-novel activities reuse the published activity's
+			// display name and category, novel ones only exist in the notice
+			for _, ad := range added {
+				i, in := dayIndex[ad.Date/10]
+				if !in {
+					continue
+				}
+				label, cats := ad.ActivityLabel, 0
+				if act, ok := actByLabel[ad.ActivityLabel]; ok {
+					label = activityLabel(act)
+					cats = mapActivityCategoryMask(mapActivityName(act))
+				} else if !ad.Novel {
+					continue // not in this (possibly filtered) data
+				} else {
+					cats = mapActivityCategoryMask(strings.ToLower(strings.Join(strings.Fields(label), " ")))
+				}
+				if label == "" {
+					continue
+				}
+				daySessions[i] = append(daySessions[i], todaySession{
+					Start:      ad.Start,
+					End:        ad.End,
+					Time:       todayClockLabel(schema.ClockRange{Start: schema.ClockTime(ad.Start), End: schema.ClockTime(ad.End)}),
+					Activity:   label,
+					Facility:   fac.GetName(),
+					Slug:       meta.slug,
+					Region:     meta.region,
+					Sector:     meta.sector,
+					Cats:       cats,
+					Weekday:    int(dates[i].Weekday()),
+					SourceURL:  sourceURL,
+					GroupIndex: gi,
+					Holiday:    holiday,
+					Incomplete: incomplete,
+					Added:      true,
+				})
+				facHasSession = true
 			}
 		}
 

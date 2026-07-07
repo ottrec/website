@@ -712,6 +712,36 @@ button.t-warn:hover span:last-child {
 .t-warn.changes .t-warn-ico { color: var(--fxki-or); }
 .t-warn.incomplete .t-warn-ico { color: var(--fxki-tx-2); }
 
+/* milder facility-notice line (grey, info icon): posted notices that
+   shouldn't affect the times themselves */
+.t-warn.notice {
+	background: light-dark(rgb(0 0 0 / .04), rgb(255 255 255 / .05));
+	border-color: var(--fxki-ui);
+	color: var(--fxki-tx-2);
+}
+.t-warn.notice .t-warn-ico { color: var(--fxki-tx-2); }
+.t-warn.notice .t-warn-ico::before { content: '\e88e'; /* info */ }
+
+/* session cancelled by a posted change: struck-through row + red-tinted line */
+.t-warn.cancelled {
+	background: light-dark(rgb(209 77 65 / .1), rgb(232 112 95 / .15));
+	border-color: light-dark(rgb(209 77 65 / .35), rgb(232 112 95 / .35));
+}
+.t-warn.cancelled .t-warn-ico { color: var(--fxki-re); }
+.today-session.cancelled .t-time,
+.today-session.cancelled .t-act {
+	text-decoration: line-through;
+	color: var(--fxki-tx-2);
+}
+
+/* session added by a posted change: green-tinted note (info icon) */
+.t-warn.added {
+	background: light-dark(rgb(102 128 11 / .1), rgb(135 154 57 / .15));
+	border-color: light-dark(rgb(102 128 11 / .35), rgb(135 154 57 / .35));
+}
+.t-warn.added .t-warn-ico { color: var(--fxki-gr); }
+.t-warn.added .t-warn-ico::before { content: '\e88e'; /* info */ }
+
 /* reservation note (grey box, info icon), below the warnings */
 .t-warn.t-resv {
 	background: light-dark(rgb(0 0 0 / .04), rgb(255 255 255 / .05));

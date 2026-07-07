@@ -15,6 +15,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/lmittmann/tint"
+	"github.com/ottrec/data-enrichment/enrich"
+	"github.com/ottrec/data-enrichment/enrichidx"
 	"github.com/ottrec/website/internal/pflagx"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/routes"
@@ -26,6 +28,7 @@ var (
 	Addr         = pflag.StringP("addr", "a", ":8083", "listen address")
 	Data         = pflag.StringP("data", "d", "http://localhost:8082/v1/latest/pb", "url or path to data protobuf")
 	DataInterval = pflag.DurationP("data-interval", "i", time.Minute*15, "poll interval for data")
+	Enrich       = pflag.Bool("enrich", true, "derive schedule-change enrichment from the data for the today page")
 	HeadHTML     = pflag.String("head-html", "", "raw html to inject at the bottom of <head> on every page")
 	AboutHTML    = pflag.String("about-html", "", "raw html to inject in the about page")
 	HomeHTML     = pflag.String("home-html", "", "raw html to inject at the bottom of the homepage main content")
@@ -76,14 +79,20 @@ func main() {
 }
 
 func run() error {
-	getData := func() func() (ottrecidx.DataRef, bool) {
+	// snapshot pairs a loaded data index with the enrichment derived from it,
+	// swapped atomically so /today never applies enrichment across versions.
+	type snapshot struct {
+		idx    *ottrecidx.Index
+		enrich enrichidx.Ref
+	}
+	getData, getEnrich := func() (func() (ottrecidx.DataRef, bool), func(ottrecidx.DataRef) enrichidx.Ref) {
 		var (
 			update     = time.Tick(*DataInterval)
 			backoffMin = time.Second
 			backoffMax = time.Minute * 3
 			backoff    time.Duration
 			dbMu       sync.Mutex
-			dbPtr      *ottrecidx.Index
+			dbPtr      *snapshot
 		)
 		go func() {
 			for {
@@ -98,9 +107,14 @@ func run() error {
 						return err
 					}
 
+					snap := &snapshot{idx: db}
+					if *Enrich {
+						snap.enrich = buildEnrichment(db)
+					}
+
 					dbMu.Lock()
 					defer dbMu.Unlock()
-					dbPtr = db
+					dbPtr = snap
 
 					return nil
 				}(); err != nil {
@@ -117,17 +131,25 @@ func run() error {
 			}
 		}()
 		return func() (ottrecidx.DataRef, bool) {
-			dbMu.Lock()
-			defer dbMu.Unlock()
-			if dbPtr == nil {
-				return ottrecidx.DataRef{}, false
+				dbMu.Lock()
+				defer dbMu.Unlock()
+				if dbPtr == nil {
+					return ottrecidx.DataRef{}, false
+				}
+				return dbPtr.idx.Data(), true
+			}, func(data ottrecidx.DataRef) enrichidx.Ref {
+				dbMu.Lock()
+				defer dbMu.Unlock()
+				if dbPtr == nil || dbPtr.idx != data.Index() {
+					return enrichidx.Ref{}
+				}
+				return dbPtr.enrich
 			}
-			return dbPtr.Data(), true
-		}
 	}()
 
 	handler, err := routes.Website(routes.WebsiteConfig{
 		Data:      getData,
+		Enrich:    getEnrich,
 		HeadHTML:  *HeadHTML,
 		AboutHTML: *AboutHTML,
 		HomeHTML:  *HomeHTML,
@@ -138,6 +160,23 @@ func run() error {
 
 	slog.Info("http: listening", "addr", *Addr)
 	return http.ListenAndServe(*Addr, handler)
+}
+
+// buildEnrichment derives the today-page enrichment from freshly loaded data.
+// It is a progressive enhancement: any failure just disables it for this
+// snapshot.
+func buildEnrichment(idx *ottrecidx.Index) (ref enrichidx.Ref) {
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("db: failed to derive enrichment", "panic", r)
+			ref = enrichidx.Ref{}
+		}
+	}()
+	start := time.Now()
+	out := enrich.EnrichVersion("", idx.Data())
+	ref = enrichidx.Join(out)
+	slog.Info("db: derived enrichment", "objects", len(out.GetObjects()), "took", time.Since(start).Truncate(time.Millisecond))
+	return ref
 }
 
 func loadData(ctx context.Context, uri string) (*ottrecidx.Index, error) {
