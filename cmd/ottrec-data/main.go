@@ -14,7 +14,6 @@ import (
 	_ "time/tzdata"
 
 	"github.com/lmittmann/tint"
-	_ "github.com/ncruces/go-sqlite3/embed"
 	"github.com/ottrec/website/internal/gitsh"
 	"github.com/ottrec/website/internal/pflagx"
 	"github.com/ottrec/website/pkg/ottrecdata"
