@@ -74,9 +74,15 @@ type todaySession struct {
 	Notice      bool // facility-wide notices apply, but nothing schedule-affecting
 	Incomplete  bool // the facility has scrape errors
 
-	// enrichment-derived session states (see enrichidx)
-	Cancelled bool // a validated notice cancels/closes this exact session
-	Added     bool // this session comes from a notice, not the published schedule
+	// enrichment-derived session states (see enrichidx). Cancelled wins over
+	// ScopeCancelled and TimeChanged; Time/Start/End hold the trimmed
+	// effective time when one was derived, with the published one kept in
+	// OldTime.
+	Cancelled      bool   // a validated notice cancels/closes this exact session
+	ScopeCancelled bool   // a whole-scope (group/facility) cancellation may apply on this date
+	Added          bool   // this session comes from a notice, not the published schedule
+	TimeChanged    bool   // a time-change notice affects this session
+	OldTime        string // the published clock label when the time was trimmed (struck out below)
 
 	// reservation note (per activity), shown as a grey boxed note below the
 	// warnings opening a modal sourced from /api/reservations
@@ -395,8 +401,27 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 						place := func(i int, wd time.Weekday, day schema.Date) {
 							s := base
 							s.Weekday = int(wd)
-							if enOK && enGrp.Cancelled(rawLabel, day, s.Start, s.End) {
-								s.Cancelled = true
+							if enOK {
+								m := enGrp.Session(rawLabel, day, s.Start, s.End)
+								s.Cancelled = m.Cancelled
+								if !m.Cancelled {
+									// group/facility-wide cancellations ("All
+									// drop-in skating, cancelled"): the scope
+									// phrase was matched against the group,
+									// not each activity, so these get the
+									// softer likely-cancelled warning, not
+									// the strike
+									s.ScopeCancelled = enFac.ScopeCancelled(day, s.Start, s.End) ||
+										enGrp.ScopeCancelled(day, s.Start, s.End)
+									s.TimeChanged = m.TimeChange
+									if m.NewTime {
+										// the trimmed effective time, with the
+										// published one struck out below
+										s.OldTime = s.Time
+										s.Start, s.End = m.NewStart, m.NewEnd
+										s.Time = todayClockLabel(schema.ClockRange{Start: schema.ClockTime(m.NewStart), End: schema.ClockTime(m.NewEnd)})
+									}
+								}
 							}
 							daySessions[i] = append(daySessions[i], s)
 							facHasSession = true

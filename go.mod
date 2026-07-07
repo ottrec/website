@@ -11,7 +11,7 @@ require (
 	github.com/klauspost/compress v1.18.6
 	github.com/lmittmann/tint v1.1.3
 	github.com/ncruces/go-sqlite3 v0.35.0
-	github.com/ottrec/data-enrichment v0.0.0-20260707065819-a4f7e21e2c56
+	github.com/ottrec/data-enrichment v0.0.0-20260707075151-d433035952b5
 	github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7
 	github.com/pgaskin/go-gfsubsets v0.0.1
 	github.com/pgaskin/go-hbsubset v0.0.0-20260704174742-f7034cef92b9

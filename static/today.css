@@ -561,6 +561,15 @@
 	white-space: nowrap;
 	font-weight: 500;
 }
+/* published time struck out under the trimmed effective time */
+.t-time-old {
+	grid-column: 1;
+	font-variant-numeric: tabular-nums;
+	font-size: .78rem;
+	color: var(--fxki-tx-2);
+	text-decoration: line-through;
+	white-space: nowrap;
+}
 .t-act {
 	grid-column: 2;
 	font-size: 1rem;
@@ -722,25 +731,32 @@ button.t-warn:hover span:last-child {
 .t-warn.notice .t-warn-ico { color: var(--fxki-tx-2); }
 .t-warn.notice .t-warn-ico::before { content: '\e88e'; /* info */ }
 
-/* session cancelled by a posted change: struck-through row + red-tinted line */
-.t-warn.cancelled {
+/* session cancelled by a posted change: struck-through row + red-tinted line.
+   scope-cancelled (a group/facility-wide cancellation that may apply) gets
+   the same red line without the strike */
+.t-warn.cancelled,
+.t-warn.scope-cancelled {
 	background: light-dark(rgb(209 77 65 / .1), rgb(232 112 95 / .15));
 	border-color: light-dark(rgb(209 77 65 / .35), rgb(232 112 95 / .35));
 }
-.t-warn.cancelled .t-warn-ico { color: var(--fxki-re); }
+.t-warn.cancelled .t-warn-ico,
+.t-warn.scope-cancelled .t-warn-ico { color: var(--fxki-re); }
 .today-session.cancelled .t-time,
 .today-session.cancelled .t-act {
 	text-decoration: line-through;
 	color: var(--fxki-tx-2);
 }
 
-/* session added by a posted change: green-tinted note (info icon) */
-.t-warn.added {
+/* session added or modified by a posted change: green-tinted note (info icon) */
+.t-warn.added,
+.t-warn.changed {
 	background: light-dark(rgb(102 128 11 / .1), rgb(135 154 57 / .15));
 	border-color: light-dark(rgb(102 128 11 / .35), rgb(135 154 57 / .35));
 }
-.t-warn.added .t-warn-ico { color: var(--fxki-gr); }
-.t-warn.added .t-warn-ico::before { content: '\e88e'; /* info */ }
+.t-warn.added .t-warn-ico,
+.t-warn.changed .t-warn-ico { color: var(--fxki-gr); }
+.t-warn.added .t-warn-ico::before,
+.t-warn.changed .t-warn-ico::before { content: '\e88e'; /* info */ }
 
 /* reservation note (grey box, info icon), below the warnings */
 .t-warn.t-resv {

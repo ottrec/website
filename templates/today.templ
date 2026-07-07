@@ -92,6 +92,9 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 															data-end={ strconv.Itoa(s.End) }
 														>
 															<span class="t-time">{ s.Time }</span>
+															if s.OldTime != "" {
+																<span class="t-time-old">{ s.OldTime }</span>
+															}
 															<span class="t-act">{ s.Activity }</span>
 															<span class="t-fac">
 																<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
@@ -142,13 +145,23 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 // The see-schedule and holiday warnings (the former, stated outright by the
 // city, takes precedence) link straight to the official facility page; the
 // others are buttons that open a modal (fetched from /api/changes and
-// /api/errors). The added note, cancelled, changes, and notice lines all open
-// the same changes modal showing the posted text as written.
+// /api/errors). The added note, cancelled, scope-cancelled, changes, and
+// notice lines all open the same changes modal showing the posted text as
+// written. Scope-cancelled is the group/facility-wide "all drop-ins
+// cancelled" tier: red like cancelled (it deserves attention), but worded
+// softly and without the strike since the scope phrase was matched against
+// the group, not each activity.
 templ todaySessionWarnings(s todaySession) {
 	if s.Added {
 		<button type="button" class="t-warn added" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>This session was added based on posted special hours or schedule changes. Click here for more information.</span>
+		</button>
+	}
+	if s.TimeChanged {
+		<button type="button" class="t-warn changed" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span>The time for this session was changed based on posted special hours or schedule changes. Click here for more information.</span>
 		</button>
 	}
 	if s.SeeSchedule {
@@ -174,6 +187,11 @@ templ todaySessionWarnings(s todaySession) {
 		<button type="button" class="t-warn cancelled" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
 			<span class="t-warn-ico" aria-hidden="true"></span>
 			<span>This session is marked as cancelled in the posted schedule changes. Click here for more information.</span>
+		</button>
+	} else if s.ScopeCancelled {
+		<button type="button" class="t-warn scope-cancelled" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span>This session may be affected by posted special hours or schedule changes. Click here for more information.</span>
 		</button>
 	} else if s.Changes {
 		<button type="button" class="t-warn changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">

@@ -43,8 +43,8 @@ github.com/ncruces/go-sqlite3-wasm/v3 v3.1.35302 h1:Cew7/eNAMd1zhpXYBjofBua/63pF
 github.com/ncruces/go-sqlite3-wasm/v3 v3.1.35302/go.mod h1:xe0CfafDUxfh+fSVKjHHMiAxoG9KALt5nFtbGNb/jRs=
 github.com/ncruces/julianday v1.0.0 h1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt7M=
 github.com/ncruces/julianday v1.0.0/go.mod h1:Dusn2KvZrrovOMJuOt0TNXL6tB7U2E8kvza5fFc9G7g=
-github.com/ottrec/data-enrichment v0.0.0-20260707065819-a4f7e21e2c56 h1:OginZdOnKg7+IbdaijpIMbxmyFjPxY+CyYd0pBm84U4=
-github.com/ottrec/data-enrichment v0.0.0-20260707065819-a4f7e21e2c56/go.mod h1:WPVkAh505i5W8pPOI2KTBk/KU7T5K3ewvSF6lg17wJ4=
+github.com/ottrec/data-enrichment v0.0.0-20260707075151-d433035952b5 h1:xgrrSWQZ9pEOWtzAUcLJubpTvPkjRP1J3tik5VVeC4Y=
+github.com/ottrec/data-enrichment v0.0.0-20260707075151-d433035952b5/go.mod h1:WPVkAh505i5W8pPOI2KTBk/KU7T5K3ewvSF6lg17wJ4=
 github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7 h1:8AxbCJOV2J75BOjmOWTzvoPJqPOy51OtrEV5jPd1LxI=
 github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7/go.mod h1:axOX9DkOQAdWiwOjC9+PTFG1corxutSFNlHMWjYWUtM=
 github.com/pgaskin/go-gfsubsets v0.0.1 h1:eEELSmWxsmljDZK9gONr7Lq0y9mXcDcVGeHW+I2fWLU=
