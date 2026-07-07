@@ -13,6 +13,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/ottrec/data-enrichment/enrichidx"
+	"github.com/ottrec/data-enrichment/report"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottrecql"
 	"github.com/ottrec/website/static"
@@ -72,6 +73,9 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 		websiteHandlerBase: base,
 	})
 	mux.Handle("GET /api/reservations", &websiteTodayReservationsHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /api/enrich/report", &websiteEnrichReportHandler{
 		websiteHandlerBase: base,
 	})
 	mux.Handle("GET /schedules", &websiteSchedulesHandler{
@@ -799,6 +803,40 @@ func (h *websiteTodayReservationsHandler) ServeHTTP(w http.ResponseWriter, r *ht
 			HasGroup: hasGroup,
 		}), http.StatusOK, nil
 	})
+}
+
+// websiteEnrichReportHandler serves the enrichment debugging report from
+// data-enrichment/report for the current dataset. Unlinked and noindex, for
+// internal use; it reruns the enrichment on a cache miss, so it's not cheap.
+type websiteEnrichReportHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteEnrichReportHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("X-Robots-Tag", "noindex")
+
+	var (
+		data ottrecidx.DataRef
+		ok   bool
+	)
+	if h.Data != nil {
+		data, ok = h.Data()
+	}
+	if !ok {
+		http.Error(w, "data not available, try again later", http.StatusServiceUnavailable)
+		return
+	}
+
+	etag := etagWeak(data.Index().Hash())
+	w.Header().Set("ETag", etag)
+	w.Header().Set("Cache-Control", "public, no-cache")
+	if slices.Contains(r.Header.Values("If-None-Match"), etag) {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write(report.Build("", data))
 }
 
 // websiteMapFacilityHandler serves the HTML fragment fetched over XHR for the
