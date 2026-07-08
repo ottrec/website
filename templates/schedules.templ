@@ -18,6 +18,27 @@ templ schedulesCats(active string, list bool) {
 	</div>
 }
 
+// schedulesView renders the table/list view toggle (below the search on pages
+// with a header; in the catnav on the single-facility pages that have none).
+templ schedulesView(params WebsiteSchedulesParams) {
+	<div class="schedules-view" role="group" aria-label="Schedule view">
+		<a
+			href={ templ.URL(schedulesViewHref(params, false)) }
+			class={ templ.KV("active", !params.List) }
+			if !params.List {
+				aria-current="true"
+			}
+		>Table</a>
+		<a
+			href={ templ.URL(schedulesViewHref(params, true)) }
+			class={ templ.KV("active", params.List) }
+			if params.List {
+				aria-current="true"
+			}
+		>List</a>
+	</div>
+}
+
 templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 	{{ css := []*asset.Asset{static.FacilityCSS, static.SearchCSS, static.SchedulesCSS} }}
 	if params.Search && params.Advanced {
@@ -36,22 +57,9 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 	}) {
 		<nav class="schedules-catnav">
 			@schedulesCats(params.Active, params.List)
-			<div class="schedules-view" role="group" aria-label="Schedule view">
-				<a
-					href={ templ.URL(schedulesViewHref(params, false)) }
-					class={ templ.KV("active", !params.List) }
-					if !params.List {
-						aria-current="true"
-					}
-				>Table</a>
-				<a
-					href={ templ.URL(schedulesViewHref(params, true)) }
-					class={ templ.KV("active", params.List) }
-					if params.List {
-						aria-current="true"
-					}
-				>List</a>
-			</div>
+			if params.Single {
+				@schedulesView(params)
+			}
 		</nav>
 		<main>
 			<div class="schedules-layout">
@@ -122,6 +130,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 									</form>
 								}
 							}
+							@schedulesView(params)
 							if params.Active == "all" && params.Query == "" && !params.Advanced && !params.List {
 								<p class="schedules-about">Every City of Ottawa recreation facility's drop-in schedules on one page, instead of clicking through each facility's own page. Search by activity or facility name above, or build a <a href="/schedules?advanced=1">custom query</a>. Automatically validated and updated daily.</p>
 							}

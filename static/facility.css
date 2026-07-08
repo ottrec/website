@@ -289,6 +289,9 @@ article.facility {
 	background: var(--fxki-bg);
 	color: var(--fxki-tx);
 	overflow: hidden;
+	/* keep it above a Leaflet map when the top layer isn't engaged (e.g. it
+	 * opens from a map marker on the activity page); a no-op for real top-layer */
+	z-index: 3000;
 
 	/* literal color + blur rather than the theme vars: custom properties don't
 	 * reach ::backdrop on the target browsers, and a plain black scrim alone is

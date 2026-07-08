@@ -392,8 +392,6 @@ var (
 	FacilityCSS     = assets.Register("facility.css", css)
 	MapCSS          = assets.Register("map.css", css)
 	MapJS           = assets.Register("map.ts", ts)
-	ActivitiesCSS   = assets.Register("activities.css", css)
-	ActivitiesJS    = assets.Register("activities.ts", ts)
 	TodayCSS        = assets.Register("today.css", css)
 	TodayJS         = assets.Register("today.ts", ts)
 	SchedulesCSS    = assets.Register("schedules.css", css)
@@ -410,6 +408,7 @@ var (
 	ActivityCSS     = assets.Register("activity.css", css)
 	ActivityMapJS   = assets.Register("activitymap.ts", ts)
 	ActivityTodayJS = assets.Register("activitytoday.ts", ts)
+	RelTimeJS       = assets.Register("reltime.ts", ts)
 	ThemeJS         = assets.Register("theme.ts", ts)
 	StarredJS       = assets.Register("starred.ts", ts)
 	FacilityModalJS = assets.Register("facilitymodal.ts", ts)
@@ -427,8 +426,6 @@ var Website = assets.
 		FacilityCSS,
 		MapCSS,
 		MapJS,
-		ActivitiesCSS,
-		ActivitiesJS,
 		TodayCSS,
 		TodayJS,
 		SchedulesCSS,
@@ -446,6 +443,7 @@ var Website = assets.
 		ActivityCSS,
 		ActivityMapJS,
 		ActivityTodayJS,
+		RelTimeJS,
 		ThemeJS,
 		StarredJS,
 		FacilityModalJS,

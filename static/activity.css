@@ -115,9 +115,9 @@
 .activity-today-date {
 	margin-left: .5rem;
 	font-family: 'Source Sans 3', sans-serif;
-	font-size: .85rem;
-	font-weight: 400;
-	color: var(--fxki-tx-3);
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--fxki-tx-2);
 }
 
 /* the tab-row "more days" affordance: a clear bordered button */
@@ -242,6 +242,21 @@
 	padding: .25rem .3rem;
 	font-size: .85rem;
 	border-radius: 0; /* square, so the row dividers reach the edges */
+
+	&:hover {
+		background: none; /* no row highlight in the compact widget */
+	}
+}
+
+/* today.css collapses sessions to one column here; keep the notice chips in it
+ * too (they'd otherwise stay in the now-nonexistent second column) */
+@media (max-width: 480px) {
+	.activity-today .today-session {
+		grid-template-columns: 1fr;
+	}
+	.activity-today .t-notices {
+		grid-column: 1;
+	}
 }
 
 .activity-today-foot {
@@ -370,6 +385,124 @@
 	color: var(--fxki-tx-3);
 }
 
+/* facilities directory page */
+
+.facilities-sector {
+	margin: 1.25rem 0;
+
+	h3 {
+		font-size: .75rem;
+		text-transform: uppercase;
+		letter-spacing: .04em;
+		color: var(--fxki-tx-3);
+		margin: 0 0 .35rem;
+	}
+}
+
+.facilities-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+	gap: .15rem 1.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	li {
+		padding: .2rem 0;
+		line-height: 1.35;
+	}
+}
+
+/* activities directory page */
+
+.activities-dir-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+	gap: .5rem;
+	margin: 1rem 0 0;
+
+	a {
+		display: flex;
+		align-items: center;
+		gap: .6rem;
+		padding: .55rem .8rem;
+		border: 1px solid var(--fxki-ui-2);
+		border-radius: .4rem;
+		background: var(--fxki-bg-2);
+		color: inherit;
+		text-decoration: none;
+
+		&:hover {
+			background: var(--fxki-bg-3);
+		}
+	}
+
+	/* category icons (Material Symbols; codepoints mirror home.css) */
+	[data-icon="pool"]::before { content: '\eb48'; }
+	[data-icon="water"]::before { content: '\f084'; }
+	[data-icon="ice_skating"]::before { content: '\e50b'; }
+	[data-icon="sports_hockey"]::before { content: '\ea2b'; }
+	[data-icon="badminton"]::before { content: '\f2a8'; }
+	[data-icon="sports_basketball"]::before { content: '\ea26'; }
+	[data-icon="sports_volleyball"]::before { content: '\ea31'; }
+	[data-icon="pickleball"]::before { content: '\f2a6'; }
+	[data-icon="sports_tennis"]::before { content: '\ea32'; }
+}
+
+.activities-dir-ico {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+
+	&::before {
+		font-size: 1.45rem;
+		color: var(--fxki-tx-3);
+	}
+}
+
+.activities-dir-text {
+	display: flex;
+	flex-direction: column;
+	gap: .1rem;
+	min-width: 0;
+}
+
+.activities-dir-name {
+	font-weight: 500;
+}
+
+.activities-dir-terms {
+	font-size: .78rem;
+	color: var(--fxki-tx-3);
+}
+
+.activities-dir-label {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.1rem;
+	margin: 2rem 0 0;
+}
+
+/* vertical fill (columns), so reading down a column is alphabetical */
+.activities-dir-list {
+	columns: 15rem;
+	column-gap: 1.5rem;
+	margin: .5rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	li {
+		padding: .2rem 0;
+		break-inside: avoid;
+	}
+	/* long single names ellipsize instead of wrapping */
+	a {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
 /* minimal facility map */
 
 .activity-map-section {
@@ -459,6 +592,12 @@
 	font-family: 'Source Serif 4', serif;
 	font-size: 1.15rem;
 	margin: 2rem 0 .5rem;
+}
+
+.activity-facilities-note {
+	margin: -.25rem 0 .75rem;
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
 }
 
 .activity-sector {

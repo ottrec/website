@@ -9,6 +9,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"cmp"
+	"encoding/json"
 	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/static"
@@ -23,21 +24,58 @@ type WebsiteParams struct {
 
 // websitePageMeta configures the shared page chrome rendered by [websitePage].
 type websitePageMeta struct {
-	Base       string          // absolute site root (params.Base); "" omits the canonical link and social meta
-	Path       string          // canonical path under Base ("" for the homepage)
-	Title      string          // full <title>, including any site suffix
-	Desc       string          // meta description ("" omits the tag)
-	SocialDesc string          // og/twitter description when it should differ from Desc
-	Article    bool            // og:type article instead of website
-	Author     string          // article author ("" omits the meta)
-	DateISO    string          // article published date ("" omits the meta)
-	NoIndex    bool            // robots noindex (error pages)
-	NoSocial   bool            // omit the social meta even with a Base (the data site)
-	BodyClass  string          // class for <body>
-	Nav        string          // active topnav slug ("" for none)
-	Updated    time.Time       // dataset timestamp for the topnav (zero to omit)
-	TopNav     templ.Component // overrides the default topnav (the data site)
-	CSS        []*asset.Asset  // page stylesheets, linked after the shared website.css
+	Base        string              // absolute site root (params.Base); "" omits the canonical link and social meta
+	Path        string              // canonical path under Base ("" for the homepage)
+	Title       string              // full <title>, including any site suffix
+	Desc        string              // meta description ("" omits the tag)
+	SocialDesc  string              // og/twitter description when it should differ from Desc
+	Article     bool                // og:type article instead of website
+	Author      string              // article author ("" omits the meta)
+	DateISO     string              // article published date ("" omits the meta)
+	NoIndex     bool                // robots noindex (error pages)
+	NoSocial    bool                // omit the social meta even with a Base (the data site)
+	BodyClass   string              // class for <body>
+	Nav         string              // active topnav slug ("" for none)
+	Updated     time.Time           // dataset timestamp for the topnav (zero to omit)
+	TopNav      templ.Component     // overrides the default topnav (the data site)
+	CSS         []*asset.Asset      // page stylesheets, linked after the shared website.css
+	Breadcrumbs []websiteBreadcrumb // BreadcrumbList JSON-LD trail (nil to omit)
+}
+
+// websiteBreadcrumb is one crumb in a page's BreadcrumbList JSON-LD.
+type websiteBreadcrumb struct {
+	Name string
+	Path string // path under Base
+}
+
+// websiteLDJSON returns the page's schema.org JSON-LD: a WebPage carrying the
+// dataset's dateModified (a freshness signal that keeps the volatile date out of
+// the visible snippet), plus a BreadcrumbList when crumbs are set. Empty for
+// pages with no canonical base or that are noindex.
+func websiteLDJSON(meta websitePageMeta) string {
+	if meta.Base == "" || meta.NoIndex {
+		return ""
+	}
+	page := map[string]any{"@type": "WebPage", "url": meta.Base + meta.Path}
+	if meta.Title != "" {
+		page["name"] = meta.Title
+	}
+	if !meta.Updated.IsZero() {
+		page["dateModified"] = meta.Updated.In(ottrecidx.TZ).Format(time.RFC3339)
+	}
+	graph := []map[string]any{page}
+	if len(meta.Breadcrumbs) > 0 {
+		items := make([]map[string]any, len(meta.Breadcrumbs))
+		for i, b := range meta.Breadcrumbs {
+			items[i] = map[string]any{"@type": "ListItem", "position": i + 1, "name": b.Name, "item": meta.Base + b.Path}
+		}
+		graph = append(graph, map[string]any{"@type": "BreadcrumbList", "itemListElement": items})
+	}
+	buf, err := json.Marshal(map[string]any{"@context": "https://schema.org", "@graph": graph})
+	if err != nil {
+		return ""
+	}
+	return string(buf)
 }
 
 // ogType returns the og:type for the social meta.
@@ -98,7 +136,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 			var templ_7745c5c3_Var2 templ.SafeURL
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinURLErrs(meta.Base + meta.Path)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 59, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 97, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -116,7 +154,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(meta.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 61, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 99, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -134,7 +172,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.Desc)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 63, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 101, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 			if templ_7745c5c3_Err != nil {
@@ -153,7 +191,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.Author)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 66, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 104, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
 			if templ_7745c5c3_Err != nil {
@@ -172,7 +210,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.DateISO)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 69, Col: 44}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 107, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
 			if templ_7745c5c3_Err != nil {
@@ -189,38 +227,44 @@ func websitePage(meta websitePageMeta) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<link rel=\"stylesheet\" href=\"")
+		if ld := websiteLDJSON(meta); ld != "" {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<script type=\"application/ld+json\">@templ.Raw(ld)</script>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<link rel=\"stylesheet\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 templ.SafeURL
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.WebsiteCSS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 74, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 115, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, a := range meta.CSS {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<link rel=\"stylesheet\" href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<link rel=\"stylesheet\" href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 templ.SafeURL
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(a))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 76, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 117, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -229,7 +273,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</head>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -238,7 +282,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<body class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<body class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -251,7 +295,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -270,7 +314,7 @@ func websitePage(meta websitePageMeta) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -368,7 +412,7 @@ func websiteHomeExtra() templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if homeExtra != nil {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div class=\"home-extra\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "<div class=\"home-extra\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -376,7 +420,7 @@ func websiteHomeExtra() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -414,20 +458,20 @@ func websiteThemeHead() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<script src=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.ResolveAttributeValue(static.Path(static.ThemeJS))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 123, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 164, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var15)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" defer></script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" defer></script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -458,46 +502,46 @@ func websiteIconsHead() templ.Component {
 			templ_7745c5c3_Var16 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<link rel=\"icon\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "<link rel=\"icon\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var17 templ.SafeURL
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.FaviconICO) + "?v=1")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 129, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 170, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" sizes=\"32x32\"><link rel=\"icon\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\" sizes=\"32x32\"><link rel=\"icon\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var18 templ.SafeURL
 		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.FaviconSVG) + "?v=1")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 130, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 171, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "\" type=\"image/svg+xml\"><link rel=\"apple-touch-icon\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\" type=\"image/svg+xml\"><link rel=\"apple-touch-icon\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var19 templ.SafeURL
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinURLErrs(static.Path(static.AppleTouchIconPNG) + "?v=1")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 131, Col: 83}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 172, Col: 83}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -534,157 +578,157 @@ func websiteSocialHead(meta websitePageMeta) templ.Component {
 		if meta.Base != "" {
 			img := strings.TrimSuffix(meta.Base, "/") + static.Path(static.SocialCardPNG)
 			desc := cmp.Or(meta.SocialDesc, meta.Desc)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<meta property=\"og:type\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<meta property=\"og:type\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.ogType())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 143, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 184, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var21)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\"><meta property=\"og:site_name\" content=\"ottrec.ca\"><meta property=\"og:locale\" content=\"en_CA\"><meta property=\"og:title\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"><meta property=\"og:site_name\" content=\"ottrec.ca\"><meta property=\"og:locale\" content=\"en_CA\"><meta property=\"og:title\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 146, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 187, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var22)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"><meta property=\"og:description\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\"><meta property=\"og:description\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.ResolveAttributeValue(desc)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 147, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 188, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var23)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\"><meta property=\"og:url\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\"><meta property=\"og:url\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.Base + meta.Path)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 148, Col: 57}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 189, Col: 57}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var24)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\"><meta property=\"og:image\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\"><meta property=\"og:image\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.ResolveAttributeValue(img)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 149, Col: 41}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 190, Col: 41}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var25)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\"><meta property=\"og:image:type\" content=\"image/png\"><meta property=\"og:image:width\" content=\"1200\"><meta property=\"og:image:height\" content=\"630\"><meta property=\"og:image:alt\" content=\"ottrec.ca — Ottawa recreation schedules, in one place.\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\"><meta property=\"og:image:type\" content=\"image/png\"><meta property=\"og:image:width\" content=\"1200\"><meta property=\"og:image:height\" content=\"630\"><meta property=\"og:image:alt\" content=\"ottrec.ca — Ottawa recreation schedules, in one place.\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if meta.Author != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<meta property=\"article:author\" content=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<meta property=\"article:author\" content=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.Author)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 155, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 196, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var26)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if meta.DateISO != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<meta property=\"article:published_time\" content=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<meta property=\"article:published_time\" content=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.DateISO)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 158, Col: 65}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 199, Col: 65}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var27)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, " <meta name=\"twitter:card\" content=\"summary_large_image\"><meta name=\"twitter:title\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, " <meta name=\"twitter:card\" content=\"summary_large_image\"><meta name=\"twitter:title\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.ResolveAttributeValue(meta.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 161, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 202, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var28)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "\"><meta name=\"twitter:description\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "\"><meta name=\"twitter:description\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var29 string
 			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.ResolveAttributeValue(desc)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 162, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 203, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var29)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "\"><meta name=\"twitter:image\" content=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"><meta name=\"twitter:image\" content=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var30 string
 			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.ResolveAttributeValue(img)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 163, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 204, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var30)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -717,7 +761,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 			templ_7745c5c3_Var31 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<nav class=\"site-topnav\"><a class=\"brand\" href=\"/\">ottrec.ca</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "<nav class=\"site-topnav\"><a class=\"brand\" href=\"/\">ottrec.ca</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -726,7 +770,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "<a class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "<a class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -739,7 +783,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "\" href=\"/today\">Today</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\" href=\"/today\">Today</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -748,7 +792,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<a class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "<a class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -761,7 +805,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "\" href=\"/map\">Map</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "\" href=\"/map\">Map</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -770,7 +814,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "<a class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "<a class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -783,7 +827,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 50, "\" href=\"/schedules\">Schedules</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "\" href=\"/schedules\">Schedules</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -792,7 +836,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "<a class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "<a class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -805,7 +849,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "\" href=\"/activities\">Activities</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "\" href=\"/activities\">Activities</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -814,7 +858,7 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "<a class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "<a class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -827,43 +871,43 @@ func websiteTopNav(active string, updated time.Time) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 54, "\" href=\"/about\">About</a><div class=\"topnav-end\"><button type=\"button\" class=\"theme-toggle msym\" id=\"theme-toggle\" data-theme=\"auto\" title=\"Toggle color scheme\" hidden></button> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "\" href=\"/about\">About</a><div class=\"topnav-end\"><button type=\"button\" class=\"theme-toggle msym\" id=\"theme-toggle\" data-theme=\"auto\" title=\"Toggle color scheme\" hidden></button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if !updated.IsZero() {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<time datetime=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "<time datetime=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var42 string
 			templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.ResolveAttributeValue(localRFC3339(updated))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 181, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 222, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var42)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "\">updated<br>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "\">updated<br>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var43 string
 			templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(localFormat(updated, "2006-01-02 15:04"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 181, Col: 99}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 222, Col: 99}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "</time>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "</time>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "</div></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "</div></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -894,20 +938,20 @@ func facStar(slug string) templ.Component {
 			templ_7745c5c3_Var44 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<button type=\"button\" class=\"fac-star msym\" data-fac-star=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "<button type=\"button\" class=\"fac-star msym\" data-fac-star=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var45 string
 		templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.ResolveAttributeValue(slug)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 190, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 231, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var45)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 60, "\" aria-pressed=\"false\" aria-label=\"Star facility\" hidden></button>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "\" aria-pressed=\"false\" aria-label=\"Star facility\" hidden></button>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -937,33 +981,33 @@ func localTime(t time.Time, layout string) templ.Component {
 			templ_7745c5c3_Var46 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "<time datetime=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<time datetime=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var47 string
 		templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.ResolveAttributeValue(localRFC3339(t))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 195, Col: 33}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 236, Col: 33}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var47)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var48 string
 		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(localFormat(t, layout))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 195, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 236, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "</time>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "</time>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -993,7 +1037,7 @@ func websiteFooter() templ.Component {
 			templ_7745c5c3_Var49 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 64, "<footer class=\"site-footer\"><p>© 2025–2026 Patrick Gaskin.</p><nav><ul><li><a href=\"/about\">About</a></li><li><a href=\"/about#terms\">Terms</a></li><li><a href=\"/about#data\">Data Sources</a></li><li><a href=\"https://data.ottrec.ca\">Dataset</a></li><li><a href=\"https://github.com/ottrec\">GitHub</a></li></ul></nav></footer>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 65, "<footer class=\"site-footer\"><p>© 2025–2026 Patrick Gaskin.</p><nav><ul><li><a href=\"/about\">About</a></li><li><a href=\"/about#terms\">Terms</a></li><li><a href=\"/about#data\">Data Sources</a></li><li><a href=\"https://data.ottrec.ca\">Dataset</a></li><li><a href=\"https://github.com/ottrec\">GitHub</a></li></ul></nav></footer>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1035,137 +1079,137 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 65, "<main><header class=\"home-hero\"><h1>ottrec.ca</h1><p>Find drop-in swimming, skating, and more across every City of Ottawa recreation facility.</p><p class=\"home-updated\">Schedules refreshed daily.</p></header><nav class=\"home-tiles\" aria-label=\"Browse\"><a href=\"/today\" data-icon=\"schedule\"><h2>This week</h2><p>See what's on over the next week, day by day, including cancellations and notices.</p></a> <a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>All schedules</h2><p>Browse or search every facility's full drop-in schedule on one page.</p></a></nav><h2 class=\"home-section-label\">Browse by activity</h2><nav class=\"home-tiles home-activities\" aria-label=\"Activities\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<main><header class=\"home-hero\"><h1>ottrec.ca</h1><p>Find drop-in swimming, skating, and more across every City of Ottawa recreation facility.</p><p class=\"home-updated\">Schedules refreshed daily.</p></header><nav class=\"home-tiles\" aria-label=\"Browse\"><a href=\"/today\" data-icon=\"schedule\"><h2>This week</h2><p>See what's on over the next week, day by day, including cancellations and notices.</p></a> <a href=\"/map\" data-icon=\"map\"><h2>Map</h2><p>Every facility on a map, filterable by activity, weekday, and time.</p></a> <a href=\"/schedules\" data-icon=\"calendar_month\"><h2>All schedules</h2><p>Browse or search every facility's full drop-in schedule on one page.</p></a></nav><h2 class=\"home-section-label\">Browse by activity</h2><nav class=\"home-tiles home-activities\" aria-label=\"Activities\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, cat := range ScheduleCategories {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 66, "<a href=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "<a href=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var52 templ.SafeURL
 				templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/schedules/" + cat.Slug))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 247, Col: 50}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 288, Col: 50}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 67, "\" data-icon=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "\" data-icon=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var53 string
 				templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.ResolveAttributeValue(cat.Icon)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 247, Col: 73}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 288, Col: 73}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var53)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 68, "\"><h2>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "\"><h2>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var54 string
 				templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(cat.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 248, Col: 20}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 289, Col: 20}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 69, "</h2></a> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "</h2></a> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<a class=\"home-activities-more\" href=\"/schedules\" data-icon=\"overview\"><h2>More&hellip;</h2></a></nav><p class=\"home-advanced\"><a href=\"/about/ottrecql\">Advanced search</a></p><section class=\"home-about\"><p>ottrec.ca gathers the drop-in recreation schedules from every City of Ottawa facility into one place, so you can browse, search, and compare them all at once. Filter by activity, time, or area, see what's on across the city this week, and find every facility on a map. Updated daily.</p></section><section class=\"home-other\" aria-labelledby=\"home-other-heading\"><h2 id=\"home-other-heading\">More stuff</h2><ul><li><a href=\"https://data.ottrec.ca\">dataset</a> &mdash; use the schedule data to build something yourself.</li><li><a href=\"/about/ottrecql\">ottrecql</a> &mdash; info about the advanced search query syntax, for building your own filtered page.</li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "<a class=\"home-activities-more\" href=\"/activities\" data-icon=\"overview\"><h2>More&hellip;</h2></a></nav><p class=\"home-advanced\"><a href=\"/about/ottrecql\">Advanced search</a></p><section class=\"home-about\"><p>ottrec.ca gathers the drop-in recreation schedules from every City of Ottawa facility into one place, so you can browse, search, and compare them all at once. Filter by activity, time, or area, see what's on across the city this week, and find every facility on a map. Updated daily.</p></section><section class=\"home-other\" aria-labelledby=\"home-other-heading\"><h2 id=\"home-other-heading\">More stuff</h2><ul><li><a href=\"https://data.ottrec.ca\">dataset</a> &mdash; use the schedule data to build something yourself.</li><li><a href=\"/about/ottrecql\">ottrecql</a> &mdash; info about the advanced search query syntax, for building your own filtered page.</li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if page, ok := AboutContentBySlug("regions"); ok {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "<li><a href=\"/about/regions\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "<li><a href=\"/about/regions\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var55 string
 				templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(page.HomeLabel)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 266, Col: 51}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 307, Col: 51}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 72, "</a> &mdash; ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "</a> &mdash; ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var56 string
 				templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(page.HomeBlurb)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 266, Col: 82}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 307, Col: 82}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 73, "</li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "</li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
 			if page, ok := AboutContentBySlug("data-quality"); ok {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "<li><a href=\"/about/data-quality\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "<li><a href=\"/about/data-quality\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var57 string
 				templ_7745c5c3_Var57, templ_7745c5c3_Err = templ.JoinStringErrs(page.HomeLabel)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 269, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 310, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var57))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "</a> &mdash; ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "</a> &mdash; ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var58 string
 				templ_7745c5c3_Var58, templ_7745c5c3_Err = templ.JoinStringErrs(page.HomeBlurb)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 269, Col: 87}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 310, Col: 87}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var58))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "</li>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "</li>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "</ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-07-07\">July 7, 2026</time><p>The <a href=\"/today\">today</a> page now shows more helpful warnings about potential cancellations or time changes.</p></li><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "</ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-07-08\">July 8, 2026</time><p>The activity pages have been completely revamped and now include facility information and a list of upcoming activities.</p></li><li><time datetime=\"2026-07-07\">July 7, 2026</time><p>The <a href=\"/today\">today</a> page now shows more helpful warnings about potential cancellations or time changes.</p></li><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var59 string
 			templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs("for more info")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 286, Col: 149}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 331, Col: 149}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var59))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, ".</p></li><li><time datetime=\"2026-06-13\">Jun 13, 2026</time><p>Star facilities to bring them to the top of the page and highlight them on the map.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Filter schedules with <a href=\"/about/ottrecql\">custom queries</a> to build your own page with only the facilities and activities you care about.</p></li></ul></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 79, ".</p></li><li><time datetime=\"2026-06-13\">Jun 13, 2026</time><p>Star facilities to bring them to the top of the page and highlight them on the map.</p></li><li><time datetime=\"2026-06-12\">Jun 12, 2026</time><p>Filter schedules with <a href=\"/about/ottrecql\">custom queries</a> to build your own page with only the facilities and activities you care about.</p></li></ul></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1173,7 +1217,7 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 79, "</main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "</main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1233,33 +1277,33 @@ func WebsiteErrorPage(title, message string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "<main class=\"error-page\"><h1>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 81, "<main class=\"error-page\"><h1>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var62 string
 			templ_7745c5c3_Var62, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 313, Col: 14}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 358, Col: 14}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var62))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 81, "</h1><p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "</h1><p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var63 string
 			templ_7745c5c3_Var63, templ_7745c5c3_Err = templ.JoinStringErrs(message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 314, Col: 15}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 359, Col: 15}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var63))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "</p><p><a href=\"/\">Go to the homepage</a></p></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "</p><p><a href=\"/\">Go to the homepage</a></p></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1304,7 +1348,7 @@ func TempWarning(dismissable bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "<aside class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 84, "<aside class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1317,7 +1361,7 @@ func TempWarning(dismissable bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 84, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1326,12 +1370,12 @@ func TempWarning(dismissable bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if dismissable {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "<button type=\"button\" class=\"temp-warn-close\" aria-label=\"Dismiss\" onclick=\"this.closest('.temp-warn').remove()\">&times;</button>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "<button type=\"button\" class=\"temp-warn-close\" aria-label=\"Dismiss\" onclick=\"this.closest('.temp-warn').remove()\">&times;</button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "<div class=\"temp-warn-head\"><span class=\"temp-warn-ico\" aria-hidden=\"true\"></span><h2>Temporary schedule inaccuracies (July 2026)</h2></div><div class=\"temp-warn-body\"><p>As of July 5, 2026, there are a bunch of facilities where the City of Ottawa website for swimming and skating is completely incorrect on some days.</p><p>Since ottrec.ca gets information from the facility webpages, this also affects the times displayed here.</p><p>It is unusual for there to be so many inaccuracies, and I have written to the city about it.</p><p>I strongly recommend calling the facility to confirm skating or swimming hours.</p><p>Some of the corrections for facilities I've been to:</p><ul><li>Bob MacQuarrie has no skating on Sunday, likely for the rest of the summer. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li><li>Splash Wave Pool was unexpectedly closed on Friday, July 3. It is not clear whether this is a one-off occurrence. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 3. Fixed July 6.</span></li><li>The skating at Ray Friel on Sunday is from 3-5pm, not 5-6. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li></ul><p>If you notice any other completely incorrect times, please report it to the city. You can also use the feedback button on the bottom-right of this page to send me a message so I can note it here too.</p></div></aside>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "<div class=\"temp-warn-head\"><span class=\"temp-warn-ico\" aria-hidden=\"true\"></span><h2>Temporary schedule inaccuracies (July 2026)</h2></div><div class=\"temp-warn-body\"><p>As of July 5, 2026, there are a bunch of facilities where the City of Ottawa website for swimming and skating is completely incorrect on some days.</p><p>Since ottrec.ca gets information from the facility webpages, this also affects the times displayed here.</p><p>It is unusual for there to be so many inaccuracies, and I have written to the city about it.</p><p>I strongly recommend calling the facility to confirm skating or swimming hours.</p><p>Some of the corrections for facilities I've been to:</p><ul><li>Bob MacQuarrie has no skating on Sunday, likely for the rest of the summer. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li><li>Splash Wave Pool was unexpectedly closed on Friday, July 3. It is not clear whether this is a one-off occurrence. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 3. Fixed July 6.</span></li><li>The skating at Ray Friel on Sunday is from 3-5pm, not 5-6. <span class=\"temp-warn-note\">Confirmed by phone and in-person July 5. Fixed July 6.</span></li></ul><p>If you notice any other completely incorrect times, please report it to the city. You can also use the feedback button on the bottom-right of this page to send me a message so I can note it here too.</p></div></aside>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

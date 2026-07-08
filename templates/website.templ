@@ -2,6 +2,7 @@ package templates
 
 import (
 	"cmp"
+	"encoding/json"
 	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/static"
@@ -16,21 +17,58 @@ type WebsiteParams struct {
 
 // websitePageMeta configures the shared page chrome rendered by [websitePage].
 type websitePageMeta struct {
-	Base       string          // absolute site root (params.Base); "" omits the canonical link and social meta
-	Path       string          // canonical path under Base ("" for the homepage)
-	Title      string          // full <title>, including any site suffix
-	Desc       string          // meta description ("" omits the tag)
-	SocialDesc string          // og/twitter description when it should differ from Desc
-	Article    bool            // og:type article instead of website
-	Author     string          // article author ("" omits the meta)
-	DateISO    string          // article published date ("" omits the meta)
-	NoIndex    bool            // robots noindex (error pages)
-	NoSocial   bool            // omit the social meta even with a Base (the data site)
-	BodyClass  string          // class for <body>
-	Nav        string          // active topnav slug ("" for none)
-	Updated    time.Time       // dataset timestamp for the topnav (zero to omit)
-	TopNav     templ.Component // overrides the default topnav (the data site)
-	CSS        []*asset.Asset  // page stylesheets, linked after the shared website.css
+	Base        string              // absolute site root (params.Base); "" omits the canonical link and social meta
+	Path        string              // canonical path under Base ("" for the homepage)
+	Title       string              // full <title>, including any site suffix
+	Desc        string              // meta description ("" omits the tag)
+	SocialDesc  string              // og/twitter description when it should differ from Desc
+	Article     bool                // og:type article instead of website
+	Author      string              // article author ("" omits the meta)
+	DateISO     string              // article published date ("" omits the meta)
+	NoIndex     bool                // robots noindex (error pages)
+	NoSocial    bool                // omit the social meta even with a Base (the data site)
+	BodyClass   string              // class for <body>
+	Nav         string              // active topnav slug ("" for none)
+	Updated     time.Time           // dataset timestamp for the topnav (zero to omit)
+	TopNav      templ.Component     // overrides the default topnav (the data site)
+	CSS         []*asset.Asset      // page stylesheets, linked after the shared website.css
+	Breadcrumbs []websiteBreadcrumb // BreadcrumbList JSON-LD trail (nil to omit)
+}
+
+// websiteBreadcrumb is one crumb in a page's BreadcrumbList JSON-LD.
+type websiteBreadcrumb struct {
+	Name string
+	Path string // path under Base
+}
+
+// websiteLDJSON returns the page's schema.org JSON-LD: a WebPage carrying the
+// dataset's dateModified (a freshness signal that keeps the volatile date out of
+// the visible snippet), plus a BreadcrumbList when crumbs are set. Empty for
+// pages with no canonical base or that are noindex.
+func websiteLDJSON(meta websitePageMeta) string {
+	if meta.Base == "" || meta.NoIndex {
+		return ""
+	}
+	page := map[string]any{"@type": "WebPage", "url": meta.Base + meta.Path}
+	if meta.Title != "" {
+		page["name"] = meta.Title
+	}
+	if !meta.Updated.IsZero() {
+		page["dateModified"] = meta.Updated.In(ottrecidx.TZ).Format(time.RFC3339)
+	}
+	graph := []map[string]any{page}
+	if len(meta.Breadcrumbs) > 0 {
+		items := make([]map[string]any, len(meta.Breadcrumbs))
+		for i, b := range meta.Breadcrumbs {
+			items[i] = map[string]any{"@type": "ListItem", "position": i + 1, "name": b.Name, "item": meta.Base + b.Path}
+		}
+		graph = append(graph, map[string]any{"@type": "BreadcrumbList", "itemListElement": items})
+	}
+	buf, err := json.Marshal(map[string]any{"@context": "https://schema.org", "@graph": graph})
+	if err != nil {
+		return ""
+	}
+	return string(buf)
 }
 
 // ogType returns the og:type for the social meta.
@@ -70,6 +108,9 @@ templ websitePage(meta websitePageMeta) {
 			}
 			if !meta.NoSocial {
 				@websiteSocialHead(meta)
+			}
+			if ld := websiteLDJSON(meta); ld != "" {
+				<script type="application/ld+json">@templ.Raw(ld)</script>
 			}
 			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
 			for _, a := range meta.CSS {
@@ -248,7 +289,7 @@ templ WebsiteHomePage(params WebsiteParams) {
 						<h2>{ cat.Name }</h2>
 					</a>
 				}
-				<a class="home-activities-more" href="/schedules" data-icon="overview">
+				<a class="home-activities-more" href="/activities" data-icon="overview">
 					<h2>More&hellip;</h2>
 				</a>
 			</nav>
@@ -273,6 +314,10 @@ templ WebsiteHomePage(params WebsiteParams) {
 			<section class="home-news" aria-labelledby="home-news-heading">
 				<h2 id="home-news-heading">What's new</h2>
 				<ul>
+					<li>
+						<time datetime="2026-07-08">July 8, 2026</time>
+						<p>The activity pages have been completely revamped and now include facility information and a list of upcoming activities.</p>
+					</li>
 					<li>
 						<time datetime="2026-07-07">July 7, 2026</time>
 						<p>The <a href="/today">today</a> page now shows more helpful warnings about potential cancellations or time changes.</p>

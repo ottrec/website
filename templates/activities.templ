@@ -1,103 +1,75 @@
 package templates
 
 import (
+	"net/url"
+	"strings"
+
 	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/static"
 )
 
 templ WebsiteActivitiesPage(params WebsiteParams) {
+	{{ cats, others := buildActivityDirectory(params.Data) }}
 	@websitePage(websitePageMeta{
 		Base:      params.Base,
 		Path:      "activities",
-		Title:     "Activities - Ottawa Recreation Schedules",
-		Desc:      "Which City of Ottawa recreation facilities offer each category of activities, by weekday, time of day, and area.",
-		BodyClass: "activities-page",
+		Title:     "Drop-In Activities in Ottawa",
+		Desc:      "Every drop-in recreation activity at City of Ottawa facilities, linking to schedules for each, plus a directory of facilities by area.",
+		BodyClass: "activity-page",
 		Nav:       "activities",
 		Updated:   params.Data.Index().Updated(),
-		CSS:       []*asset.Asset{static.FacilityCSS, static.ActivitiesCSS},
+		Breadcrumbs: []websiteBreadcrumb{
+			{Name: "Home", Path: ""},
+			{Name: "Activities", Path: "activities"},
+		},
+		CSS: []*asset.Asset{static.FacilityCSS, static.ActivityCSS},
 	}) {
-		<main>
-			<header class="page-header activities-header">
-				<h1>Activities</h1>
-				<p>This page shows facilities currently offering each category of activity, by area, time of day, and weekday: <b class="per-m">morning</b> (until 11:00), <b class="per-a">afternoon</b> (11:00 to 17:00), <b class="per-e">evening</b> (from 17:00).</p>
-				<p class="activities-about">It covers every City of Ottawa recreation facility currently offering drop-in activities like swimming, lane swim, aquafit, skating, hockey, badminton, basketball, volleyball, and pickleball, so you can see at a glance where and when each is available.</p>
+		<main class="activity-main">
+			<header class="activity-header">
+				<h1>Drop-In Activities in Ottawa</h1>
+				<p>Browse drop-in recreation at City of Ottawa facilities. The main activities have their own schedule pages; search finds everything else.</p>
 			</header>
-			//@TempWarning(false)
-			<div class="activity-cards">
-				for _, card := range buildActivityCards(params.Data) {
-					if len(card.Groups) > 0 {
-						<section class="activity-card">
-							<header class="activity-card-head">
-								<div class="activity-card-title">
-									<h2>{ card.Name }</h2>
-									if len(card.Terms) > 0 {
-										<p class="activity-terms">
-											matching&nbsp;
-											for i, t := range card.Terms {
-												if i > 0 {
-													{ ", " }
-												}
-												<code>{ t }</code>
-											}
-										</p>
-									}
-								</div>
-								if card.Slug != "" {
-									<a class="activity-all" href={ templ.URL("/schedules/" + card.Slug) }>All&nbsp;Schedules</a>
-								}
-							</header>
-							<div class="activity-table">
-								<table>
-									<thead>
-										<tr>
-											<th class="fac" rowspan="2" scope="col">Facility</th>
-											for p, long := range activityPeriodLong {
-												<th colspan="7" scope="colgroup" class={ "per-" + activityPeriodShort[p] }>
-													<abbr title={ activityPeriodTitle[p] }>{ long }</abbr>
-												</th>
-											}
-										</tr>
-										<tr>
-											for range activityPeriodLong {
-												for d := range mapDays {
-													<th scope="col"><abbr title={ activityDayName[d] }>{ activityDayShort[d] }</abbr></th>
-												}
-											}
-										</tr>
-									</thead>
-									for _, g := range card.Groups {
-										<tbody data-sector={ g.Sector }>
-											<tr class="sector-row">
-												<th class="sector" colspan="22" scope="colgroup">{ g.Sector }</th>
-											</tr>
-											for _, f := range g.Facilities {
-												<tr>
-													<th class="fac" scope="row">
-														@facStar(f.Slug)
-														<a href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>{ f.Name }</a>
-														if f.Region != "" {
-															<span class="fac-region">{ f.Region }</span>
-														}
-													</th>
-													for p := range activityPeriodShort {
-														for d := range mapDays {
-															<td class={ "per-" + activityPeriodShort[p] }><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>
-														}
-													}
-												</tr>
-											}
-										</tbody>
-									}
-								</table>
-							</div>
-						</section>
-					}
+			<nav class="activities-dir-grid" aria-label="Activities">
+				for _, cat := range cats {
+					<a href={ templ.URL("/schedules/" + cat.Slug) }>
+						<span class="msym activities-dir-ico" data-icon={ cat.Icon } aria-hidden="true"></span>
+						<span class="activities-dir-text">
+							<span class="activities-dir-name">{ cat.Name }</span>
+							if len(cat.Activities) > 0 {
+								<span class="activities-dir-terms">Activities matching { strings.Join(cat.Activities, ", ") }</span>
+							}
+						</span>
+					</a>
 				}
-			</div>
+			</nav>
+			if len(others) > 0 {
+				<h2 class="activities-dir-label">More activities</h2>
+				<ul class="activities-dir-list">
+					for _, name := range others {
+						<li><a href={ templ.URL("/schedules?q=" + url.QueryEscape(name)) }>{ name }</a></li>
+					}
+				</ul>
+			}
+			<section id="facilities">
+				<h2 class="activities-dir-label">Facilities by area</h2>
+				for _, sec := range buildFacilitiesList(params.Data, MapFacilitySlugger(params.Data)) {
+					<section class="facilities-sector">
+						<h3>{ sec.Sector }</h3>
+						<ul class="facilities-list">
+							for _, f := range sec.Facilities {
+								<li>
+									<a href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>{ f.Name }</a>
+									if f.Region != "" {
+										<span class="activity-fac-region">{ f.Region }</span>
+									}
+								</li>
+							}
+						</ul>
+					</section>
+				}
+			</section>
 		</main>
 		@websiteFooter()
-		<script src={ static.Path(static.StarredJS) }></script>
-		<script src={ static.Path(static.ActivitiesJS) }></script>
 		<script src={ static.Path(static.FacilityModalJS) }></script>
 	}
 }

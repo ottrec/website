@@ -334,8 +334,8 @@ func activityFacilityCount(sectors []activityLandingSector) int {
 
 var activityWhenPeriodWord = []string{"mornings", "afternoons", "evenings"}
 
-// activityWhenSummary renders a [7]byte weekday/period availability mask (see
-// [activityCategoryFacility]) as a concise, precise sentence like "Evenings on
+// activityWhenSummary renders a [7]byte weekday/period availability mask (byte
+// d bit p set = offered on weekday d, period p) as a concise sentence like "Evenings on
 // weekdays; mornings and afternoons on weekends". Returns "" for an empty mask.
 func activityWhenSummary(mask [7]byte) string {
 	byPattern := map[byte][]int{}
