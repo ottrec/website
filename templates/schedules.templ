@@ -118,7 +118,7 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 						</header>
 					}
 					if params.QueryError != "" {
-						<p class="schedules-query-error">{ params.QueryError }</p>
+						<p class="query-error">{ params.QueryError }</p>
 					} else if len(params.TOC) == 0 {
 						<p class="schedules-empty">No matching schedules.</p>
 					} else {

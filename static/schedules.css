@@ -275,13 +275,6 @@
 .schedules-about a:hover {
 	text-decoration: underline;
 }
-.schedules-query-error {
-	color: var(--fxki-re);
-	font-size: .85rem;
-}
-.search-form-advanced .schedules-query-error {
-	margin: 0;
-}
 /* facility sections */
 
 .schedules-empty {

@@ -48,7 +48,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 			}
 			<div class="today-chips" id="today-chips"></div>
 			if params.QueryError != "" {
-				<p class="today-query-error">{ params.QueryError }</p>
+				<p class="query-error today-query-error">{ params.QueryError }</p>
 			}
 			<div class="today-board">
 				<div class="today-tabs" id="today-tabs" role="tablist" hidden></div>

@@ -36,7 +36,7 @@ function liveValidation() {
 	if (!textarea) return
 
 	const errEl = document.createElement('p')
-	errEl.className = 'schedules-query-error'
+	errEl.className = 'query-error'
 	errEl.setAttribute('aria-live', 'polite')
 	errEl.hidden = true
 	textarea.after(errEl)

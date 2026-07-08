@@ -41,8 +41,6 @@
 }
 .today-query-error {
 	margin: 0 0 .75rem;
-	color: var(--fxki-re);
-	font-size: .85rem;
 }
 
 /* filter pills */
@@ -747,8 +745,12 @@ button.t-warn:hover span:last-child {
 	color: var(--fxki-tx);
 	overflow: hidden;
 }
+/* literal color + blur rather than the theme vars: custom properties don't
+ * reach ::backdrop on the target browsers, and a plain black scrim alone is
+ * nearly invisible over the dark theme's near-black page */
 .today-modal::backdrop {
-	background: rgb(0 0 0 / .45);
+	background: rgb(0 0 0 / .5);
+	backdrop-filter: blur(2px);
 }
 .today-modal-close {
 	position: absolute;

@@ -57,3 +57,12 @@
 .search-mode:hover {
 	text-decoration: underline;
 }
+/* query parse/limit errors, both the server-rendered <p> and the live-
+ * validation one schedules.js inserts into the advanced form */
+.query-error {
+	color: var(--fxki-re);
+	font-size: .85rem;
+}
+.search-form-advanced .query-error {
+	margin: 0;
+}

@@ -1,5 +1,6 @@
 'use strict'
 import * as L from 'leaflet'
+import {normalizeText} from './text'
 
 // the shared starred facility store (starred.ts) is a global; see ottrecstarred.d.ts
 
@@ -23,12 +24,6 @@ function showError(msg: string) {
 }
 window.addEventListener('error', (ev) => showError(ev.message || 'unknown error'))
 window.addEventListener('unhandledrejection', (ev) => showError((ev.reason && ev.reason.message) || String(ev.reason)))
-
-// normalizeText lowercases and strips diacritics so a search for "lariviere"
-// matches "Larivière" (and vice versa).
-function normalizeText(s: string): string {
-	return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-}
 
 // transient toast over the map (e.g., when stale url filters are reset)
 
@@ -894,7 +889,7 @@ function renderList() {
 		h.append(link)
 		const star = document.createElement('button')
 		star.type = 'button'
-		star.className = 'fac-star'
+		star.className = 'fac-star msym'
 		star.dataset['facStar'] = f.slug
 		h.append(star)
 		const addr = document.createElement('p')

@@ -1,5 +1,5 @@
 'use strict'
-export {}
+import {normalizeText} from './text'
 
 // The "what's on" feed. Sessions for each day are server-rendered (so the page
 // works without JS and for crawlers); this script turns the days into tabs and
@@ -8,10 +8,6 @@ export {}
 //
 // The shared starred facility store (starred.ts) is a global; see
 // ottrecstarred.d.ts.
-
-function normalizeText(s: string): string {
-	return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-}
 
 interface DataJSON {
 	updated: string

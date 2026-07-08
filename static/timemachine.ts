@@ -21,7 +21,7 @@
 		const d = new Date(el.dateTime);
 		if (isNaN(d.getTime())) continue;
 		if (!el.title) el.title = el.textContent ?? "";
-		el.textContent = (el.dataset.prefix ?? "") + relativeTime(d);
+		el.textContent = (el.dataset["prefix"] ?? "") + relativeTime(d);
 	}
 
 	// Trends charts (.tm-chart-fig): a hover guideline and value tooltip driven
@@ -115,12 +115,12 @@
 	const bars = Array.from(strip.querySelectorAll<HTMLAnchorElement>(".tm-bar"));
 	if (bars.length === 0) return;
 
-	const only = strip.dataset.only ?? "";
+	const only = strip.dataset["only"] ?? "";
 
-	const idOf = (b: HTMLElement): string => b.dataset.id ?? "";
-	const prevOf = (b: HTMLElement): string => b.dataset.prev ?? "";
-	const dateOf = (b: HTMLElement): string => b.dataset.date ?? "";
-	const magOf = (b: HTMLElement): string => b.dataset.mag ?? "0";
+	const idOf = (b: HTMLElement): string => b.dataset["id"] ?? "";
+	const prevOf = (b: HTMLElement): string => b.dataset["prev"] ?? "";
+	const dateOf = (b: HTMLElement): string => b.dataset["date"] ?? "";
+	const magOf = (b: HTMLElement): string => b.dataset["mag"] ?? "0";
 	// bars are rendered oldest → newest, so array index is the time order.
 	const indexOf = (b: HTMLElement): number => bars.indexOf(b as HTMLAnchorElement);
 
@@ -144,7 +144,7 @@
 		const lo = Math.min(indexOf(a), indexOf(b));
 		const hi = Math.max(indexOf(a), indexOf(b));
 		for (let i = 0; i < bars.length; i++) {
-			bars[i].classList.toggle("tm-bar-preview", i >= lo && i <= hi);
+			bars[i]!.classList.toggle("tm-bar-preview", i >= lo && i <= hi);
 		}
 	}
 
