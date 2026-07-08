@@ -27,6 +27,86 @@ interface Session {
 	cats: number
 	start: number
 	end: number
+	text: string     // normalized activity + facility names, for the quick filter
+	compact: string  // text with the spaces dropped ("aqua fit" <-> "aquafit")
+	words: string[]  // text split into words, for fuzzy matching
+	stems: string[]  // the words stemmed, for inflection-insensitive matching
+}
+
+// stem crudely de-suffixes a word ("skating" and "skate" both become "skat",
+// "classes" becomes "class") and folds "mac" onto "mc", so common inflections
+// and name variants compare equal. English-biased, but harmless elsewhere
+// since both sides are stemmed the same way.
+function stem(w: string): string {
+	if (w.startsWith('mac')) w = 'mc' + w.slice(3)
+	const undouble = (v: string) => (v.length > 2 && v[v.length - 1] === v[v.length - 2] ? v.slice(0, -1) : v) // swimm -> swim
+	if (w.length > 5 && w.endsWith('ing')) w = undouble(w.slice(0, -3))
+	else if (w.length > 6 && w.endsWith('ers')) w = undouble(w.slice(0, -3))
+	else if (w.length > 5 && w.endsWith('er')) w = undouble(w.slice(0, -2))
+	else if (w.length > 4 && w.endsWith('es')) w = w.slice(0, -2)
+	else if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) w = w.slice(0, -1)
+	if (w.length > 3 && w.endsWith('e')) w = w.slice(0, -1)
+	return w
+}
+
+// quickNorm normalizes text for quick-filter matching: on top of normalizeText,
+// punctuation collapses to spaces so "st laurent" matches "St-Laurent".
+function quickNorm(s: string): string {
+	return normalizeText(s).replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
+}
+
+// editDist is the Levenshtein distance between a and b, giving up (returning
+// max+1) once it exceeds max.
+function editDist(a: string, b: string, max: number): number {
+	if (Math.abs(a.length - b.length) > max) return max + 1
+	let prev = Array.from({length: b.length + 1}, (_, i) => i)
+	let cur = new Array<number>(b.length + 1)
+	for (let i = 1; i <= a.length; i++) {
+		cur[0] = i
+		let best = i
+		for (let j = 1; j <= b.length; j++) {
+			cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1))
+			best = Math.min(best, cur[j]!)
+		}
+		if (best > max) return max + 1
+		;[prev, cur] = [cur, prev]
+	}
+	return prev[b.length]!
+}
+
+// a quick-filter query word, its stem, and the typo tolerance each earns from
+// its length
+interface QuickToken {
+	t: string
+	stem: string
+	k: number
+	ks: number
+}
+
+function quickTokens(q: string): QuickToken[] {
+	const fuzz = (n: number) => (n >= 7 ? 2 : n >= 4 ? 1 : 0)
+	return quickNorm(q).split(' ').filter(Boolean).map((t) => {
+		const st = stem(t)
+		return {t, stem: st, k: fuzz(t.length), ks: fuzz(st.length)}
+	})
+}
+
+// a token matches a session by substring (against the spaced and space-dropped
+// text, so partial words and "aqua fit"/"aquafit" both work), by stem prefix
+// ("skating" matches "skate", "mcquarrie" matches "MacQuarrie"), or fuzzily
+// against each word, same-length word prefix, or stem (so typos still match,
+// including in a partially typed word).
+function quickTokenMatches(s: Session, tok: QuickToken): boolean {
+	if (s.text.includes(tok.t) || s.compact.includes(tok.t)) return true
+	for (let i = 0; i < s.words.length; i++) {
+		if (s.stems[i]!.startsWith(tok.stem)) return true
+		if (!tok.k) continue
+		const w = s.words[i]!
+		if (editDist(tok.t, w, tok.k) <= tok.k) return true
+		if (w.length > tok.t.length && editDist(tok.t, w.slice(0, tok.t.length), tok.k) <= tok.k) return true
+		if (tok.ks && editDist(tok.stem, s.stems[i]!, tok.ks) <= tok.ks) return true
+	}
+	return false
 }
 
 // a server-rendered day section, surfaced as a tab
@@ -52,13 +132,22 @@ const noResultsEl = document.getElementById('today-noresults')!
 
 const days: Day[] = [...feedEl.querySelectorAll<HTMLElement>('.today-day')].map((el) => {
 	const head = el.querySelector('.today-day-head')!
-	const sessions: Session[] = [...el.querySelectorAll<HTMLElement>('.today-session')].map((s) => ({
-		el: s,
-		slug: s.dataset['slug'] || '',
-		cats: Number(s.dataset['cats'] || 0),
-		start: Number(s.dataset['start'] || 0),
-		end: Number(s.dataset['end'] || 0),
-	}))
+	const sessions: Session[] = [...el.querySelectorAll<HTMLElement>('.today-session')].map((s) => {
+		const text = quickNorm((s.querySelector('.t-act')?.textContent || '') + ' ' +
+			(s.querySelector('.t-fac-name')?.textContent || ''))
+		const words = text.split(' ')
+		return {
+			el: s,
+			slug: s.dataset['slug'] || '',
+			cats: Number(s.dataset['cats'] || 0),
+			start: Number(s.dataset['start'] || 0),
+			end: Number(s.dataset['end'] || 0),
+			text,
+			compact: text.replaceAll(' ', ''),
+			words,
+			stems: words.map(stem),
+		}
+	})
 	return {
 		el,
 		date: el.dataset['date'] || '',
@@ -85,6 +174,7 @@ for (const s of sessions)
 // is an arbitrary start/end window in minutes from midnight (either side
 // optional).
 const filter = {
+	q: '', // quick-filter text, as typed (matching normalizes it)
 	include: new Set<string>(),
 	exclude: new Set<string>(),
 	cats: new Set<number>(),
@@ -92,6 +182,9 @@ const filter = {
 	timeTo: null as number | null,
 	starredOnly: false,
 }
+
+// the tokenized quick-filter query, rebuilt from filter.q on each refresh
+let qTokens: QuickToken[] = []
 
 let activeDate = (days.find((d) => d.today) || days[0])?.date || ''
 
@@ -116,6 +209,7 @@ days.find((d) => d.today)?.el.querySelector('.today-day-head')?.after(pastNote)
 // session matching (everything except the per-day weekday split, which the tabs
 // handle)
 function sessionVisible(s: Session): boolean {
+	if (!qTokens.every((t) => quickTokenMatches(s, t))) return false
 	if (filter.exclude.has(s.slug)) return false
 	if (filter.include.size && !filter.include.has(s.slug)) return false
 	if (filter.starredOnly && !ottrecStarred.has(s.slug)) return false
@@ -198,6 +292,8 @@ tabsEl.addEventListener('keydown', (ev) => {
 function refreshFeed() {
 	if (!days.some((d) => d.date === activeDate))
 		activeDate = (days.find((d) => d.today) || days[0])?.date || ''
+
+	qTokens = quickTokens(filter.q)
 
 	let shownCount = 0
 	let pastHidden = 0
@@ -625,11 +721,51 @@ function syncStarredPill() {
 	starredPill.classList.toggle('active', filter.starredOnly)
 }
 
+// quick text filter box, first in the row: matches activity and facility names
+// (normalized and typo-tolerant), with an explicit clear button inside it
+
+if (!advanced) {
+	const quick = document.createElement('div')
+	quick.className = 'today-quick'
+	const input = document.createElement('input')
+	input.type = 'text'
+	input.placeholder = 'Filter by name'
+	input.setAttribute('aria-label', 'Filter sessions by activity or facility name')
+	const clear = document.createElement('button')
+	clear.type = 'button'
+	clear.className = 'quick-clear msym'
+	clear.title = 'Clear filter'
+	clear.setAttribute('aria-label', 'Clear filter')
+	clear.hidden = true
+	quick.append(input, clear)
+	filtersEl.prepend(quick) // before the starred toggle
+
+	function updateButton() {
+		clear.hidden = filter.q === ''
+		quick.classList.toggle('active', quickTokens(filter.q).length > 0)
+	}
+	input.addEventListener('input', () => {
+		filter.q = input.value
+		apply()
+	})
+	clear.addEventListener('click', () => {
+		filter.q = ''
+		input.value = ''
+		apply()
+		input.focus()
+	})
+	pills.push({updateButton, syncChecks: () => {
+		input.value = filter.q
+		updateButton()
+	}})
+}
+
 // active-filter chips
 
 function renderChips() {
 	const chips: {label: string; clear: () => void}[] = []
 	const facName = (slug: string) => data.facilities.find((f) => f.slug === slug)?.name || slug
+	if (filter.q.trim()) chips.push({label: '“' + filter.q.trim() + '”', clear: () => filter.q = ''})
 	if (filter.starredOnly) chips.push({label: '★ Starred only', clear: () => filter.starredOnly = false})
 	for (const slug of filter.include) chips.push({label: 'Only ' + facName(slug), clear: () => filter.include.delete(slug)})
 	for (const slug of filter.exclude) chips.push({label: 'Hide ' + facName(slug), clear: () => filter.exclude.delete(slug)})
@@ -656,6 +792,7 @@ function renderChips() {
 		all.className = 'fchip clear-all'
 		all.textContent = 'Clear all'
 		all.addEventListener('click', () => {
+			filter.q = ''
 			filter.include.clear()
 			filter.exclude.clear()
 			filter.cats.clear()
@@ -677,6 +814,7 @@ function syncAll() {
 
 function writeURL() {
 	const params = new URLSearchParams()
+	if (filter.q.trim()) params.set('f-q', filter.q.trim())
 	if (filter.include.size) params.set('f-fac', [...filter.include].join(','))
 	if (filter.exclude.size) params.set('f-xfac', [...filter.exclude].join(','))
 	if (filter.cats.size) params.set('f-cat', [...filter.cats].sort((a, b) => a - b).map((c) => data.categories[c]!).join(','))
@@ -697,6 +835,7 @@ function writeURL() {
 
 function loadURL() {
 	const params = new URLSearchParams(location.search)
+	filter.q = params.get('f-q') || ''
 	for (const slug of (params.get('f-fac') || '').split(',').filter(Boolean))
 		if (data.facilities.some((f) => f.slug === slug)) filter.include.add(slug)
 	for (const slug of (params.get('f-xfac') || '').split(',').filter(Boolean))

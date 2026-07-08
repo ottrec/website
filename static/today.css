@@ -42,6 +42,57 @@
 	gap: .4rem;
 	margin: 0 0 .75rem;
 }
+
+/* quick text filter box, first in the pill row */
+.today-quick {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+
+	input {
+		font: inherit;
+		font-size: .8rem;
+		width: 10.5rem;
+		padding: .3rem 1.7rem .3rem .7rem;
+		border: 1px solid var(--fxki-ui-2);
+		border-radius: 999px;
+		background: var(--fxki-bg-2);
+		color: var(--fxki-tx);
+
+		&::placeholder {
+			color: var(--fxki-tx-2);
+		}
+		&:hover {
+			border-color: var(--fxki-ui-3);
+		}
+	}
+	&.active input {
+		border-color: var(--fxki-bl);
+	}
+	.quick-clear {
+		position: absolute;
+		right: .3rem;
+		display: inline-flex;
+		padding: .15rem;
+		border: none;
+		border-radius: 999px;
+		background: none;
+		color: var(--fxki-tx-2);
+		cursor: pointer;
+
+		&::before {
+			content: '\e5cd'; /* close */
+			font-size: 1rem;
+		}
+		&:hover {
+			background: light-dark(rgb(0 0 0 / .06), rgb(255 255 255 / .1));
+			color: var(--fxki-tx);
+		}
+		&[hidden] {
+			display: none;
+		}
+	}
+}
 .today-pill {
 	position: relative;
 
@@ -900,5 +951,12 @@ button.t-warn {
 	}
 	.t-time, .t-act, .t-fac, .t-qual, .t-warn {
 		grid-column: 1;
+	}
+	.today-quick {
+		flex-basis: 100%;
+
+		input {
+			width: 100%;
+		}
 	}
 }
