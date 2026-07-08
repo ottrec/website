@@ -649,12 +649,14 @@
 		color: var(--fxki-tx-3);
 		margin: 0 0 .25rem;
 	}
-	ul {
+	/* direct children only: the facility items nest their own lists (the
+	 * dated-range rows), which must not inherit the row borders */
+	> ul {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
-	li {
+	> ul > li {
 		padding: .4rem 0;
 		border-top: 1px solid var(--fxki-ui-2);
 		line-height: 1.4;
@@ -683,6 +685,8 @@
 	color: var(--fxki-tx-2);
 }
 
+/* dated summaries: the date as a chip (shared .activity-change-date styling
+ * from the cancellations/notices section) + the summary text */
 .activity-fac-ranges {
 	margin: .3rem 0 0;
 	padding: 0;
@@ -692,14 +696,10 @@
 	li {
 		display: flex;
 		flex-wrap: wrap;
-		gap: .1rem .5rem;
-		padding: .1rem 0;
+		align-items: baseline;
+		gap: .15rem .5rem;
+		padding: .15rem 0;
 	}
-}
-
-.activity-fac-range-label {
-	color: var(--fxki-tx-2);
-	font-variant-numeric: tabular-nums;
 }
 
 .activity-fac-range-summary {

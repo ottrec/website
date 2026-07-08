@@ -11,7 +11,7 @@ import (
 )
 
 templ WebsiteActivityPage(params WebsiteActivityParams) {
-	{{ sectors, names := buildActivityLanding(params.Filtered, MapFacilitySlugger(params.Data)) }}
+	{{ sectors, names := buildActivityLanding(params.Filtered, MapFacilitySlugger(params.Data), timeNow()) }}
 	{{ mapFacs := buildActivityMap(params.Filtered, MapFacilitySlugger(params.Data)) }}
 	{{ cancels, noticeItems := buildActivityChanges(params.Filtered, params.Enrich, MapFacilitySlugger(params.Data), timeNow()) }}
 	{{ feed := buildTodayFeed(params.Filtered, params.Enrich, MapFacilitySlugger(params.Data), timeNow()) }}
@@ -201,24 +201,23 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 											}
 											@facStar(f.Slug)
 										</span>
+										if f.When != "" {
+											<span class="activity-fac-when">{ f.When }</span>
+										}
 										if len(f.Ranges) > 0 {
 											<ul class="activity-fac-ranges">
 												for _, rg := range f.Ranges {
 													<li>
-														<span class="activity-fac-range-label">{ rg.Label }</span>
+														<span class={ "activity-change-date", templ.KV("na", rg.NA) }>{ rg.Label }</span>
 														if rg.Summary != "" {
 															<span class="activity-fac-range-summary">{ rg.Summary }</span>
 														}
 													</li>
 												}
 											</ul>
-										} else {
-											if f.When != "" {
-												<span class="activity-fac-when">{ f.When }</span>
-											}
-											if f.Holiday {
-												<span class="activity-fac-holiday">Holiday schedule</span>
-											}
+										}
+										if f.Holiday {
+											<span class="activity-fac-holiday">Holiday schedule</span>
 										}
 										<span class="activity-fac-links">
 											<a href={ templ.URL("/today?f-fac=" + f.Slug + "&" + catQuery) }>Upcoming sessions and cancellations</a>

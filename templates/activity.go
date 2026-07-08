@@ -400,20 +400,25 @@ func activityTodayDay(feed todayFeed) (todayFeedDay, bool) {
 // activityLandingFacility is one facility offering the category, with a concise
 // summary of when it does.
 type activityLandingFacility struct {
-	Name    string
-	Slug    string
-	Region  string              // finer place name shown faint (may be "")
-	When    string              // concise day/period summary (may be "" if unparseable)
-	Holiday bool                // also has a holiday schedule (when not in Ranges)
-	Ranges  []activityDateRange // set only when the summary differs across date ranges
+	Name   string
+	Slug   string
+	Region string // finer place name shown faint (may be "")
+	// When summarizes the schedules that may apply today (merged when they
+	// agree); "" when they genuinely differ (see Ranges) or none apply.
+	When    string
+	Holiday bool // also has a holiday schedule (when not in Ranges)
+	// Ranges are the dated summaries that need their dates visible: the
+	// current ranges when they differ from each other, plus any range that
+	// definitely doesn't apply today (unless it just repeats When).
+	Ranges []activityDateRange
 }
 
 // activityDateRange is one dated context at a facility and the weekday/time
-// summary within it, shown only when a facility splits the category across more
-// than one. Fixed-date (holiday) schedules collapse to a single entry labelled
-// "Holiday schedule" with no summary.
+// summary within it. Fixed-date (holiday) schedules collapse to a single
+// entry labelled "Holiday schedule" with no summary.
 type activityDateRange struct {
-	Label   string // date range, or "Holiday schedule"
+	Label   string // date range as posted, "Dates not listed", or "Holiday schedule"
+	NA      bool   // Label is the "Dates not listed" placeholder (muted chip)
 	Summary string // weekday/time summary (empty for the holiday entry)
 }
 
@@ -427,13 +432,24 @@ type activityLandingSector struct {
 // buildActivityLanding collects, from data already filtered to a category, the
 // facilities offering it grouped by sector (each with a when-summary), plus the
 // category's normalized activity names sorted most to least common by facility.
-func buildActivityLanding(filtered ottrecidx.DataRef, slugger func(string) string) ([]activityLandingSector, []string) {
+//
+// The When summary merges only schedules that may apply today (a parseable
+// effective date range that excludes today rules a schedule out; anything
+// unparseable can't be ruled out, so it counts). Ranges keeps the dates
+// visible where they matter: the current ranges when their summaries genuinely
+// differ, plus every range that definitely doesn't apply today unless it just
+// repeats the merged current summary.
+func buildActivityLanding(filtered ottrecidx.DataRef, slugger func(string) string, now time.Time) ([]activityLandingSector, []string) {
+	today := schema.MakeDateFromGo(now.In(ottrecidx.TZ))
 	bySector := map[ottregions.Sector][]activityLandingFacility{}
 	nameCount := map[string]int{}
 	for fac := range filtered.Facilities() {
-		var m [7]byte                         // overall recurring weekday/period mask
-		seenBase := map[string]bool{}         // distinct base names here, for nameCount
-		masksByLabel := map[string]*[7]byte{} // recurring times per date-range label
+		type rangeAgg struct {
+			mask    [7]byte // recurring weekday/period mask for this label
+			applies bool    // may apply today (same label = same range, so this is per label)
+		}
+		seenBase := map[string]bool{} // distinct base names here, for nameCount
+		byLabel := map[string]*rangeAgg{}
 		var labelOrder []string
 		hasHoliday := false
 		for sch := range fac.Schedules() {
@@ -454,11 +470,14 @@ func buildActivityLanding(filtered ottrecidx.DataRef, slugger func(string) strin
 				continue
 			}
 			label := scheduleDateRangeLabel(sch)
-			lm := masksByLabel[label]
-			if lm == nil {
-				lm = new([7]byte)
-				masksByLabel[label] = lm
+			agg := byLabel[label]
+			if agg == nil {
+				agg = &rangeAgg{}
+				byLabel[label] = agg
 				labelOrder = append(labelOrder, label)
+			}
+			if er, ok := sch.ComputeEffectiveDateRange(); !ok || todayRangeIntersects(er, today, today) {
+				agg.applies = true
 			}
 			for tm := range sch.Times() {
 				wd, ok := tm.GetWeekday()
@@ -469,33 +488,57 @@ func buildActivityLanding(filtered ottrecidx.DataRef, slugger func(string) strin
 				if !ok {
 					continue
 				}
-				maskSetRange(lm, activityPeriods, int(wd), int(r.Start), int(r.End))
-				maskSetRange(&m, activityPeriods, int(wd), int(r.Start), int(r.End))
+				maskSetRange(&agg.mask, activityPeriods, int(wd), int(r.Start), int(r.End))
 			}
 		}
-		// list per-date-range summaries only when the recurring schedules genuinely
-		// differ across dates; if they all share one summary (or there's just one),
-		// the dates add nothing, so collapse to the overall summary
-		var labeled []string
+
+		// summaries per label; When merges only what may apply today
+		var curMask [7]byte
+		summaries := make(map[string]string, len(labelOrder))
+		var current []string          // applying labels with times, in order
+		distinct := map[string]bool{} // their distinct summaries
 		for _, l := range labelOrder {
-			if l != "" {
-				labeled = append(labeled, l)
+			agg := byLabel[l]
+			if agg.mask == ([7]byte{}) {
+				continue
+			}
+			summaries[l] = activityWhenSummary(agg.mask)
+			if agg.applies {
+				current = append(current, l)
+				distinct[summaries[l]] = true
+				for d := range 7 {
+					curMask[d] |= agg.mask[d]
+				}
 			}
 		}
-		summaries := make(map[string]string, len(labeled))
-		distinct := map[string]bool{}
-		for _, l := range labeled {
-			s := activityWhenSummary(*masksByLabel[l])
-			summaries[l] = s
-			distinct[s] = true
-		}
-		when := activityWhenSummary(m)
+		when := activityWhenSummary(curMask)
 		var ranges []activityDateRange
-		holiday := false
-		if len(labeled) >= 2 && len(distinct) >= 2 {
-			for _, l := range labeled {
-				ranges = append(ranges, activityDateRange{Label: l, Summary: summaries[l]})
+		// the current ranges genuinely differ: show each with its dates (a
+		// schedule with no date caption at all gets a muted placeholder)
+		if len(current) >= 2 && len(distinct) >= 2 {
+			when = ""
+			for _, l := range current {
+				r := activityDateRange{Label: l, Summary: summaries[l]}
+				if l == "" {
+					r.Label, r.NA = "Dates not listed", true
+				}
+				ranges = append(ranges, r)
 			}
+		}
+		// ranges that definitely don't apply today keep their dates visible,
+		// unless they just repeat the merged current summary
+		for _, l := range labelOrder {
+			agg := byLabel[l]
+			if agg.applies || agg.mask == ([7]byte{}) {
+				continue
+			}
+			if when != "" && summaries[l] == when {
+				continue
+			}
+			ranges = append(ranges, activityDateRange{Label: l, Summary: summaries[l]})
+		}
+		holiday := false
+		if len(ranges) > 0 {
 			if hasHoliday {
 				ranges = append(ranges, activityDateRange{Label: "Holiday schedule"})
 			}
@@ -606,7 +649,7 @@ var activityWhenPeriodWord = []string{"mornings", "afternoons", "evenings"}
 
 // activityWhenSummary renders a [7]byte weekday/period availability mask (byte
 // d bit p set = offered on weekday d, period p) as a concise sentence like "Evenings on
-// weekdays; mornings and afternoons on weekends" or "All day every day".
+// weekdays; mornings and afternoons on weekends" or "Evenings every day".
 // Returns "" for an empty mask.
 func activityWhenSummary(mask [7]byte) string {
 	byPattern := map[byte][]int{}
