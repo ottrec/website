@@ -49,7 +49,7 @@ func WebsiteActivitiesPage(params WebsiteParams) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"activity-main\"><header class=\"activity-header\"><h1>Drop-In Activities in Ottawa</h1><p>Browse drop-in recreation at City of Ottawa facilities. The main activities have their own schedule pages; search finds everything else.</p></header><nav class=\"activities-dir-grid\" aria-label=\"Activities\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"activity-main\"><header class=\"activity-header\"><h1>Drop-In Activities in Ottawa</h1><p>Browse drop-in recreation at City of Ottawa facilities.</p></header><nav class=\"activities-dir-grid\" aria-label=\"Activities\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

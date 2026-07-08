@@ -623,15 +623,15 @@ func WebsiteSchedulesPage(params WebsiteSchedulesParams) templ.Component {
 						}
 					}
 				}
-				templ_7745c5c3_Err = schedulesView(params).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
 				if params.Active == "all" && params.Query == "" && !params.Advanced && !params.List {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<p class=\"schedules-about\">Every City of Ottawa recreation facility's drop-in schedules on one page, instead of clicking through each facility's own page. Search by activity or facility name above, or build a <a href=\"/schedules?advanced=1\">custom query</a>. Automatically validated and updated daily.</p>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
+				}
+				templ_7745c5c3_Err = schedulesView(params).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 56, "</header>")
 				if templ_7745c5c3_Err != nil {

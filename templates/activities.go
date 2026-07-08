@@ -49,7 +49,7 @@ var activityPeriodLong = []string{"Morning", "Afternoon", "Evening"}
 // activityDayShort/Name are the weekday labels, starting at Sunday, used by the
 // landing-page when-summaries.
 var (
-	activityDayShort = []string{"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"}
+	activityDayShort = []string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
 	activityDayName  = []string{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
 )
 
