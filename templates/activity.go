@@ -130,11 +130,11 @@ func activityTodayDay(feed todayFeed) (todayFeedDay, bool) {
 // activityLandingFacility is one facility offering the category, with a concise
 // summary of when it does.
 type activityLandingFacility struct {
-	Name   string
-	Slug   string
-	Region  string             // finer place name shown faint (may be "")
-	When    string             // concise day/period summary (may be "" if unparseable)
-	Holiday bool               // also has a holiday schedule (when not in Ranges)
+	Name    string
+	Slug    string
+	Region  string              // finer place name shown faint (may be "")
+	When    string              // concise day/period summary (may be "" if unparseable)
+	Holiday bool                // also has a holiday schedule (when not in Ranges)
 	Ranges  []activityDateRange // set only when the summary differs across date ranges
 }
 
@@ -372,7 +372,7 @@ func activityMonFirst(d int) int {
 // activityWhenPeriods labels the set periods in a mask byte.
 func activityWhenPeriods(b byte) string {
 	if b == 0b111 {
-		return "all day"
+		return "throughout the day"
 	}
 	var words []string
 	for p := range 3 {
