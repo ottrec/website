@@ -158,6 +158,7 @@ templ WebsiteFacilityModal(params WebsiteFacilityModalParams) {
 	@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{Anchors: params.Slug, HeaderLinks: true, Star: params.Slug, Region: true}) {
 		<a href={ templ.URL("/schedules/facility/" + params.Slug) }>Full schedule page</a>
 	}
+	@todayModalSource(params.Facility.GetSourceURL())
 }
 
 // facilityBox renders the header of a boxed section around its children,

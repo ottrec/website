@@ -323,6 +323,12 @@ article.facility {
 	max-height: 85vh;
 	padding: 1rem 1.25rem 1.25rem;
 }
+
+/* keep the facility header clear of the absolute close button (modal + map popup) */
+.facmodal .facility-header,
+.fac-popup .facility-header {
+	padding-right: 1.75rem;
+}
 .facmodal-loading,
 .facmodal-empty {
 	font-size: .85rem;

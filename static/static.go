@@ -409,6 +409,7 @@ var (
 	HomeCSS         = assets.Register("home.css", css)
 	ActivityCSS     = assets.Register("activity.css", css)
 	ActivityMapJS   = assets.Register("activitymap.ts", ts)
+	ActivityTodayJS = assets.Register("activitytoday.ts", ts)
 	ThemeJS         = assets.Register("theme.ts", ts)
 	StarredJS       = assets.Register("starred.ts", ts)
 	FacilityModalJS = assets.Register("facilitymodal.ts", ts)
@@ -444,6 +445,7 @@ var Website = assets.
 		HomeCSS,
 		ActivityCSS,
 		ActivityMapJS,
+		ActivityTodayJS,
 		ThemeJS,
 		StarredJS,
 		FacilityModalJS,

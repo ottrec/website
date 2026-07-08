@@ -76,3 +76,7 @@ document.addEventListener('click', (ev) => {
 	ev.preventDefault()
 	openModal(slug)
 })
+
+// expose the opener so other scripts (e.g. the activity page's minimal map) can
+// open the facility schedule directly instead of via an anchor click
+;(window as unknown as {ottrecFacilityModal?: (slug: string) => void}).ottrecFacilityModal = openModal

@@ -1,8 +1,18 @@
 .activity-main {
 	width: 100%;
-	max-width: 55rem;
+	max-width: 64rem;
 	margin: 0 auto;
 	padding: 1.5rem 1.5rem 3rem;
+}
+
+/* today + map side by side on desktop (single column when narrow), so the
+ * facilities list stays closer to the top */
+.activity-overview {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+	gap: 1.5rem;
+	align-items: stretch;
+	margin: .75rem 0 1rem;
 }
 
 .activity-header {
@@ -51,14 +61,321 @@
 }
 
 .activity-see-all {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: .45rem;
 	margin: 1rem 0 2rem;
+	font-size: 1rem;
+
+	a {
+		display: inline-flex;
+		align-items: center;
+		gap: .45rem;
+		text-decoration: none;
+	}
+	/* only the text underlines on hover, never the icon */
+	a:hover .activity-see-all-text {
+		text-decoration: underline;
+	}
+}
+
+.activity-see-all-ico {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+
+	&::before {
+		content: '\e941'; /* arrow_right_alt */
+		font-size: 1.15em;
+		line-height: 1;
+	}
+}
+
+/* minimal today widget (session rows reuse today.css) */
+
+.activity-today {
+	min-width: 0; /* let the grid column shrink instead of overflowing */
+}
+
+.activity-today-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 0 0 .35rem;
+
+	h2 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.15rem;
+		margin: 0;
+	}
+}
+
+.activity-today-date {
+	margin-left: .5rem;
+	font-family: 'Source Sans 3', sans-serif;
+	font-size: .85rem;
+	font-weight: 400;
+	color: var(--fxki-tx-3);
+}
+
+/* the tab-row "more days" affordance: a clear bordered button */
+.activity-today-more {
+	flex: none;
+	padding: .25rem .7rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .35rem;
+	background: var(--fxki-bg-2);
+	font-size: .85rem;
+	color: var(--fxki-tx-1);
+	text-decoration: none;
+
+	&:hover {
+		background: var(--fxki-bg-3);
+	}
+}
+
+.activity-today-filters {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: .5rem;
+	margin: .5rem 0 .6rem;
+	font-size: .85rem;
+
+	input {
+		padding: .3em .6em;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: .35rem;
+		background: var(--fxki-bg);
+		color: inherit;
+		font: inherit;
+		font-size: .85rem;
+	}
+	/* the search always sits on its own line (the today column is narrow) */
+	input[type="search"] {
+		width: 100%;
+	}
+	.activity-today-times {
+		display: flex;
+		align-items: center;
+		gap: .75rem;
+	}
+	.activity-today-time {
+		display: inline-flex;
+		align-items: center;
+		gap: .4rem;
+		padding: .3em .55em;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: .35rem;
+		color: var(--fxki-tx-2);
+		white-space: nowrap;
+	}
+	.activity-today-time input {
+		width: 6rem;
+		padding: 0;
+		border: 0;
+		background: none;
+	}
+}
+
+/* filter status banner attached to the top of the list (shown only while
+ * filtering; the display:flex would otherwise override the [hidden] attribute) */
+.activity-today-filterbar {
+	display: flex;
+	align-items: center;
+	gap: .75rem;
+	margin: 0;
+	padding: .3rem .6rem;
+	background: var(--fxki-bg-2);
+	border: 1px solid var(--fxki-ui-2);
+	border-bottom: 0;
+	border-radius: .5rem .5rem 0 0;
+	font-size: .8rem;
+	color: var(--fxki-tx-2);
+}
+
+.activity-today-filterbar[hidden] {
+	display: none;
+}
+
+/* square off the list's top corners when the banner is attached above it */
+.activity-today-filterbar:not([hidden]) + .activity-today-scroll {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
+.activity-today-clear {
+	margin-left: auto;
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .8rem;
+	color: var(--fxki-bl);
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+
+.activity-today-scroll {
+	max-height: 18rem;
+	overflow-y: auto;
+	padding: 0 .5rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .5rem;
+	transition: max-height .15s ease;
+
+	&.expanded {
+		max-height: 44rem;
+	}
+}
+
+/* denser session rows in the narrow activity-page column */
+.activity-today .today-session {
+	grid-template-columns: 6.25rem 1fr;
+	gap: .05rem .55rem;
+	padding: .25rem .3rem;
+	font-size: .85rem;
+	border-radius: 0; /* square, so the row dividers reach the edges */
+}
+
+.activity-today-foot {
+	display: flex;
+	align-items: center;
+	gap: 1.25rem;
+	margin: .35rem 0 0;
+}
+
+.activity-today-tomorrow {
+	display: inline-flex;
+	align-items: center;
+	gap: .25rem;
+	font-size: .8rem;
+	line-height: 1;
+	text-decoration: none;
+
+	/* beat a:hover (higher specificity) so the icon never underlines */
+	&:hover {
+		text-decoration: none;
+	}
+	&:hover .activity-today-tomorrow-text {
+		text-decoration: underline;
+	}
+}
+
+.activity-today-tomorrow-ico {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+
+	&::before {
+		content: '\ebcc'; /* calendar_month */
+		font-size: 1.05rem;
+	}
+}
+
+/* small left-aligned expand/collapse link under the list */
+.activity-today-expand {
+	display: inline-flex;
+	align-items: center;
+	gap: .2rem;
+	padding: 0;
+	border: 0;
+	background: none;
+	font-family: inherit; /* buttons don't inherit the page font by default */
+	font-size: .8rem;
+	line-height: 1;
+	color: var(--fxki-bl);
+	cursor: pointer;
+
+	&:hover .activity-today-expand-label {
+		text-decoration: underline;
+	}
+}
+
+.activity-today-expand-ico {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+
+	&::before {
+		content: '\e5cf'; /* expand_more */
+		font-size: 1.05rem;
+	}
+}
+
+.activity-today-expand[aria-expanded="true"] .activity-today-expand-ico {
+	display: inline-block;
+	transform: rotate(180deg);
+}
+
+/* compact notice chips on their own line under a session */
+.activity-today .t-notices {
+	grid-column: 2;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .3rem .4rem;
+	margin-top: .2rem;
+}
+
+.activity-today .t-note {
+	display: inline-flex;
+	align-items: center;
+	gap: .25rem;
+	padding: .05rem .4rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .3rem;
+	background: none;
+	font: inherit;
+	font-size: .75rem;
+	color: var(--fxki-tx-2);
+	text-decoration: none;
+	cursor: pointer;
+
+	&.alert {
+		color: var(--fxki-re);
+	}
+	&.warn {
+		color: var(--fxki-or);
+	}
+	&.good {
+		color: var(--fxki-gr);
+	}
+}
+
+.activity-today .t-note-ico {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+}
+.activity-today .t-note-ico::before {
+	font-size: 1.05em;
+	line-height: 1;
+}
+.activity-today .t-note-ico.warn::before {
+	content: '\e002'; /* warning */
+}
+.activity-today .t-note-ico.info::before {
+	content: '\e88e'; /* info */
+}
+
+.activity-today-empty {
+	margin: .5rem 0 0;
 	font-size: .9rem;
+	color: var(--fxki-tx-3);
 }
 
 /* minimal facility map */
 
 .activity-map-section {
-	margin: 1.5rem 0 2rem;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
 }
 
 .activity-map-head {
@@ -79,7 +396,10 @@
 }
 
 .activity-map {
-	height: 20rem;
+	/* fill the column so the map matches the today section's height when the two
+	 * sit side by side; a minimum keeps it usable when today is short or stacked */
+	flex: 1;
+	min-height: 16rem;
 	border: 1px solid var(--fxki-ui-2);
 	border-radius: .5rem;
 	overflow: hidden;
@@ -91,6 +411,35 @@
 	padding: 1rem;
 	font-size: .9rem;
 	color: var(--fxki-tx-2);
+}
+
+/* themed marker popups (the base leaflet popup chrome lives in map.css, which
+ * this page doesn't load) */
+.activity-map {
+	.leaflet-popup-content-wrapper,
+	.leaflet-popup-tip {
+		background: var(--fxki-bg);
+		color: var(--fxki-tx);
+	}
+	.leaflet-popup-content-wrapper {
+		border-radius: .5rem;
+	}
+	.leaflet-popup-content {
+		font: inherit;
+		font-size: .9rem;
+		margin: .6rem .85rem;
+	}
+	.leaflet-popup-content a {
+		color: var(--fxki-bl);
+		font-weight: 500;
+	}
+	.leaflet-container a.leaflet-popup-close-button {
+		color: var(--fxki-tx-2);
+
+		&:hover {
+			color: var(--fxki-tx);
+		}
+	}
 }
 
 /* facility markers (a trimmed copy of the full map's pins) */

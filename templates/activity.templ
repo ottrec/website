@@ -2,6 +2,8 @@ package templates
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/ottrec/website/internal/asset"
@@ -11,12 +13,18 @@ import (
 templ WebsiteActivityPage(params WebsiteActivityParams) {
 	{{ sectors, names := buildActivityLanding(params.Filtered, MapFacilitySlugger(params.Data)) }}
 	{{ mapFacs := buildActivityMap(params.Filtered, MapFacilitySlugger(params.Data)) }}
+	{{ feed := buildTodayFeed(params.Filtered, params.Enrich, MapFacilitySlugger(params.Data), timeNow()) }}
+	{{ today, hasToday := activityTodayDay(feed) }}
+	{{ catQuery := "f-cat=" + strings.ReplaceAll(url.QueryEscape(params.Cat.Name), "+", "%20") }}
+	{{ mapHref := "/map?" + catQuery }}
+	{{ todayHref := "/today?" + catQuery }}
 	{{ n := activityFacilityCount(sectors) }}
 	{{ facWord := "facilities" }}
 	if n == 1 {
 		{{ facWord = "facility" }}
 	}
 	{{ desc := fmt.Sprintf("Locations, sessions, and cancellations for drop-in %s at %d City of Ottawa recreation %s, updated daily.", strings.ToLower(params.Cat.Name), n, facWord) }}
+	{{ updated := params.Data.Index().Updated() }}
 	@websitePage(websitePageMeta{
 		Base:      params.Base,
 		Path:      "schedules/" + params.Cat.Slug,
@@ -24,8 +32,8 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 		Desc:      desc,
 		BodyClass: "activity-page",
 		Nav:       "schedules",
-		Updated:   params.Data.Index().Updated(),
-		CSS:       []*asset.Asset{static.FacilityCSS, static.SchedulesCSS, static.LeafletCSS, static.LeafletThemeCSS, static.ActivityCSS},
+		Updated:   updated,
+		CSS:       []*asset.Asset{static.FacilityCSS, static.SchedulesCSS, static.TodayCSS, static.LeafletCSS, static.LeafletThemeCSS, static.ActivityCSS},
 	}) {
 		<nav class="schedules-catnav">
 			@schedulesCats(params.Cat.Slug, false)
@@ -46,24 +54,114 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 				</div>
 			}
 			<p class="activity-see-all">
-				<a href={ templ.URL("/schedules/" + params.Cat.Slug + "/all") }>See all { params.Cat.Name } schedules</a>
+				<a href={ templ.URL("/schedules/" + params.Cat.Slug + "/all") }>
+					<span class="msym activity-see-all-ico" aria-hidden="true"></span>
+					<span class="activity-see-all-text">See all { params.Cat.Name } schedules</span>
+				</a>
+				<a href={ templ.URL(todayHref) }>
+					<span class="msym activity-see-all-ico" aria-hidden="true"></span>
+					<span class="activity-see-all-text">See upcoming sessions for the next week</span>
+				</a>
 			</p>
-			if len(mapFacs) > 0 {
-				<section class="activity-map-section">
-					<div class="activity-map-head">
-						<h2>Map</h2>
-						<a href="/map">View the full map</a>
+			<p class="today-updated" role="note">
+				This data was last updated <time datetime={ localRFC3339(updated) }>{ localFormat(updated, "Jan 2, 3:04 PM") }</time>. Check the official facility page before you go.
+			</p>
+			<div class="activity-overview">
+				<section class="activity-today">
+					<div class="activity-today-head">
+						<h2>
+							Today
+							if hasToday {
+								<span class="activity-today-date">{ today.Month }</span>
+							}
+						</h2>
+						<a class="activity-today-more" href={ templ.URL(todayHref) }>More days</a>
 					</div>
-					<div id="activity-map" class="activity-map">
-						<noscript>
-							<p class="activity-map-noscript">The map needs JavaScript. <a href="/map">Open the full map.</a></p>
-						</noscript>
-					</div>
+					if !hasToday || today.Empty {
+						<p class="activity-today-empty">No drop-in sessions today.</p>
+					} else {
+						<div class="activity-today-filters">
+							<input type="search" id="activity-today-q" placeholder="Filter by facility or activity" aria-label="Filter by facility or activity" autocomplete="off"/>
+							<div class="activity-today-times">
+								<label class="activity-today-time">From <input type="time" id="activity-today-from" autocomplete="off"/></label>
+								<label class="activity-today-time">To <input type="time" id="activity-today-to" autocomplete="off"/></label>
+							</div>
+						</div>
+						<p class="activity-today-filterbar" id="activity-today-filterbar" hidden>
+							<span id="activity-today-count"></span>
+							<button type="button" class="activity-today-clear" id="activity-today-clear">Clear filters</button>
+						</p>
+						<div class="activity-today-scroll">
+							<ol class="today-sessions" id="activity-today-list">
+								for _, hr := range today.Hours {
+									for _, s := range hr.Sessions {
+										<li
+											class={ "today-session", templ.KV("fixed", s.Fixed), templ.KV("cancelled", s.EnrichedCancelled), templ.KV("added", s.EnrichedAdded) }
+											data-fac={ strings.ToLower(s.Facility) }
+											data-act={ strings.ToLower(s.Activity) }
+											data-start={ strconv.Itoa(s.Start) }
+											data-end={ strconv.Itoa(s.End) }
+										>
+											<span class="t-time">{ s.Time }</span>
+											if s.OldTime != "" {
+												<span class="t-time-old">{ s.OldTime }</span>
+											}
+											<span class="t-act">{ s.Activity }</span>
+											<span class="t-fac">
+												<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) } data-facility-modal={ s.Slug }>{ s.Facility }</a>
+											</span>
+											if notices := activitySessionNotices(s); len(notices) > 0 {
+												<span class="t-notices">
+													for _, nt := range notices {
+														if nt.Href != "" {
+															<a class={ "t-note", nt.Kind } href={ templ.URL(nt.Href) } target="_blank" rel="noopener">
+																<span class={ "t-note-ico", "msym", nt.Icon } aria-hidden="true"></span>
+																{ nt.Label }
+															</a>
+														} else {
+															<button type="button" class={ "t-note", nt.Kind } data-warn={ nt.Warn } data-slug={ nt.Slug } data-group={ strconv.Itoa(nt.Group) } aria-haspopup="dialog">
+																<span class={ "t-note-ico", "msym", nt.Icon } aria-hidden="true"></span>
+																{ nt.Label }
+															</button>
+														}
+													}
+												</span>
+											}
+										</li>
+									}
+								}
+							</ol>
+						</div>
+						<div class="activity-today-foot">
+							<button type="button" class="activity-today-expand" id="activity-today-expand" aria-expanded="false">
+								<span class="msym activity-today-expand-ico" aria-hidden="true"></span>
+								<span class="activity-today-expand-label">Expand</span>
+							</button>
+							<a class="activity-today-tomorrow" href={ templ.URL(todayHref) }>
+								<span class="msym activity-today-tomorrow-ico" aria-hidden="true"></span>
+								<span class="activity-today-tomorrow-text">Next 7 days</span>
+							</a>
+						</div>
+						<p class="activity-today-empty" id="activity-today-nomatch" hidden>No sessions match.</p>
+					}
 				</section>
-				@templ.JSONScript("activity-map-data", mapFacs)
-			}
+				if len(mapFacs) > 0 {
+					<section class="activity-map-section">
+						<div class="activity-map-head">
+							<h2>Map</h2>
+							<a href={ templ.URL(mapHref) }>View the full map</a>
+						</div>
+						<div id="activity-map" class="activity-map">
+							<noscript>
+								<p class="activity-map-noscript">The map needs JavaScript. <a href="/map">Open the full map.</a></p>
+							</noscript>
+						</div>
+						@templ.JSONScript("activity-map-data", mapFacs)
+					</section>
+				}
+			</div>
 			<section class="activity-facilities">
-				<h2>Where to find it</h2>
+				<h2>Facilities</h2>
 				if len(sectors) == 0 {
 					<p>No facilities currently offer this.</p>
 				}
@@ -99,7 +197,7 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 										}
 									}
 									<span class="activity-fac-links">
-										<a href={ templ.URL("/today?f-fac=" + f.Slug) }>Upcoming sessions and cancellations</a>
+										<a href={ templ.URL("/today?f-fac=" + f.Slug + "&" + catQuery) }>Upcoming sessions and cancellations</a>
 										<a href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>Full schedule</a>
 									</span>
 								</li>
@@ -125,6 +223,9 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 			}
 		</main>
 		@websiteFooter()
+		if hasToday && !today.Empty {
+			<script src={ static.Path(static.ActivityTodayJS) }></script>
+		}
 		if len(mapFacs) > 0 {
 			<script src={ static.Path(static.ActivityMapJS) }></script>
 		}

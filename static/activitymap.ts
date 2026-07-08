@@ -59,9 +59,12 @@ if (el && dataEl) {
 		})
 		const marker = L.marker([f.lat, f.lng], {icon}).addTo(map)
 		marker.bindTooltip(f.name, {direction: 'top', offset: [0, -12]})
-		marker.bindPopup(
-			'<a href="/schedules/facility/' + f.slug + '" data-facility-modal="' + f.slug + '">' + f.name + '</a>',
-		)
+		// open the facility schedule modal directly (no intermediate popup)
+		marker.on('click', () => {
+			const open = (window as unknown as {ottrecFacilityModal?: (slug: string) => void}).ottrecFacilityModal
+			if (open) open(f.slug)
+			else location.href = '/schedules/facility/' + f.slug
+		})
 		bounds.push([f.lat, f.lng])
 	}
 	if (bounds.length) map.fitBounds(bounds, {padding: [30, 30], maxZoom: 14})

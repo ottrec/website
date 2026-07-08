@@ -1,5 +1,6 @@
 'use strict'
 import {normalizeText} from './text'
+import {quickNorm, quickTokens, quickMatch, stem, type QuickToken} from './quickfilter'
 
 // The "what's on" feed. Sessions for each day are server-rendered (so the page
 // works without JS and for crawlers); this script turns the days into tabs and
@@ -31,82 +32,6 @@ interface Session {
 	compact: string  // text with the spaces dropped ("aqua fit" <-> "aquafit")
 	words: string[]  // text split into words, for fuzzy matching
 	stems: string[]  // the words stemmed, for inflection-insensitive matching
-}
-
-// stem crudely de-suffixes a word ("skating" and "skate" both become "skat",
-// "classes" becomes "class") and folds "mac" onto "mc", so common inflections
-// and name variants compare equal. English-biased, but harmless elsewhere
-// since both sides are stemmed the same way.
-function stem(w: string): string {
-	if (w.startsWith('mac')) w = 'mc' + w.slice(3)
-	const undouble = (v: string) => (v.length > 2 && v[v.length - 1] === v[v.length - 2] ? v.slice(0, -1) : v) // swimm -> swim
-	if (w.length > 5 && w.endsWith('ing')) w = undouble(w.slice(0, -3))
-	else if (w.length > 6 && w.endsWith('ers')) w = undouble(w.slice(0, -3))
-	else if (w.length > 5 && w.endsWith('er')) w = undouble(w.slice(0, -2))
-	else if (w.length > 4 && w.endsWith('es')) w = w.slice(0, -2)
-	else if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) w = w.slice(0, -1)
-	if (w.length > 3 && w.endsWith('e')) w = w.slice(0, -1)
-	return w
-}
-
-// quickNorm normalizes text for quick-filter matching: on top of normalizeText,
-// punctuation collapses to spaces so "st laurent" matches "St-Laurent".
-function quickNorm(s: string): string {
-	return normalizeText(s).replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
-}
-
-// editDist is the Levenshtein distance between a and b, giving up (returning
-// max+1) once it exceeds max.
-function editDist(a: string, b: string, max: number): number {
-	if (Math.abs(a.length - b.length) > max) return max + 1
-	let prev = Array.from({length: b.length + 1}, (_, i) => i)
-	let cur = new Array<number>(b.length + 1)
-	for (let i = 1; i <= a.length; i++) {
-		cur[0] = i
-		let best = i
-		for (let j = 1; j <= b.length; j++) {
-			cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1))
-			best = Math.min(best, cur[j]!)
-		}
-		if (best > max) return max + 1
-		;[prev, cur] = [cur, prev]
-	}
-	return prev[b.length]!
-}
-
-// a quick-filter query word, its stem, and the typo tolerance each earns from
-// its length
-interface QuickToken {
-	t: string
-	stem: string
-	k: number
-	ks: number
-}
-
-function quickTokens(q: string): QuickToken[] {
-	const fuzz = (n: number) => (n >= 7 ? 2 : n >= 4 ? 1 : 0)
-	return quickNorm(q).split(' ').filter(Boolean).map((t) => {
-		const st = stem(t)
-		return {t, stem: st, k: fuzz(t.length), ks: fuzz(st.length)}
-	})
-}
-
-// a token matches a session by substring (against the spaced and space-dropped
-// text, so partial words and "aqua fit"/"aquafit" both work), by stem prefix
-// ("skating" matches "skate", "mcquarrie" matches "MacQuarrie"), or fuzzily
-// against each word, same-length word prefix, or stem (so typos still match,
-// including in a partially typed word).
-function quickTokenMatches(s: Session, tok: QuickToken): boolean {
-	if (s.text.includes(tok.t) || s.compact.includes(tok.t)) return true
-	for (let i = 0; i < s.words.length; i++) {
-		if (s.stems[i]!.startsWith(tok.stem)) return true
-		if (!tok.k) continue
-		const w = s.words[i]!
-		if (editDist(tok.t, w, tok.k) <= tok.k) return true
-		if (w.length > tok.t.length && editDist(tok.t, w.slice(0, tok.t.length), tok.k) <= tok.k) return true
-		if (tok.ks && editDist(tok.stem, s.stems[i]!, tok.ks) <= tok.ks) return true
-	}
-	return false
 }
 
 // a server-rendered day section, surfaced as a tab
@@ -209,7 +134,7 @@ days.find((d) => d.today)?.el.querySelector('.today-day-head')?.after(pastNote)
 // session matching (everything except the per-day weekday split, which the tabs
 // handle)
 function sessionVisible(s: Session): boolean {
-	if (!qTokens.every((t) => quickTokenMatches(s, t))) return false
+	if (!quickMatch(s, qTokens)) return false
 	if (filter.exclude.has(s.slug)) return false
 	if (filter.include.size && !filter.include.has(s.slug)) return false
 	if (filter.starredOnly && !ottrecStarred.has(s.slug)) return false

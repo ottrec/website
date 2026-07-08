@@ -526,7 +526,8 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
 		return
 	}
-	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+	// the today widget anchors the page to the current date, so mix it into the etag
+	h.renderETag(w, r, templates.TodayFeedDate(), func(data ottrecidx.DataRef) (templ.Component, int, error) {
 		cat, ok := templates.ScheduleCategoryBySlug(key)
 		if !ok {
 			return templates.WebsiteErrorPage("Not Found", "no schedule category matching "+strconv.Quote(key)), http.StatusNotFound, nil
@@ -539,6 +540,7 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 			Base:     h.base(r),
 			Data:     data,
 			Filtered: filtered,
+			Enrich:   h.enrich(data),
 			Cat:      cat,
 			Links:    templates.ActivityLinksBySlug(cat.Slug),
 		}), http.StatusOK, nil

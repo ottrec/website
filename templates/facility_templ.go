@@ -630,6 +630,10 @@ func WebsiteFacilityModal(params WebsiteFacilityModalParams) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = todayModalSource(params.Facility.GetSourceURL()).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		return nil
 	})
 }
@@ -666,7 +670,7 @@ func facilityBox(title string, sub bool, collapse bool) templ.Component {
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 169, Col: 19}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 170, Col: 19}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
@@ -693,7 +697,7 @@ func facilityBox(title string, sub bool, collapse bool) templ.Component {
 				var templ_7745c5c3_Var29 string
 				templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 174, Col: 14}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 175, Col: 14}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 				if templ_7745c5c3_Err != nil {
@@ -711,7 +715,7 @@ func facilityBox(title string, sub bool, collapse bool) templ.Component {
 				var templ_7745c5c3_Var30 string
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 176, Col: 14}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 177, Col: 14}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
@@ -762,7 +766,7 @@ func activityResv(act ottrecidx.ActivityRef) templ.Component {
 			var templ_7745c5c3_Var32 string
 			templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 186, Col: 7}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 187, Col: 7}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 			if templ_7745c5c3_Err != nil {
@@ -843,7 +847,7 @@ func websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) templ.Component {
 			var templ_7745c5c3_Var36 string
 			templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(activityLabel(act))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 204, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 205, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 			if templ_7745c5c3_Err != nil {
@@ -861,7 +865,7 @@ func websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) templ.Component {
 				var templ_7745c5c3_Var37 string
 				templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 207, Col: 11}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 208, Col: 11}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 				if templ_7745c5c3_Err != nil {
@@ -874,7 +878,7 @@ func websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) templ.Component {
 				var templ_7745c5c3_Var38 string
 				templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(d)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 208, Col: 37}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 209, Col: 37}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 				if templ_7745c5c3_Err != nil {
@@ -903,7 +907,7 @@ func websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) templ.Component {
 						var templ_7745c5c3_Var39 string
 						templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(scheduleListDayLabel(sch, i))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 216, Col: 57}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 217, Col: 57}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 						if templ_7745c5c3_Err != nil {
@@ -921,7 +925,7 @@ func websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) templ.Component {
 							var templ_7745c5c3_Var40 string
 							templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(timeLabel(tm))
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 219, Col: 45}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 220, Col: 45}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 							if templ_7745c5c3_Err != nil {
@@ -1011,7 +1015,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 			var templ_7745c5c3_Var44 string
 			templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(s)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 237, Col: 36}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 238, Col: 36}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 			if templ_7745c5c3_Err != nil {
@@ -1025,7 +1029,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 				var templ_7745c5c3_Var45 string
 				templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(" ")
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 239, Col: 11}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 240, Col: 11}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 				if templ_7745c5c3_Err != nil {
@@ -1038,7 +1042,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 				var templ_7745c5c3_Var46 string
 				templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(d)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 240, Col: 38}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 241, Col: 38}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 				if templ_7745c5c3_Err != nil {
@@ -1053,7 +1057,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 			var templ_7745c5c3_Var47 string
 			templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(sch.GetCaption())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 243, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 244, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 			if templ_7745c5c3_Err != nil {
@@ -1073,7 +1077,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 				var templ_7745c5c3_Var48 string
 				templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(d.String())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 252, Col: 20}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 253, Col: 20}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 				if templ_7745c5c3_Err != nil {
@@ -1083,7 +1087,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 				var templ_7745c5c3_Var49 string
 				templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(sch.GetDay(i))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 254, Col: 23}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 255, Col: 23}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 				if templ_7745c5c3_Err != nil {
@@ -1107,7 +1111,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 			var templ_7745c5c3_Var50 string
 			templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(activityLabel(act))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 264, Col: 50}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 265, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 			if templ_7745c5c3_Err != nil {
@@ -1138,7 +1142,7 @@ func websiteFacilitySchedule(sch ottrecidx.ScheduleRef) templ.Component {
 					var templ_7745c5c3_Var51 string
 					templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(timeLabel(tm))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 270, Col: 43}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `facility.templ`, Line: 271, Col: 43}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 					if templ_7745c5c3_Err != nil {

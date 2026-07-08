@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/ottrec/data-enrichment/enrichidx"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottregions"
 )
@@ -43,8 +44,87 @@ type WebsiteActivityParams struct {
 	Base     string
 	Data     ottrecidx.DataRef // full data, for the timestamp and slugger
 	Filtered ottrecidx.DataRef // scoped to the category's activities
+	Enrich   enrichidx.Ref     // schedule-change enrichment for the today widget (zero = unavailable)
 	Cat      ScheduleCategory
 	Links    []ActivityLink
+}
+
+// activityNotice is one compact notice chip under a today-widget session,
+// mirroring the caveats from [todaySessionWarnings]/[todaySessionReservation]
+// but condensed. Chips with Href link out (holiday/see-schedule); the rest are
+// buttons that open the same /api/{changes,errors,reservations} modal as /today.
+type activityNotice struct {
+	Label string // short chip text, e.g. "schedule changes"
+	Kind  string // severity class: "alert", "warn", "info", "good"
+	Icon  string // "warn" (triangle) or "info"
+	Warn  string // data-warn value ("changes"/"errors"/"reservations"); "" if Href
+	Href  string // external source link; "" for modal chips
+	Slug  string
+	Group int
+}
+
+// activitySessionNotices condenses a session's warnings/reservation into compact
+// chips, following the same precedence as [todaySessionWarnings].
+func activitySessionNotices(s todaySession) []activityNotice {
+	var ns []activityNotice
+	modal := func(label, kind, icon string) activityNotice {
+		return activityNotice{Label: label, Kind: kind, Icon: icon, Warn: "changes", Slug: s.Slug, Group: s.GroupIndex}
+	}
+	if s.EnrichedAdded {
+		ns = append(ns, modal("added", "good", "info"))
+	}
+	if s.EnrichedTimeChanged {
+		ns = append(ns, modal("time changed", "good", "info"))
+	}
+	if s.EnrichedSeeSchedule {
+		if s.SourceURL != "" {
+			ns = append(ns, activityNotice{Label: "holiday schedule", Kind: "alert", Icon: "warn", Href: s.SourceURL})
+		} else {
+			ns = append(ns, modal("holiday schedule", "alert", "warn"))
+		}
+	} else if s.Holiday {
+		n := activityNotice{Label: "holiday hours", Kind: "alert", Icon: "warn"}
+		if s.SourceURL != "" {
+			n.Href = s.SourceURL
+		}
+		ns = append(ns, n)
+	}
+	switch {
+	case s.EnrichedCancelled:
+		ns = append(ns, modal("cancelled", "alert", "warn"))
+	case s.EnrichedScopeCancelled:
+		ns = append(ns, modal("may be cancelled", "alert", "warn"))
+	case s.Changes:
+		ns = append(ns, modal("schedule changes", "warn", "warn"))
+	case s.EnrichedNotice:
+		ns = append(ns, modal("notice", "info", "info"))
+	}
+	if s.Incomplete {
+		n := modal("may be incomplete", "info", "info")
+		n.Warn = "errors"
+		ns = append(ns, n)
+	}
+	if s.Reservations {
+		label := "reservation?"
+		if s.ResvDefinite {
+			label = "reserve"
+		}
+		n := modal(label, "info", "info")
+		n.Warn = "reservations"
+		ns = append(ns, n)
+	}
+	return ns
+}
+
+// activityTodayDay returns the "Today" day from a feed built for the landing
+// page's today widget, and whether it was found.
+func activityTodayDay(feed todayFeed) (todayFeedDay, bool) {
+	for _, d := range feed.Days {
+		if d.Rel == "Today" {
+			return d, true
+		}
+	}
+	return todayFeedDay{}, false
 }
 
 // activityLandingFacility is one facility offering the category, with a concise
