@@ -17,8 +17,12 @@ if (list) {
 	const from = document.getElementById('activity-today-from') as HTMLInputElement | null
 	const to = document.getElementById('activity-today-to') as HTMLInputElement | null
 	const noMatch = document.getElementById('activity-today-nomatch')
-	const bar = document.getElementById('activity-today-filterbar')
 	const count = document.getElementById('activity-today-count')
+	const clear = document.getElementById('activity-today-clear')
+
+	// the filter inputs are server-hidden since they need JS
+	const filters = document.querySelector<HTMLElement>('.activity-today-filters')
+	if (filters) filters.hidden = false
 	// precompute each row's fuzzy-searchable target (activity + facility) and its
 	// time window, matching the /today feed's quick filter
 	interface Row {
@@ -54,10 +58,14 @@ if (list) {
 			if (ok) shown++
 		}
 		if (noMatch) noMatch.hidden = shown !== 0
-		// banner: only while a filter is active, showing shown/total
+		// the banner always shows the count; shown/total (and the clear button)
+		// only while a filter is active
 		const active = tokens.length > 0 || fromMin !== null || toMin !== null
-		if (count) count.textContent = shown + '/' + rows.length + ' sessions'
-		if (bar) bar.hidden = !active
+		if (count)
+			count.textContent = active
+				? shown + '/' + rows.length + ' sessions'
+				: rows.length + (rows.length === 1 ? ' session' : ' sessions')
+		if (clear) clear.hidden = !active
 	}
 
 	q?.addEventListener('input', apply)
@@ -71,7 +79,7 @@ if (list) {
 		apply()
 	}
 
-	document.getElementById('activity-today-clear')?.addEventListener('click', clearFilters)
+	clear?.addEventListener('click', clearFilters)
 
 	// don't retain filter values across reloads or bfcache restores
 	window.addEventListener('pageshow', clearFilters)

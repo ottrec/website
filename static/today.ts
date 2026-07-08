@@ -326,8 +326,11 @@ feedEl.addEventListener('click', (ev) => {
 		openScheduleModal(full)
 		return
 	}
-	const warn = target.closest<HTMLButtonElement>('[data-warn]')
+	const warn = target.closest<HTMLElement>('[data-warn]')
 	if (warn) {
+		// the warn lines are links to the facility page (the no-JS fallback);
+		// modified clicks keep the normal link behavior
+		if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return
 		ev.preventDefault()
 		openWarnModal(warn)
 	}

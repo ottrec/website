@@ -120,20 +120,16 @@
 	color: var(--fxki-tx-2);
 }
 
-/* the tab-row "more days" affordance: a clear bordered button */
+/* the head's "more days" link, matching the map head's "view the full map" */
 .activity-today-more {
 	flex: none;
-	padding: .25rem .7rem;
-	border: 1px solid var(--fxki-ui-2);
-	border-radius: .35rem;
-	background: var(--fxki-bg-2);
 	font-size: .85rem;
-	color: var(--fxki-tx-1);
-	text-decoration: none;
+}
 
-	&:hover {
-		background: var(--fxki-bg-3);
-	}
+/* server-rendered hidden (the filters need JS; activitytoday.ts unhides them);
+ * the display:flex would otherwise override the [hidden] attribute */
+.activity-today-filters[hidden] {
+	display: none;
 }
 
 .activity-today-filters {
@@ -180,8 +176,8 @@
 	}
 }
 
-/* filter status banner attached to the top of the list (shown only while
- * filtering; the display:flex would otherwise override the [hidden] attribute) */
+/* session-count banner attached to the top of the list (the clear button in it
+ * appears only while filtering) */
 .activity-today-filterbar {
 	display: flex;
 	align-items: center;
@@ -196,12 +192,8 @@
 	color: var(--fxki-tx-2);
 }
 
-.activity-today-filterbar[hidden] {
-	display: none;
-}
-
-/* square off the list's top corners when the banner is attached above it */
-.activity-today-filterbar:not([hidden]) + .activity-today-scroll {
+/* square off the list's top corners under the attached banner */
+.activity-today-filterbar + .activity-today-scroll {
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
 }
@@ -410,6 +402,10 @@
 	li {
 		padding: .2rem 0;
 		line-height: 1.35;
+		/* keep each facility on one line; long names ellipsize */
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 }
 

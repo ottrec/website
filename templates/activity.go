@@ -2,6 +2,7 @@ package templates
 
 import (
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/ottrec/data-enrichment/enrichidx"
@@ -155,6 +156,34 @@ func activitySessionNotices(s todaySession) []activityNotice {
 		ns = append(ns, n)
 	}
 	return ns
+}
+
+// activityTodaySessionCount totals the sessions in a today-widget day.
+func activityTodaySessionCount(d todayFeedDay) int {
+	n := 0
+	for _, hr := range d.Hours {
+		n += len(hr.Sessions)
+	}
+	return n
+}
+
+// activitySessionCountLabel labels a session count for the today widget's
+// filter banner.
+func activitySessionCountLabel(n int) string {
+	if n == 1 {
+		return "1 session"
+	}
+	return strconv.Itoa(n) + " sessions"
+}
+
+// activityQuotedTerms joins fuzzy match terms into a quoted comma-separated
+// list for prose.
+func activityQuotedTerms(terms []string) string {
+	quoted := make([]string, len(terms))
+	for i, t := range terms {
+		quoted[i] = "“" + t + "”"
+	}
+	return strings.Join(quoted, ", ")
 }
 
 // activityTodayDay returns the "Today" day from a feed built for the landing
@@ -377,7 +406,8 @@ var activityWhenPeriodWord = []string{"mornings", "afternoons", "evenings"}
 
 // activityWhenSummary renders a [7]byte weekday/period availability mask (byte
 // d bit p set = offered on weekday d, period p) as a concise sentence like "Evenings on
-// weekdays; mornings and afternoons on weekends". Returns "" for an empty mask.
+// weekdays; mornings and afternoons on weekends" or "All day every day".
+// Returns "" for an empty mask.
 func activityWhenSummary(mask [7]byte) string {
 	byPattern := map[byte][]int{}
 	for d := range 7 {
@@ -398,7 +428,7 @@ func activityWhenSummary(mask [7]byte) string {
 	})
 	parts := make([]string, len(patterns))
 	for i, b := range patterns {
-		parts[i] = activityWhenPeriods(b) + " on " + activityWhenDays(byPattern[b])
+		parts[i] = activityWhenPeriods(b) + " " + activityWhenDays(byPattern[b])
 	}
 	s := strings.Join(parts, "; ")
 	return strings.ToUpper(s[:1]) + s[1:]
@@ -413,7 +443,7 @@ func activityMonFirst(d int) int {
 // activityWhenPeriods labels the set periods in a mask byte.
 func activityWhenPeriods(b byte) string {
 	if b == 0b111 {
-		return "throughout the day"
+		return "all day"
 	}
 	var words []string
 	for p := range 3 {
@@ -431,22 +461,26 @@ func activityWhenPeriods(b byte) string {
 	}
 }
 
-// activityWhenDays labels a set of weekdays (Sunday=0), collapsing Mon-Fri to
-// "weekdays" and Sat+Sun to "weekends", a single day to its plural name, and
-// otherwise compressing Monday-first runs (e.g. "Mo to Th, Sa").
+// activityWhenDays phrases a set of weekdays (Sunday=0) with its preposition:
+// all seven days become "every day", Mon-Fri "on weekdays", Sat+Sun "on
+// weekends", a single day its plural name, and anything else compressed
+// Monday-first runs (e.g. "on Mon to Thu and Sat").
 func activityWhenDays(days []int) string {
 	var in [7]bool
 	for _, d := range days {
 		in[d] = true
 	}
+	if len(days) == 7 {
+		return "every day"
+	}
 	if in[1] && in[2] && in[3] && in[4] && in[5] && !in[0] && !in[6] {
-		return "weekdays"
+		return "on weekdays"
 	}
 	if in[0] && in[6] && !in[1] && !in[2] && !in[3] && !in[4] && !in[5] {
-		return "weekends"
+		return "on weekends"
 	}
 	if len(days) == 1 {
-		return activityDayName[days[0]] + "s"
+		return "on " + activityDayName[days[0]] + "s"
 	}
 	order := []int{1, 2, 3, 4, 5, 6, 0} // Monday first
 	var seq []int
@@ -468,5 +502,8 @@ func activityWhenDays(days []int) string {
 		}
 		i = j + 1
 	}
-	return strings.Join(parts, ", ")
+	if len(parts) > 1 {
+		return "on " + strings.Join(parts[:len(parts)-1], ", ") + " and " + parts[len(parts)-1]
+	}
+	return "on " + parts[0]
 }

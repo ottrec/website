@@ -709,6 +709,12 @@
 	font-weight: 500;
 	color: var(--fxki-tx);
 
+	/* also rendered as a link (the no-JS fallback navigates to the facility
+	   page); keep the flat boxed look either way */
+	&:hover {
+		text-decoration: none;
+	}
+
 	a {
 		color: inherit;
 		text-decoration: none;

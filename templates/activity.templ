@@ -85,16 +85,17 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 					if !hasToday || today.Empty {
 						<p class="activity-today-empty">No drop-in sessions today.</p>
 					} else {
-						<div class="activity-today-filters">
+						// the filters need JS; activitytoday.ts unhides them
+						<div class="activity-today-filters" hidden>
 							<input type="search" id="activity-today-q" placeholder="Filter by facility or activity" aria-label="Filter by facility or activity" autocomplete="off"/>
 							<div class="activity-today-times">
 								<label class="activity-today-time">From <input type="time" id="activity-today-from" autocomplete="off"/></label>
 								<label class="activity-today-time">To <input type="time" id="activity-today-to" autocomplete="off"/></label>
 							</div>
 						</div>
-						<p class="activity-today-filterbar" id="activity-today-filterbar" hidden>
-							<span id="activity-today-count"></span>
-							<button type="button" class="activity-today-clear" id="activity-today-clear">Clear filters</button>
+						<p class="activity-today-filterbar">
+							<span id="activity-today-count">{ activitySessionCountLabel(activityTodaySessionCount(today)) }</span>
+							<button type="button" class="activity-today-clear" id="activity-today-clear" hidden>Clear filters</button>
 						</p>
 						<div class="activity-today-scroll">
 							<ol class="today-sessions" id="activity-today-list">
@@ -168,7 +169,7 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 			<section class="activity-facilities">
 				<h2>Facilities</h2>
 				if len(params.Cat.Activities) > 0 {
-					<p class="activity-facilities-note">Facilities currently offering activities matching { strings.Join(params.Cat.Activities, ", ") }.</p>
+					<p class="activity-facilities-note">Facilities currently offering activities matching { activityQuotedTerms(params.Cat.Activities) }.</p>
 				}
 				if len(sectors) == 0 {
 					<p>No facilities currently offer this.</p>
