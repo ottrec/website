@@ -680,6 +680,7 @@ function openWarnModal(btn: HTMLElement) {
 		: kind === 'reservations'
 			? '/api/reservations?facility=' + slug + '&group=' + group
 			: '/api/changes?facility=' + slug + '&group=' + group
+	modal.classList.remove('wide')
 	loadModal(url, btn.dataset['source'])
 }
 
@@ -688,6 +689,7 @@ function openWarnModal(btn: HTMLElement) {
 function openScheduleModal(btn: HTMLElement) {
 	const slug = encodeURIComponent(btn.dataset['slug'] || '')
 	const group = encodeURIComponent(btn.dataset['group'] || '0')
+	modal.classList.add('wide') // room for the full week's schedule table
 	loadModal('/map/facility/' + slug + '?group=' + group, btn.dataset['source'])
 }
 

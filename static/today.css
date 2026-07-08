@@ -767,6 +767,12 @@ button.t-warn {
 	color: var(--fxki-tx);
 	overflow: hidden;
 
+	/* the full-schedule modal (today.js sets .wide) fits the week's table
+	 * without scrolling; the text modals keep the narrower measure */
+	&.wide {
+		width: min(64rem, 94vw);
+	}
+
 	/* literal color + blur rather than the theme vars: custom properties don't
 	 * reach ::backdrop on the target browsers, and a plain black scrim alone is
 	 * nearly invisible over the dark theme's near-black page */
