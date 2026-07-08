@@ -286,7 +286,12 @@
 	}
 }
 
-/* small left-aligned expand/collapse link under the list */
+/* small left-aligned expand/collapse link under the list; server-rendered
+ * hidden (needs JS), and the display:inline-flex would override [hidden] */
+.activity-today-expand[hidden] {
+	display: none;
+}
+
 .activity-today-expand {
 	display: inline-flex;
 	align-items: center;
@@ -369,6 +374,17 @@
 }
 .activity-today .t-note-ico.info::before {
 	content: '\e88e'; /* info */
+}
+
+/* starred facility indicator on the widget's session rows (.starred set by
+ * starred.js on the msym facility links; mirrors the schedules TOC) */
+.activity-today .t-fac-name.starred::after {
+	content: '\f09a'; /* star */
+	font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+	font-size: 1.15em;
+	vertical-align: -.2em;
+	margin-left: .25em;
+	color: var(--fxki-gr);
 }
 
 .activity-today-empty {
@@ -626,6 +642,12 @@
 	margin-left: .5rem;
 	font-size: .85rem;
 	color: var(--fxki-tx-3);
+}
+
+/* star toggle after the facility name (base styles in website.css) */
+.activity-fac-head .fac-star {
+	margin-left: .45rem;
+	font-size: .95rem;
 }
 
 .activity-fac-when {

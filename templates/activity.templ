@@ -114,7 +114,9 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 											}
 											<span class="t-act">{ s.Activity }</span>
 											<span class="t-fac">
-												<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) } data-facility-modal={ s.Slug }>{ s.Facility }</a>
+												// msym + data-fac-starred: starred.js marks starred
+												// facilities with a small filled star (::after)
+												<a class="t-fac-name msym" href={ templ.URL("/schedules/facility/" + s.Slug) } data-facility-modal={ s.Slug } data-fac-starred={ s.Slug }>{ s.Facility }</a>
 											</span>
 											if notices := activitySessionNotices(s); len(notices) > 0 {
 												<span class="t-notices">
@@ -139,7 +141,8 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 							</ol>
 						</div>
 						<div class="activity-today-foot">
-							<button type="button" class="activity-today-expand" id="activity-today-expand" aria-expanded="false">
+							// the expand toggle needs JS; activitytoday.ts unhides it
+							<button type="button" class="activity-today-expand" id="activity-today-expand" aria-expanded="false" hidden>
 								<span class="msym activity-today-expand-ico" aria-hidden="true"></span>
 								<span class="activity-today-expand-label">Expand</span>
 							</button>
@@ -185,6 +188,7 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 										if f.Region != "" {
 											<span class="activity-fac-region">{ f.Region }</span>
 										}
+										@facStar(f.Slug)
 									</span>
 									if len(f.Ranges) > 0 {
 										<ul class="activity-fac-ranges">
@@ -233,9 +237,10 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 		</main>
 		@websiteFooter()
 		<script src={ static.Path(static.RelTimeJS) }></script>
-		if hasToday && !today.Empty {
-			<script src={ static.Path(static.ActivityTodayJS) }></script>
-		}
+		// starred before activitytoday (which sorts starred facilities first);
+		// activitytoday loads even without a today list for that sort
+		<script src={ static.Path(static.StarredJS) }></script>
+		<script src={ static.Path(static.ActivityTodayJS) }></script>
 		if len(mapFacs) > 0 {
 			<script src={ static.Path(static.ActivityMapJS) }></script>
 		}

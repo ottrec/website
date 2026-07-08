@@ -7,6 +7,8 @@ import {quickTarget, quickTokens, quickMatch, type QuickTarget} from './quickfil
 //  - an expand toggle that makes the scroll box taller
 //  - opening the session warning/reservation modals (the same /api/changes,
 //    /api/errors, /api/reservations fragments the full /today page uses)
+//  - starred facilities first in the facilities section (starred.js must load
+//    before this script)
 // The list is server-rendered and works without JS; this only enhances it.
 
 // --- filtering ---
@@ -91,12 +93,30 @@ const scroll = document.querySelector<HTMLElement>('.activity-today-scroll')
 const expandBtn = document.getElementById('activity-today-expand')
 const expandLabel = expandBtn?.querySelector('.activity-today-expand-label')
 if (scroll && expandBtn) {
+	expandBtn.hidden = false // server-hidden since it needs JS
 	expandBtn.addEventListener('click', () => {
 		const expanded = scroll.classList.toggle('expanded')
 		expandBtn.setAttribute('aria-expanded', String(expanded))
 		if (expandLabel) expandLabel.textContent = expanded ? 'Collapse' : 'Expand'
 	})
 }
+
+// --- starred facilities ---
+
+// move starred facilities to the front of each sector's list, on load only
+// (like the schedules pages; a live re-sort would jump the page mid-read)
+function sortStarred() {
+	for (const ul of document.querySelectorAll('.activity-sector ul')) {
+		const items = [...ul.querySelectorAll<HTMLElement>(':scope > li')]
+		const starred = (li: HTMLElement) => {
+			const slug = li.querySelector<HTMLElement>('[data-fac-star]')?.dataset['facStar']
+			return Boolean(slug && ottrecStarred.has(slug))
+		}
+		if (!items.some(starred)) continue
+		for (const li of [...items.filter(starred), ...items.filter((li) => !starred(li))]) ul.append(li)
+	}
+}
+sortStarred()
 
 // --- warning / reservation modals ---
 
