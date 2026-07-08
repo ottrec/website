@@ -85,7 +85,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 														}
 														<span class="t-act">{ s.Activity }</span>
 														<span class="t-fac">
-															<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
+															<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) } data-facility-modal={ s.Slug }>{ s.Facility }</a>
 															if s.Region != "" {
 																<span class="t-region">{ s.Region }</span>
 															}
@@ -132,6 +132,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 			<script src={ static.Path(static.OttrecqlEditorJS) }></script>
 		}
 		<script src={ static.Path(static.TodayJS) }></script>
+		<script src={ static.Path(static.FacilityModalJS) }></script>
 	}
 }
 

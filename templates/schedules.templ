@@ -6,6 +6,18 @@ import (
 	"github.com/ottrec/website/static"
 )
 
+// schedulesCats renders the category tabs (All + each schedule category),
+// shared by the schedules pages and the activity landing pages. active is the
+// current slug ("all" or a category slug); list keeps the ?mode=list view.
+templ schedulesCats(active string, list bool) {
+	<div class="schedules-cats">
+		<a href={ templ.URL(schedulesNavHref("/schedules", list)) } class={ templ.KV("active", active == "all") }>All</a>
+		for _, cat := range ScheduleCategories {
+			<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, list)) } class={ templ.KV("active", active == cat.Slug) }>{ cat.Name }</a>
+		}
+	</div>
+}
+
 templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 	{{ css := []*asset.Asset{static.FacilityCSS, static.SearchCSS, static.SchedulesCSS} }}
 	if params.Search && params.Advanced {
@@ -18,16 +30,12 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 		Desc:      cmp.Or(params.MetaDescription, params.Description),
 		BodyClass: "schedules-page",
 		Nav:       "schedules",
+		NoIndex:   params.NoIndex,
 		Updated:   params.Data.Index().Updated(),
 		CSS:       css,
 	}) {
 		<nav class="schedules-catnav">
-			<div class="schedules-cats">
-				<a href={ templ.URL(schedulesNavHref("/schedules", params.List)) } class={ templ.KV("active", params.Active == "all") }>All</a>
-				for _, cat := range ScheduleCategories {
-					<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
-				}
-			</div>
+			@schedulesCats(params.Active, params.List)
 			<div class="schedules-view" role="group" aria-label="Schedule view">
 				<a
 					href={ templ.URL(schedulesViewHref(params, false)) }

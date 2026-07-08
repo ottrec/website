@@ -79,10 +79,20 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /api/enrich/report", &websiteEnrichReportHandler{
 		websiteHandlerBase: base,
 	})
+	mux.Handle("GET /api/facility", &websiteFacilityHandler{
+		websiteHandlerBase: base,
+	})
 	mux.Handle("GET /schedules", &websiteSchedulesHandler{
 		websiteHandlerBase: base,
 	})
 	mux.Handle("GET /schedules/{key}", &websiteSchedulesKeyHandler{
+		websiteHandlerBase: base,
+	})
+	// {sub} rather than a literal /all: a literal third segment would conflict
+	// with /schedules/facility/{slug} (neither pattern more specific); {sub} is
+	// strictly less specific, so the facility route still wins. Only "all" is
+	// valid (checked in the handler).
+	mux.Handle("GET /schedules/{key}/{sub}", &websiteSchedulesAllHandler{
 		websiteHandlerBase: base,
 	})
 	mux.Handle("GET /schedules/facility/{slug}", &websiteSchedulesFacilityHandler{
@@ -488,8 +498,9 @@ func (h *websiteOttrecqlNamesHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 	w.Write(buf)
 }
 
-// websiteSchedulesKeyHandler serves the category schedule pages under
-// /schedules/, redirecting old facility page paths to /schedules/facility/.
+// websiteSchedulesKeyHandler serves the per-activity landing pages at
+// /schedules/{slug} (an overview: facilities by area, when, and a link to the
+// full schedule), redirecting old facility page paths to /schedules/facility/.
 type websiteSchedulesKeyHandler struct {
 	websiteHandlerBase
 }
@@ -497,6 +508,60 @@ type websiteSchedulesKeyHandler struct {
 func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Vary", "Accept-Encoding")
 	w.Header().Set("Cache-Control", "public, no-cache")
+
+	key := r.PathValue("key")
+	if _, ok := templates.ScheduleCategoryBySlug(key); !ok {
+		// the facility pages used to live at /schedules/{slug}
+		if data, ok := h.Data(); ok {
+			if _, ok := templates.MapFacilityBySlug(data, key); ok {
+				w.Header().Set("Cache-Control", "no-store")
+				http.Redirect(w, r, "/schedules/facility/"+url.PathEscape(key), http.StatusPermanentRedirect)
+				return
+			}
+		}
+	}
+	// the landing page has no query modes; canonicalize any params away
+	if r.URL.RawQuery != "" {
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, r.URL.EscapedPath(), http.StatusTemporaryRedirect)
+		return
+	}
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		cat, ok := templates.ScheduleCategoryBySlug(key)
+		if !ok {
+			return templates.WebsiteErrorPage("Not Found", "no schedule category matching "+strconv.Quote(key)), http.StatusNotFound, nil
+		}
+		filtered, err := templates.SchedulesFilter(data, cat.Query())
+		if err != nil {
+			return nil, 0, err
+		}
+		return templates.WebsiteActivityPage(templates.WebsiteActivityParams{
+			Base:     h.base(r),
+			Data:     data,
+			Filtered: filtered,
+			Cat:      cat,
+			Links:    templates.ActivityLinksBySlug(cat.Slug),
+		}), http.StatusOK, nil
+	})
+}
+
+// websiteSchedulesAllHandler serves the full per-activity schedule at
+// /schedules/{slug}/all: the complete category schedules (the old
+// /schedules/{slug}). It is noindex; the landing page is the indexed one.
+type websiteSchedulesAllHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteSchedulesAllHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	if sub := r.PathValue("sub"); sub != "all" {
+		h.render(w, r, func(ottrecidx.DataRef) (templ.Component, int, error) {
+			return templates.WebsiteErrorPage("Not Found", "no such page "+strconv.Quote(sub)), http.StatusNotFound, nil
+		})
+		return
+	}
 
 	list := r.URL.Query().Get("mode") == "list"
 	if r.URL.RawQuery != "" && !list {
@@ -506,20 +571,6 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	key := r.PathValue("key")
-	if _, ok := templates.ScheduleCategoryBySlug(key); !ok {
-		// the facility pages used to live at /schedules/{slug}
-		if data, ok := h.Data(); ok {
-			if _, ok := templates.MapFacilityBySlug(data, key); ok {
-				target := "/schedules/facility/" + url.PathEscape(key)
-				if list {
-					target += "?mode=list"
-				}
-				w.Header().Set("Cache-Control", "no-store")
-				http.Redirect(w, r, target, http.StatusPermanentRedirect)
-				return
-			}
-		}
-	}
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
 		cat, ok := templates.ScheduleCategoryBySlug(key)
 		if !ok {
@@ -532,13 +583,14 @@ func (h *websiteSchedulesKeyHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 		return templates.WebsiteSchedulesPage(templates.WebsiteSchedulesParams{
 			Base:            h.base(r),
 			Data:            data,
-			Canonical:       "schedules/" + cat.Slug,
-			Path:            "/schedules/" + cat.Slug,
+			Canonical:       "schedules/" + cat.Slug + "/all",
+			Path:            "/schedules/" + cat.Slug + "/all",
 			Active:          cat.Slug,
 			Title:           cat.Name + " Schedules",
 			Description:     cat.Description,
 			MetaDescription: "City of Ottawa drop-in " + strings.ToLower(cat.Name) + " schedules across all recreation facilities.",
 			List:            list,
+			NoIndex:         true,
 			CategoryTerms:   cat.Activities,
 			TOC:             templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data)),
 		}), http.StatusOK, nil
@@ -844,6 +896,30 @@ func (h *websiteEnrichReportHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write(report.Build("", data))
+}
+
+// websiteFacilityHandler serves the HTML fragment fetched over XHR for the
+// ephemeral facility-schedule modal (facilitymodal.ts): a facility's full
+// schedule article, opened in place of navigating to /schedules/facility/{slug}.
+type websiteFacilityHandler struct {
+	websiteHandlerBase
+}
+
+func (h *websiteFacilityHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Cache-Control", "public, no-cache")
+
+	slug := r.URL.Query().Get("facility")
+	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
+		fac, ok := templates.MapFacilityBySlug(data, slug)
+		if !ok {
+			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
+		}
+		return templates.WebsiteFacilityModal(templates.WebsiteFacilityModalParams{
+			Slug:     slug,
+			Facility: fac,
+		}), http.StatusOK, nil
+	})
 }
 
 // websiteMapFacilityHandler serves the HTML fragment fetched over XHR for the

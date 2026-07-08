@@ -1,0 +1,217 @@
+.activity-main {
+	width: 100%;
+	max-width: 55rem;
+	margin: 0 auto;
+	padding: 1.5rem 1.5rem 3rem;
+}
+
+.activity-header {
+	margin: 1rem 0 1.5rem;
+
+	h1 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.8rem;
+		margin: 0 0 .5rem;
+	}
+	p {
+		margin: 0;
+		color: var(--fxki-tx-2);
+	}
+}
+
+.activity-includes {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: .4rem .6rem;
+	margin: 1rem 0 0;
+}
+
+.activity-includes-label {
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
+}
+
+.activity-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .15rem .3rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: .85rem;
+	color: var(--fxki-tx-2);
+
+	/* plain wrapping text, comma-separated: readable but clearly not buttons
+	 * (bordered = button here) */
+	li:not(:last-child)::after {
+		content: ",";
+		color: var(--fxki-tx-3);
+	}
+}
+
+.activity-see-all {
+	margin: 1rem 0 2rem;
+	font-size: .9rem;
+}
+
+/* minimal facility map */
+
+.activity-map-section {
+	margin: 1.5rem 0 2rem;
+}
+
+.activity-map-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 0 0 .5rem;
+
+	h2 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.15rem;
+		margin: 0;
+	}
+	a {
+		font-size: .85rem;
+	}
+}
+
+.activity-map {
+	height: 20rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .5rem;
+	overflow: hidden;
+	background: var(--fxki-bg-2);
+}
+
+.activity-map-noscript {
+	margin: 0;
+	padding: 1rem;
+	font-size: .9rem;
+	color: var(--fxki-tx-2);
+}
+
+/* facility markers (a trimmed copy of the full map's pins) */
+.fac-pin {
+	width: 20px;
+	height: 20px;
+	margin: 3px;
+	border-radius: 50%;
+	background: var(--fxki-bl);
+	border: 2px solid var(--fxki-bg);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .4);
+	opacity: .8;
+}
+
+.activity-facilities h2,
+.activity-related h2 {
+	font-family: 'Source Serif 4', serif;
+	font-size: 1.15rem;
+	margin: 2rem 0 .5rem;
+}
+
+.activity-sector {
+	margin: 1.25rem 0;
+
+	h3 {
+		font-size: .75rem;
+		text-transform: uppercase;
+		letter-spacing: .04em;
+		color: var(--fxki-tx-3);
+		margin: 0 0 .25rem;
+	}
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	li {
+		padding: .4rem 0;
+		border-top: 1px solid var(--fxki-ui-2);
+		line-height: 1.4;
+	}
+}
+
+.activity-fac-name {
+	font-weight: 500;
+}
+
+.activity-fac-region {
+	margin-left: .5rem;
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
+}
+
+.activity-fac-when {
+	display: block;
+	font-size: .85rem;
+	color: var(--fxki-tx-2);
+}
+
+.activity-fac-ranges {
+	margin: .3rem 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: .85rem;
+
+	li {
+		display: flex;
+		flex-wrap: wrap;
+		gap: .1rem .5rem;
+		padding: .1rem 0;
+	}
+}
+
+.activity-fac-range-label {
+	color: var(--fxki-tx-2);
+	font-variant-numeric: tabular-nums;
+}
+
+.activity-fac-range-summary {
+	color: var(--fxki-tx-2);
+}
+
+.activity-fac-holiday {
+	display: block;
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
+}
+
+.activity-fac-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .2rem 1.1rem;
+	margin-top: .35rem;
+	font-size: .85rem;
+
+	/* plain links (blue), with a dotted underline that goes solid on hover so a
+	 * row of them doesn't read as busy */
+	a {
+		color: var(--fxki-bl);
+		text-decoration: underline dotted;
+		text-underline-offset: .15em;
+
+		&:hover {
+			text-decoration-style: solid;
+		}
+	}
+}
+
+.activity-related {
+	ul {
+		margin: .5rem 0;
+		padding-left: 1.15rem;
+	}
+	li {
+		margin: .3rem 0;
+		line-height: 1.45;
+	}
+}
+
+.activity-related-note {
+	margin-left: .35rem;
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
+}

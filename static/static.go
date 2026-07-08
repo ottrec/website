@@ -407,8 +407,11 @@ var (
 	RegionsCSS      = assets.Register("regions.css", css)
 	RegionsJS       = assets.Register("regions.ts", ts)
 	HomeCSS         = assets.Register("home.css", css)
+	ActivityCSS     = assets.Register("activity.css", css)
+	ActivityMapJS   = assets.Register("activitymap.ts", ts)
 	ThemeJS         = assets.Register("theme.ts", ts)
 	StarredJS       = assets.Register("starred.ts", ts)
+	FacilityModalJS = assets.Register("facilitymodal.ts", ts)
 
 	// advanced search editor component
 	OttrecqlEditorJS = assets.Register("ottrecql-editor/index.ts", ts)
@@ -439,8 +442,11 @@ var Website = assets.
 		RegionsCSS,
 		RegionsJS,
 		HomeCSS,
+		ActivityCSS,
+		ActivityMapJS,
 		ThemeJS,
 		StarredJS,
+		FacilityModalJS,
 		SourceSans3WOFF2,
 		SourceSans3ItalicWOFF2,
 		SourceSerif4WOFF2,

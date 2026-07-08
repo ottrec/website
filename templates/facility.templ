@@ -31,7 +31,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 				}
 				if t := fac.GetSourceDate(); !t.IsZero() {
 					<p class="facility-updated">
-						Updated
+						{ "Updated " }
 						@localTime(t, "2006-01-02 at 3:04 PM")
 					</p>
 				}
@@ -142,6 +142,22 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 			}
 		</section>
 	</article>
+}
+
+// WebsiteFacilityModalParams configures [WebsiteFacilityModal].
+type WebsiteFacilityModalParams struct {
+	Slug     string
+	Facility ottrecidx.FacilityRef
+}
+
+// WebsiteFacilityModal is the HTML fragment fetched over XHR for the ephemeral
+// facility-schedule modal (facilitymodal.ts), opened in place of navigating to
+// the standalone /schedules/facility/{slug} page. It renders the full facility
+// article with a permalink to that page under the header.
+templ WebsiteFacilityModal(params WebsiteFacilityModalParams) {
+	@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{Anchors: params.Slug, HeaderLinks: true, Star: params.Slug, Region: true}) {
+		<a href={ templ.URL("/schedules/facility/" + params.Slug) }>Full schedule page</a>
+	}
 }
 
 // facilityBox renders the header of a boxed section around its children,

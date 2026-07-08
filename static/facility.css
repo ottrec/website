@@ -277,6 +277,58 @@ article.facility {
 	}
 }
 
+/* ephemeral facility-schedule modal (facilitymodal.ts): a <dialog> overlay
+ * showing a facility's full schedule without navigating. Mirrors the today
+ * page's warning-modal styling; sized wide for the week's table. */
+.facmodal {
+	width: min(64rem, 94vw);
+	max-height: 85vh;
+	padding: 0;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .6rem;
+	background: var(--fxki-bg);
+	color: var(--fxki-tx);
+	overflow: hidden;
+
+	/* literal color + blur rather than the theme vars: custom properties don't
+	 * reach ::backdrop on the target browsers, and a plain black scrim alone is
+	 * nearly invisible over the dark theme's near-black page */
+	&::backdrop {
+		background: rgb(0 0 0 / .5);
+		backdrop-filter: blur(2px);
+	}
+}
+.facmodal-close {
+	position: absolute;
+	top: .4rem;
+	right: .5rem;
+	z-index: 1;
+	font-size: 1.3rem;
+	line-height: 1;
+	width: 1.6rem;
+	height: 1.6rem;
+	border: none;
+	border-radius: .3rem;
+	background: none;
+	color: var(--fxki-tx-3);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--fxki-bg-2);
+		color: var(--fxki-tx);
+	}
+}
+.facmodal-content {
+	overflow-y: auto;
+	max-height: 85vh;
+	padding: 1rem 1.25rem 1.25rem;
+}
+.facmodal-loading,
+.facmodal-empty {
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
+}
+
 /* print: avoid splitting schedule tables/rows across pages */
 @media print {
 	article.facility table,

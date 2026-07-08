@@ -14,7 +14,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 		BodyClass: "activities-page",
 		Nav:       "activities",
 		Updated:   params.Data.Index().Updated(),
-		CSS:       []*asset.Asset{static.ActivitiesCSS},
+		CSS:       []*asset.Asset{static.FacilityCSS, static.ActivitiesCSS},
 	}) {
 		<main>
 			<header class="page-header activities-header">
@@ -74,7 +74,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 												<tr>
 													<th class="fac" scope="row">
 														@facStar(f.Slug)
-														<a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a>
+														<a href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>{ f.Name }</a>
 														if f.Region != "" {
 															<span class="fac-region">{ f.Region }</span>
 														}
@@ -98,5 +98,6 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 		@websiteFooter()
 		<script src={ static.Path(static.StarredJS) }></script>
 		<script src={ static.Path(static.ActivitiesJS) }></script>
+		<script src={ static.Path(static.FacilityModalJS) }></script>
 	}
 }

@@ -234,6 +234,7 @@ type WebsiteSchedulesParams struct {
 	QueryError      string                 // query parse/limit error to show instead of results
 	Single          bool                   // single-facility page: hide the page header and facility page links
 	List            bool                   // compact list view (?mode=list) instead of the schedule tables
+	NoIndex         bool                   // emit a noindex robots meta (e.g. the per-activity /all full views)
 	CategoryTerms   []string               // category pages: the activity names used for filtering, for the incompleteness note
 	TOC             []SchedulesTOCFacility // facilities to render, with their sidebar anchors
 }

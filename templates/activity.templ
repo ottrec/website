@@ -1,0 +1,133 @@
+package templates
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/ottrec/website/internal/asset"
+	"github.com/ottrec/website/static"
+)
+
+templ WebsiteActivityPage(params WebsiteActivityParams) {
+	{{ sectors, names := buildActivityLanding(params.Filtered, MapFacilitySlugger(params.Data)) }}
+	{{ mapFacs := buildActivityMap(params.Filtered, MapFacilitySlugger(params.Data)) }}
+	{{ n := activityFacilityCount(sectors) }}
+	{{ facWord := "facilities" }}
+	if n == 1 {
+		{{ facWord = "facility" }}
+	}
+	{{ desc := fmt.Sprintf("Locations, sessions, and cancellations for drop-in %s at %d City of Ottawa recreation %s, updated daily.", strings.ToLower(params.Cat.Name), n, facWord) }}
+	@websitePage(websitePageMeta{
+		Base:      params.Base,
+		Path:      "schedules/" + params.Cat.Slug,
+		Title:     "Ottawa Drop-In " + params.Cat.Name,
+		Desc:      desc,
+		BodyClass: "activity-page",
+		Nav:       "schedules",
+		Updated:   params.Data.Index().Updated(),
+		CSS:       []*asset.Asset{static.FacilityCSS, static.SchedulesCSS, static.LeafletCSS, static.LeafletThemeCSS, static.ActivityCSS},
+	}) {
+		<nav class="schedules-catnav">
+			@schedulesCats(params.Cat.Slug, false)
+		</nav>
+		<main class="activity-main">
+			<header class="activity-header">
+				<h1>Ottawa Drop-In { params.Cat.Name }</h1>
+				<p>{ desc }</p>
+			</header>
+			if len(names) > 0 {
+				<div class="activity-includes">
+					<span class="activity-includes-label">Includes</span>
+					<ul class="activity-tags">
+						for _, name := range names {
+							<li>{ name }</li>
+						}
+					</ul>
+				</div>
+			}
+			<p class="activity-see-all">
+				<a href={ templ.URL("/schedules/" + params.Cat.Slug + "/all") }>See all { params.Cat.Name } schedules</a>
+			</p>
+			if len(mapFacs) > 0 {
+				<section class="activity-map-section">
+					<div class="activity-map-head">
+						<h2>Map</h2>
+						<a href="/map">View the full map</a>
+					</div>
+					<div id="activity-map" class="activity-map">
+						<noscript>
+							<p class="activity-map-noscript">The map needs JavaScript. <a href="/map">Open the full map.</a></p>
+						</noscript>
+					</div>
+				</section>
+				@templ.JSONScript("activity-map-data", mapFacs)
+			}
+			<section class="activity-facilities">
+				<h2>Where to find it</h2>
+				if len(sectors) == 0 {
+					<p>No facilities currently offer this.</p>
+				}
+				for _, sec := range sectors {
+					<div class="activity-sector">
+						<h3>{ sec.Sector }</h3>
+						<ul>
+							for _, f := range sec.Facilities {
+								<li>
+									<span class="activity-fac-head">
+										<span class="activity-fac-name">{ f.Name }</span>
+										if f.Region != "" {
+											<span class="activity-fac-region">{ f.Region }</span>
+										}
+									</span>
+									if len(f.Ranges) > 0 {
+										<ul class="activity-fac-ranges">
+											for _, rg := range f.Ranges {
+												<li>
+													<span class="activity-fac-range-label">{ rg.Label }</span>
+													if rg.Summary != "" {
+														<span class="activity-fac-range-summary">{ rg.Summary }</span>
+													}
+												</li>
+											}
+										</ul>
+									} else {
+										if f.When != "" {
+											<span class="activity-fac-when">{ f.When }</span>
+										}
+										if f.Holiday {
+											<span class="activity-fac-holiday">Holiday schedule</span>
+										}
+									}
+									<span class="activity-fac-links">
+										<a href={ templ.URL("/today?f-fac=" + f.Slug) }>Upcoming sessions and cancellations</a>
+										<a href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>Full schedule</a>
+									</span>
+								</li>
+							}
+						</ul>
+					</div>
+				}
+			</section>
+			if len(params.Links) > 0 {
+				<section class="activity-related">
+					<h2>Related</h2>
+					<ul>
+						for _, l := range params.Links {
+							<li>
+								<a href={ templ.URL(l.URL) }>{ l.Label }</a>
+								if l.Note != "" {
+									<span class="activity-related-note">{ l.Note }</span>
+								}
+							</li>
+						}
+					</ul>
+				</section>
+			}
+		</main>
+		@websiteFooter()
+		if len(mapFacs) > 0 {
+			<script src={ static.Path(static.ActivityMapJS) }></script>
+		}
+		<script src={ static.Path(static.FacilityModalJS) }></script>
+	}
+}
