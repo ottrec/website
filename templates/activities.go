@@ -11,7 +11,7 @@ import (
 // distinct normalized activity names not covered by any category (the long
 // tail, linked to a schedules search), for the activities directory page.
 func buildActivityDirectory(data ottrecidx.DataRef) (cats []ScheduleCategory, others []string) {
-	otherBit := 1 << len(mapCategories)
+	otherBit := 1 << len(ScheduleCategories)
 	seenName := map[string]bool{}
 	seenBase := map[string]bool{}
 	for act := range data.Activities() {
@@ -20,7 +20,7 @@ func buildActivityDirectory(data ottrecidx.DataRef) (cats []ScheduleCategory, ot
 			continue
 		}
 		seenName[name] = true
-		if mapActivityCategoryMask(name)&^otherBit != 0 {
+		if activityCategoryMask(name)&^otherBit != 0 {
 			continue // covered by a category (has a landing page)
 		}
 		base := activityIncludeName(name) // trim variant suffixes, like the Includes list

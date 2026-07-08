@@ -9,50 +9,6 @@ import (
 	"github.com/ottrec/website/pkg/ottrecql"
 )
 
-// ScheduleCategory defines a category page at /schedules/{Slug}, matching
-// activities by ottrecql fuzzy names. Icon is a Material Symbols name mapped
-// to a glyph in home.css (the glyph must be included in static/fonts.go).
-type ScheduleCategory struct {
-	Slug        string
-	Name        string
-	Description string
-	Icon        string
-	Activities  []string
-}
-
-// ScheduleCategories contains the predefined schedule category pages, shown in
-// the schedules category navbar. It mirrors the map filter categories
-// ([mapCategories]), but matches with ottrecql fuzzy activity names instead of
-// regexps.
-var ScheduleCategories = []ScheduleCategory{
-	{"swimming", "Swimming", "All swims, including public, lane, and wave swims.", "pool", []string{"swim"}},
-	{"lane-swim", "Lane Swim", "Lane swims.", "pool", []string{"lane swim"}},
-	{"aquafit", "Aquafit", "Aquafit and aqua lite.", "water", []string{"aqua"}},
-	{"skating", "Skating", "Public, adult, family, senior, and figure skating.", "ice_skating", []string{"skat"}},
-	{"hockey", "Hockey", "Hockey, shinny, stick and puck, and ringette.", "sports_hockey", []string{"hockey", "shinny", "puck", "ringette"}},
-	{"badminton", "Badminton", "Badminton.", "badminton", []string{"badminton"}},
-	{"basketball", "Basketball", "Basketball.", "sports_basketball", []string{"basketball"}},
-	{"volleyball", "Volleyball", "Volleyball.", "sports_volleyball", []string{"volleyball"}},
-	{"pickleball", "Pickleball", "Pickleball.", "pickleball", []string{"pickleball"}},
-	{"squash", "Squash", "Squash.", "sports_tennis", []string{"squash"}},
-	{"racquetball", "Racquetball", "Racquetball.", "sports_tennis", []string{"racquetball"}},
-}
-
-// ScheduleCategoryBySlug resolves a slug from a schedules page path.
-func ScheduleCategoryBySlug(slug string) (ScheduleCategory, bool) {
-	for _, cat := range ScheduleCategories {
-		if cat.Slug == slug {
-			return cat, true
-		}
-	}
-	return ScheduleCategory{}, false
-}
-
-// Query returns the ottrecql AST matching the category's activities.
-func (c ScheduleCategory) Query() ottrecql.Node {
-	return &ottrecql.ActivityNode{FuzzyName: c.Activities}
-}
-
 // SchedulesSearchQuery returns the ottrecql AST for the schedules page search
 // box, fuzzily matching the activity or facility name against q.
 func SchedulesSearchQuery(q string) ottrecql.Node {
@@ -100,8 +56,7 @@ func schedulesAdvancedHref(q string, list bool) string {
 }
 
 // scheduleTodayHref returns the /today feed link pre-filtered to a category,
-// using the shared f-cat filter param keyed by the category's display name
-// (ScheduleCategories mirror the map/today categories 1:1).
+// using the shared f-cat filter param keyed by the category's display name.
 func scheduleTodayHref(cat ScheduleCategory) string {
 	return "/today?f-cat=" + url.QueryEscape(cat.Name)
 }

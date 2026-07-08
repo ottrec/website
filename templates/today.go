@@ -67,7 +67,7 @@ type todaySession struct {
 	Slug       string
 	Region     string
 	Sector     string // sector display label ("Central"…/"Other")
-	Cats       int    // bitmask of [mapCategories] indexes (+ Other bit)
+	Cats       int    // bitmask of [ScheduleCategories] indexes (+ Other bit)
 	Weekday    int    // 0 = Sunday, for the weekday filter
 	Qual       string // date-range qualifier, shown only for bounded/seasonal schedules
 	Fixed      bool   // a published fixed-date (holiday/special) session
@@ -183,7 +183,7 @@ type todayFeed struct {
 type todayDataJSON struct {
 	Updated    string              `json:"updated"`
 	Weekdays   []string            `json:"weekdays"`   // Sun..Sat
-	Categories []string            `json:"categories"` // [mapCategories] + Other
+	Categories []string            `json:"categories"` // [ScheduleCategories] + Other
 	Periods    []todayPeriodJSON   `json:"periods"`
 	Sectors    []string            `json:"sectors"` // group order for the facility pill
 	Facilities []todayFacilityJSON `json:"facilities"`
@@ -405,7 +405,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							actByLabel[rawLabel] = act
 						}
 					}
-					cats := mapActivityCategoryMask(mapActivityName(act))
+					cats := activityCategoryMask(mapActivityName(act))
 					resvReq, resvDef := act.GuessReservationRequirement()
 					for tm := range act.Times() {
 						r, ok := tm.GetRange()
@@ -524,11 +524,11 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 				label, cats := ad.ActivityLabel, 0
 				if act, ok := actByLabel[ad.ActivityLabel]; ok {
 					label = activityLabel(act)
-					cats = mapActivityCategoryMask(mapActivityName(act))
+					cats = activityCategoryMask(mapActivityName(act))
 				} else if !ad.Novel {
 					continue // not in this (possibly filtered) data
 				} else {
-					cats = mapActivityCategoryMask(strings.ToLower(strings.Join(strings.Fields(label), " ")))
+					cats = activityCategoryMask(strings.ToLower(strings.Join(strings.Fields(label), " ")))
 				}
 				if label == "" {
 					continue
@@ -618,12 +618,6 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 	}
 	sectors = append(sectors, "Other")
 
-	catNames := make([]string, 0, len(mapCategories)+1)
-	for _, c := range mapCategories {
-		catNames = append(catNames, c.Name)
-	}
-	catNames = append(catNames, mapCategoryOther)
-
 	periods := make([]todayPeriodJSON, len(todayPeriods))
 	for i, p := range todayPeriods {
 		periods[i] = todayPeriodJSON{Label: activityPeriodLong[i], Start: p[0], End: p[1]}
@@ -634,7 +628,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 		JSON: todayDataJSON{
 			Updated:    data.Index().Updated().In(loc).Format("2006-01-02"),
 			Weekdays:   slices.Clone(mapDays),
-			Categories: catNames,
+			Categories: categoryNames(),
 			Periods:    periods,
 			Sectors:    sectors,
 			Facilities: facList,

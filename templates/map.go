@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"maps"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -57,28 +56,6 @@ func mapClockTime(min int) string {
 	return fmt.Sprintf("%d:%02d %s", h12, m, meridiem)
 }
 
-// mapCategories contains the predefined activity categories for the map
-// filter, matched against the normalized activity names. An activity can be in
-// multiple categories, and ones not matching any are put in [mapCategoryOther].
-var mapCategories = []struct {
-	Name  string
-	Match *regexp.Regexp
-}{
-	{"Swimming", regexp.MustCompile(`swim`)},
-	{"Lane Swim", regexp.MustCompile(`lane swim`)},
-	{"Aquafit", regexp.MustCompile(`aqua`)},
-	{"Skating", regexp.MustCompile(`skat`)},
-	{"Hockey", regexp.MustCompile(`hockey|shinny|stick and puck|ringette`)},
-	{"Badminton", regexp.MustCompile(`badminton`)},
-	{"Basketball", regexp.MustCompile(`basketball`)},
-	{"Volleyball", regexp.MustCompile(`volleyball`)},
-	{"Pickleball", regexp.MustCompile(`pickleball`)},
-	{"Squash", regexp.MustCompile(`squash`)},
-	{"Racquetball", regexp.MustCompile(`racquetball`)},
-}
-
-const mapCategoryOther = "Other"
-
 // mapDataJSON is embedded into the map page as a JSON data island and consumed
 // by the FacilityData class in the inline script.
 type mapDataJSON struct {
@@ -118,21 +95,6 @@ func mapActivityName(act ottrecidx.ActivityRef) string {
 	return strings.ToLower(strings.Join(strings.Fields(act.GetLabel()), " "))
 }
 
-// mapActivityCategoryMask returns the bitmask of [mapCategories] indexes
-// matching the activity name, or the [mapCategoryOther] bit if none match.
-func mapActivityCategoryMask(name string) int {
-	var cats int
-	for c, cat := range mapCategories {
-		if cat.Match.MatchString(name) {
-			cats |= 1 << c
-		}
-	}
-	if cats == 0 {
-		cats = 1 << len(mapCategories)
-	}
-	return cats
-}
-
 // maskSetRange sets the slot bits overlapping the clock range start-end (in
 // minutes) on weekday wd, wrapping overnight ranges onto the next day.
 func maskSetRange(m *[7]byte, slots [][2]int, wd, start, end int) {
@@ -166,14 +128,10 @@ func buildMapData(data ottrecidx.DataRef) mapDataJSON {
 	}
 
 	// categorize the activities
-	catNames := make([]string, 0, len(mapCategories)+1)
-	for _, cat := range mapCategories {
-		catNames = append(catNames, cat.Name)
-	}
-	catNames = append(catNames, mapCategoryOther)
+	catNames := categoryNames()
 	actCats := make([]int, len(actNames))
 	for i, name := range actNames {
-		actCats[i] = mapActivityCategoryMask(name)
+		actCats[i] = activityCategoryMask(name)
 	}
 
 	// pack the per-facility availability masks
