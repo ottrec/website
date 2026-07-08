@@ -266,6 +266,7 @@ function makePill(title: string): {pill: HTMLElement; button: HTMLButtonElement;
 	pill.className = 'today-pill'
 	const button = document.createElement('button')
 	button.type = 'button'
+	button.className = 'msym' // the dropdown arrow glyph base (website.css)
 	const panel = document.createElement('div')
 	panel.className = 'today-pill-panel'
 	panel.hidden = true

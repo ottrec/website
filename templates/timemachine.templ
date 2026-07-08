@@ -29,7 +29,7 @@ templ timemachineHead(title string, noindex bool) {
 // timemachineNav renders the shared header bar and the public-preview notice
 // shown on every page. active is the slug of the current nav link ("" for none).
 templ timemachineNav(active, subtitle string) {
-	<nav class="map-topnav tm-topnav">
+	<nav class="site-topnav tm-topnav">
 		<a class="brand" href="/">ottrec time machine <span class="tm-beta">beta</span></a>
 		<a class={ "nav", templ.KV("active", active == "datasets") } href="/datasets">Compare</a>
 		<a class={ "nav", templ.KV("active", active == "trends") } href="/trends">Trends</a>
@@ -38,7 +38,7 @@ templ timemachineNav(active, subtitle string) {
 			if subtitle != "" {
 				<span class="tm-nav-sub">{ subtitle }</span>
 			}
-			<button type="button" class="theme-toggle" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
+			<button type="button" class="theme-toggle msym" id="theme-toggle" data-theme="auto" title="Toggle color scheme" hidden></button>
 		</div>
 	</nav>
 	<div class="tm-notice" role="note">

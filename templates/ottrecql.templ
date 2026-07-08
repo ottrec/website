@@ -1,6 +1,9 @@
 package templates
 
-import "github.com/ottrec/website/static"
+import (
+	"github.com/ottrec/website/internal/asset"
+	"github.com/ottrec/website/static"
+)
 
 // ottrecqlReference renders the ottrecql query-language documentation: an intro,
 // worked examples, and the function/operator reference. It's shared between the
@@ -80,44 +83,34 @@ templ ottrecqlReference() {
 // full reference below — so the query language is documented and indexable on
 // its own URL. The box submits to /schedules with ?advanced=1.
 templ WebsiteOttrecqlPage(params WebsiteParams) {
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="utf-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			@websiteThemeHead()
-			@websiteIconsHead()
-			if params.Base != "" {
-				<link rel="canonical" href={ params.Base + "about/ottrecql" }/>
-			}
-			<title>Query Language - Ottawa Recreation Schedules</title>
-			<meta name="description" content="ottrecql is the query language behind ottrec.ca's advanced schedule search — filter Ottawa drop-in recreation by activity, facility, weekday, time, date, and location."/>
-			@websiteSocialHead(params.Base, params.Base+"about/ottrecql", "Query Language - Ottawa Recreation Schedules", "ottrecql is the query language behind ottrec.ca's advanced schedule search — filter Ottawa drop-in recreation by activity, facility, weekday, time, date, and location.")
-			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.OttrecqlCSS) }/>
-			@websiteHeadExtra()
-		</head>
-		<body class="ottrecql-page">
-			@websiteTopNav("about", params.Data.Index().Updated())
-			<main>
-				<h1>The ottrecql query language</h1>
-				<p class="ottrecql-lede">
-					ottrecql is the small query language behind the <a href="/schedules?advanced=1">advanced search</a> on ottrec.ca. It allows you to create custom schedule pages by filtering every City of Ottawa drop-in recreation activity by name, facility, weekday, time, date, and location, combining conditions with <code>and</code>, <code>or</code>, and <code>not</code>. Type a query to search across all schedules.
-				</p>
-				<form class="ottrecql-search" method="get">
-					<input type="hidden" name="advanced" value="1"/>
-					<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities"></textarea>
-					<button type="submit" formaction="/today">Search upcoming activities</button>
-					<button type="submit" formaction="/schedules">Search schedules</button>
-				</form>
-				<section class="ottrecql-help">
-					@ottrecqlReference()
-				</section>
-			</main>
-			@websiteFooter()
-			// progressively enhances the query box and the example snippets into
-			// syntax-highlighted CodeMirror editors (the box also lints as you type)
-			<script src={ static.Path(static.OttrecqlEditorJS) }></script>
-		</body>
-	</html>
+	@websitePage(websitePageMeta{
+		Base:      params.Base,
+		Path:      "about/ottrecql",
+		Title:     "Query Language - Ottawa Recreation Schedules",
+		Desc:      "ottrecql is the query language behind ottrec.ca's advanced schedule search — filter Ottawa drop-in recreation by activity, facility, weekday, time, date, and location.",
+		BodyClass: "ottrecql-page",
+		Nav:       "about",
+		Updated:   params.Data.Index().Updated(),
+		CSS:       []*asset.Asset{static.OttrecqlCSS},
+	}) {
+		<main>
+			<h1>The ottrecql query language</h1>
+			<p class="ottrecql-lede">
+				ottrecql is the small query language behind the <a href="/schedules?advanced=1">advanced search</a> on ottrec.ca. It allows you to create custom schedule pages by filtering every City of Ottawa drop-in recreation activity by name, facility, weekday, time, date, and location, combining conditions with <code>and</code>, <code>or</code>, and <code>not</code>. Type a query to search across all schedules.
+			</p>
+			<form class="ottrecql-search" method="get">
+				<input type="hidden" name="advanced" value="1"/>
+				<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities"></textarea>
+				<button type="submit" formaction="/today">Search upcoming activities</button>
+				<button type="submit" formaction="/schedules">Search schedules</button>
+			</form>
+			<section class="ottrecql-help">
+				@ottrecqlReference()
+			</section>
+		</main>
+		@websiteFooter()
+		// progressively enhances the query box and the example snippets into
+		// syntax-highlighted CodeMirror editors (the box also lints as you type)
+		<script src={ static.Path(static.OttrecqlEditorJS) }></script>
+	}
 }

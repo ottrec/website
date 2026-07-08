@@ -144,7 +144,7 @@ func timemachineNav(active, subtitle string) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<nav class=\"map-topnav tm-topnav\"><a class=\"brand\" href=\"/\">ottrec time machine <span class=\"tm-beta\">beta</span></a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<nav class=\"site-topnav tm-topnav\"><a class=\"brand\" href=\"/\">ottrec time machine <span class=\"tm-beta\">beta</span></a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -233,7 +233,7 @@ func timemachineNav(active, subtitle string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<button type=\"button\" class=\"theme-toggle\" id=\"theme-toggle\" data-theme=\"auto\" title=\"Toggle color scheme\" hidden></button></div></nav><div class=\"tm-notice\" role=\"note\"><p style=\"font-weight: bold\">This is a public preview. The time machine is still under development and is highly experimental.</p><p>Unlike the main site and dataset, the time machine has not been rigorously tested or fully reviewed and was mostly vibecoded (as an experiment). It does not meet my usual quality standards.</p><p>The diffs may be inaccurate or misleading, and everything is subject to change. Do not depend on them. You have been warned.</p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<button type=\"button\" class=\"theme-toggle msym\" id=\"theme-toggle\" data-theme=\"auto\" title=\"Toggle color scheme\" hidden></button></div></nav><div class=\"tm-notice\" role=\"note\"><p style=\"font-weight: bold\">This is a public preview. The time machine is still under development and is highly experimental.</p><p>Unlike the main site and dataset, the time machine has not been rigorously tested or fully reviewed and was mostly vibecoded (as an experiment). It does not meet my usual quality standards.</p><p>The diffs may be inaccurate or misleading, and everything is subject to change. Do not depend on them. You have been warned.</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

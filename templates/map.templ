@@ -1,102 +1,91 @@
 package templates
 
 import (
+	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/static"
 )
 
 templ WebsiteMapPage(params WebsiteParams) {
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="utf-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			@websiteThemeHead()
-			@websiteIconsHead()
-			if params.Base != "" {
-				<link rel="canonical" href={ params.Base + "map" }/>
-			}
-			<title>Facility Map - Ottawa Recreation Schedules</title>
-			<meta name="description" content="Interactive map of City of Ottawa recreation facilities, filterable by activity, weekday, and time."/>
-			@websiteSocialHead(params.Base, params.Base+"map", "Facility Map - Ottawa Recreation Schedules", "Interactive map of City of Ottawa recreation facilities, filterable by activity, weekday, and time.")
-			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.LeafletCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.MapCSS) }/>
-			@websiteHeadExtra()
-		</head>
-		<body class="map-page">
-			@websiteTopNav("map", params.Data.Index().Updated())
-			<h1 class="visually-hidden">Map of City of Ottawa drop-in recreation facilities</h1>
-			<div class="map-filterbar">
-				<button type="button" id="btn-filters">Filters</button>
-				<div id="filter-chips"></div>
-			</div>
-			<div class="map-main">
-				<aside class="map-filters">
-					<header class="mobile-only">
-						<h2>Filters</h2>
-						<button type="button" id="btn-filters-done">Done</button>
-					</header>
-					<section>
-						<div class="check-list">
-							<label class="check" id="filter-starred" hidden><input type="checkbox" id="filter-starred-only"/><span class="name">Starred only</span></label>
-							<label class="check"><input type="checkbox" id="filter-hide-empty"/><span class="name">Hide facilities with no activities</span></label>
-						</div>
-					</section>
-					<section>
-						<h2>Weekdays <span class="h2-actions"><button type="button" id="filter-days-all">all</button> <button type="button" id="filter-days-none">none</button></span></h2>
-						<div class="day-row" id="filter-days"></div>
-					</section>
-					<section>
-						<h2>Times <span class="h2-actions"><button type="button" id="filter-slots-all">all</button> <button type="button" id="filter-slots-none">none</button></span></h2>
-						<div class="check-list" id="filter-slots"></div>
-					</section>
-					<section>
-						<h2>Categories</h2>
-						<div class="check-list" id="filter-categories"></div>
-					</section>
-					<section>
-						<h2>Activities <button type="button" class="filtered-flag" id="filter-activities-filtered" title="Clear the category filters" hidden>filtered</button></h2>
-						<div class="check-list" id="filter-activities"></div>
-					</section>
-				</aside>
-				<div class="map-map">
-					<div id="map"></div>
-					<noscript>
-						<div class="map-noscript">
-							<p>The interactive map needs JavaScript. You can still <a href="/schedules">browse every facility's schedules</a> or see <a href="/activities">which facilities offer each activity</a>.</p>
-						</div>
-					</noscript>
-					<div class="map-chips" id="map-chips"></div>
-					<div class="fac-detail" id="fac-detail">
-						<header>
-							<button type="button" id="fac-detail-close">Close ✕</button>
-						</header>
-						<div id="fac-detail-content"></div>
+	@websitePage(websitePageMeta{
+		Base:      params.Base,
+		Path:      "map",
+		Title:     "Facility Map - Ottawa Recreation Schedules",
+		Desc:      "Interactive map of City of Ottawa recreation facilities, filterable by activity, weekday, and time.",
+		BodyClass: "map-page",
+		Nav:       "map",
+		Updated:   params.Data.Index().Updated(),
+		CSS:       []*asset.Asset{static.LeafletCSS, static.FacilityCSS, static.MapCSS},
+	}) {
+		<h1 class="visually-hidden">Map of City of Ottawa drop-in recreation facilities</h1>
+		<div class="map-filterbar">
+			<button type="button" id="btn-filters">Filters</button>
+			<div id="filter-chips"></div>
+		</div>
+		<div class="map-main">
+			<aside class="map-filters">
+				<header class="mobile-only">
+					<h2>Filters</h2>
+					<button type="button" id="btn-filters-done">Done</button>
+				</header>
+				<section>
+					<div class="check-list">
+						<label class="check" id="filter-starred" hidden><input type="checkbox" id="filter-starred-only"/><span class="name">Starred only</span></label>
+						<label class="check"><input type="checkbox" id="filter-hide-empty"/><span class="name">Hide facilities with no activities</span></label>
 					</div>
-					//@TempWarning(true)
-				</div>
-				<section class="map-facilities">
-					<button type="button" class="sheet-toggle" id="fac-sheet-toggle">Facilities</button>
-					<header>
-						<div class="row">
-							<span id="fac-count"></span>
-							<select id="fac-order" aria-label="Sort facilities by">
-								<option value="alpha" selected>A-Z</option>
-								<option value="distance">Distance</option>
-							</select>
-						</div>
-						<input type="search" id="fac-search" placeholder="Filter by name" aria-label="Filter facilities by name"/>
-					</header>
-					<ul id="fac-list"></ul>
 				</section>
+				<section>
+					<h2>Weekdays <span class="h2-actions"><button type="button" id="filter-days-all">all</button> <button type="button" id="filter-days-none">none</button></span></h2>
+					<div class="day-row" id="filter-days"></div>
+				</section>
+				<section>
+					<h2>Times <span class="h2-actions"><button type="button" id="filter-slots-all">all</button> <button type="button" id="filter-slots-none">none</button></span></h2>
+					<div class="check-list" id="filter-slots"></div>
+				</section>
+				<section>
+					<h2>Categories</h2>
+					<div class="check-list" id="filter-categories"></div>
+				</section>
+				<section>
+					<h2>Activities <button type="button" class="filtered-flag" id="filter-activities-filtered" title="Clear the category filters" hidden>filtered</button></h2>
+					<div class="check-list" id="filter-activities"></div>
+				</section>
+			</aside>
+			<div class="map-map">
+				<div id="map"></div>
+				<noscript>
+					<div class="map-noscript">
+						<p>The interactive map needs JavaScript. You can still <a href="/schedules">browse every facility's schedules</a> or see <a href="/activities">which facilities offer each activity</a>.</p>
+					</div>
+				</noscript>
+				<div class="map-chips" id="map-chips"></div>
+				<div class="fac-detail" id="fac-detail">
+					<header>
+						<button type="button" id="fac-detail-close">Close ✕</button>
+					</header>
+					<div id="fac-detail-content"></div>
+				</div>
+				//@TempWarning(true)
 			</div>
-			@templ.JSONScript("map-data", buildMapData(params.Data))
-			<script src={ static.Path(static.StarredJS) }></script>
-			<script src={ static.Path(static.MapJS) }></script>
-		</body>
-	</html>
+			<section class="map-facilities">
+				<button type="button" class="sheet-toggle" id="fac-sheet-toggle">Facilities</button>
+				<header>
+					<div class="row">
+						<span id="fac-count"></span>
+						<select id="fac-order" aria-label="Sort facilities by">
+							<option value="alpha" selected>A-Z</option>
+							<option value="distance">Distance</option>
+						</select>
+					</div>
+					<input type="search" id="fac-search" placeholder="Filter by name" aria-label="Filter facilities by name"/>
+				</header>
+				<ul id="fac-list"></ul>
+			</section>
+		</div>
+		@templ.JSONScript("map-data", buildMapData(params.Data))
+		<script src={ static.Path(static.StarredJS) }></script>
+		<script src={ static.Path(static.MapJS) }></script>
+	}
 }
 
 type WebsiteMapPopupParams struct {

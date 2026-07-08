@@ -3,7 +3,6 @@ package templates
 import (
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"strings"
-	"time"
 )
 
 // WebsiteFacilityArticle renders the full information and schedules for a
@@ -22,7 +21,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 					}
 					if opts.Star != "" {
 						{ " " }
-						<button type="button" class="fac-star" data-fac-star={ opts.Star } aria-pressed="false" aria-label="Star facility" hidden></button>
+						@facStar(opts.Star)
 					}
 				</h1>
 				if opts.Region {
@@ -31,7 +30,10 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 					}
 				}
 				if t := fac.GetSourceDate(); !t.IsZero() {
-					<p class="facility-updated">Updated <time datetime={ t.In(ottrecidx.TZ).Format(time.RFC3339) }>{ t.In(ottrecidx.TZ).Format("2006-01-02 at 3:04 PM") }</time></p>
+					<p class="facility-updated">
+						Updated
+						@localTime(t, "2006-01-02 at 3:04 PM")
+					</p>
 				}
 			</hgroup>
 			if opts.HeaderLinks {

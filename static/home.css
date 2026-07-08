@@ -11,20 +11,9 @@ body.home-page {
 	padding: 1.5rem 1.5rem 3rem;
 }
 
-/* material symbols icons (the glyphs must be listed in static/fonts.go) */
+/* material symbols icons (the glyph base comes from [data-icon] in
+ * website.css; the codepoints must be listed in static/static.go) */
 
-.home-page [data-icon]::before {
-	font-family: 'Material Symbols Outlined';
-	font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
-	font-weight: normal;
-	font-style: normal;
-	line-height: 1;
-	letter-spacing: normal;
-	text-transform: none;
-	white-space: nowrap;
-	direction: ltr;
-	-moz-osx-font-smoothing: grayscale;
-}
 .home-page [data-icon="schedule"]::before { content: '\e192'; }
 .home-page [data-icon="map"]::before { content: '\e55b'; }
 .home-page [data-icon="calendar_month"]::before { content: '\ebcc'; }

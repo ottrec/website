@@ -30,7 +30,7 @@ function sortStarred() {
 // progressively enhance the advanced search with live query validation; the
 // form still works without this (errors are shown when it is submitted)
 function liveValidation() {
-	const form = document.querySelector('.schedules-search-advanced')
+	const form = document.querySelector('.search-form-advanced')
 	if (!form) return
 	const textarea = form.querySelector<HTMLTextAreaElement>('textarea[name="q"]')
 	if (!textarea) return

@@ -3,150 +3,136 @@ package templates
 import (
 	"strconv"
 	"strings"
-	"time"
 
+	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/static"
 )
 
 templ WebsiteTodayPage(params WebsiteTodayParams) {
 	{{ feed := buildTodayFeed(params.Filtered, params.Enrich, MapFacilitySlugger(params.Data), timeNow()) }}
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="utf-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			@websiteThemeHead()
-			@websiteIconsHead()
-			if params.Base != "" {
-				<link rel="canonical" href={ params.Base + "today" }/>
-			}
-			<title>Today - Ottawa Recreation Schedules</title>
-			<meta name="description" content="A chronological feed of City of Ottawa drop-in recreation sessions happening now and over the next week, including schedule changes, filterable by facility, activity, weekday, and time."/>
-			@websiteSocialHead(params.Base, params.Base+"today", "Today - Ottawa Recreation Schedules", "City of Ottawa drop-in recreation sessions on now and over the next week, including schedule changes and special hours.")
-			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.TodayCSS) }/>
+	{{ css := []*asset.Asset{static.FacilityCSS, static.SearchCSS, static.TodayCSS} }}
+	{{ bodyClass := "today-page" }}
+	if params.Advanced {
+		{{ css = append(css, static.OttrecqlCSS) }}
+		{{ bodyClass += " today-advanced" }}
+	}
+	@websitePage(websitePageMeta{
+		Base:       params.Base,
+		Path:       "today",
+		Title:      "Today - Ottawa Recreation Schedules",
+		Desc:       "A chronological feed of City of Ottawa drop-in recreation sessions happening now and over the next week, including schedule changes, filterable by facility, activity, weekday, and time.",
+		SocialDesc: "City of Ottawa drop-in recreation sessions on now and over the next week, including schedule changes and special hours.",
+		BodyClass:  bodyClass,
+		Nav:        "today",
+		Updated:    params.Data.Index().Updated(),
+		CSS:        css,
+	}) {
+		<main class="today-main">
+			<header class="today-header">
+				<h1>What's on</h1>
+				<p>Browse upcoming drop-in recreation sessions for the current week. Select a day to view all drop-in sessions, and use the filters to narrow it down. Times are shown in Ottawa time. Only facilities with sessions during the current week are included.</p>
+			</header>
+			//@TempWarning(false)
+			{{ updated := params.Data.Index().Updated() }}
+			<p class="today-updated" role="note">
+				This data was last updated <time id="today-updated-time" datetime={ localRFC3339(updated) }>at { localFormat(updated, "Jan 2, 3:04 PM") }</time>. Check the official facility page before you go.
+			</p>
 			if params.Advanced {
-				<link rel="stylesheet" href={ static.Path(static.OttrecqlCSS) }/>
+				@ottrecqlSearchForm("/today", `activity("lane sw") and time(18:00-21:00)`, params.Query, "/today", "Simple filters")
+				@schedulesQueryHelp()
 			}
-			@websiteHeadExtra()
-		</head>
-		<body class={ "today-page", templ.KV("today-advanced", params.Advanced) }>
-			@websiteTopNav("today", params.Data.Index().Updated())
-			<main class="today-main">
-				<header class="today-header">
-					<h1>What's on</h1>
-					<p>Browse upcoming drop-in recreation sessions for the current week. Select a day to view all drop-in sessions, and use the filters to narrow it down. Times are shown in Ottawa time. Only facilities with sessions during the current week are included.</p>
-				</header>
-				//@TempWarning(false)
-				{{ updated := params.Data.Index().Updated().In(ottrecidx.TZ) }}
-				<p class="today-updated" role="note">
-					This data was last updated <time id="today-updated-time" datetime={ updated.Format(time.RFC3339) }>at { updated.Format("Jan 2, 3:04 PM") }</time>. Check the official facility page before you go.
-				</p>
-				if params.Advanced {
-					<form class="today-search today-search-advanced" action="/today" method="get">
-						<input type="hidden" name="advanced" value="1"/>
-						<textarea name="q" rows="3" placeholder={ `activity("lane sw") and time(18:00-21:00)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities">{ params.Query }</textarea>
-						<div class="row">
-							<button type="submit">Search</button>
-							<a class="today-search-mode" href="/today">Simple filters</a>
-						</div>
-					</form>
-					@schedulesQueryHelp()
-				}
-				<div class="today-filters" id="today-filters" hidden></div>
-				if !params.Advanced {
-					<a class="today-search-mode today-advanced-link" href="/today?advanced=1">Advanced search</a>
-				}
-				<div class="today-chips" id="today-chips"></div>
-				if params.QueryError != "" {
-					<p class="today-query-error">{ params.QueryError }</p>
-				}
-				<div class="today-board">
-					<div class="today-tabs" id="today-tabs" role="tablist" hidden></div>
-					<div class="today-feed" id="today-feed">
-						if params.QueryError == "" {
-							for _, day := range feed.Days {
-								<section class="today-day" data-date={ day.DateISO } data-wd={ strconv.Itoa(day.WdIndex) }>
-									<h2 class="today-day-head">
-										if day.Rel != "" {
-											<span class="rel">{ day.Rel }</span>
-										}
-										<span class="wd">{ day.Weekday }</span>
-										<span class="date">{ day.Month }</span>
-									</h2>
-									if day.Empty {
-										<p class="today-empty">No listed drop-in sessions.</p>
-									} else {
-										for _, hr := range day.Hours {
-											<section class="today-hour" data-hour={ strconv.Itoa(hr.Hour) }>
-												<h3 class="today-hour-head">{ hr.Label }</h3>
-												<ol class="today-sessions">
-													for _, s := range hr.Sessions {
-														<li
-															class={ "today-session", templ.KV("fixed", s.Fixed), templ.KV("cancelled", s.EnrichedCancelled), templ.KV("added", s.EnrichedAdded) }
-															data-slug={ s.Slug }
-															data-cats={ strconv.Itoa(s.Cats) }
-															data-start={ strconv.Itoa(s.Start) }
-															data-end={ strconv.Itoa(s.End) }
-														>
-															<span class="t-time">{ s.Time }</span>
-															if s.OldTime != "" {
-																// enrichment-derived: the published time struck out under a trimmed one
-																<span class="t-time-old">{ s.OldTime }</span>
+			<div class="today-filters" id="today-filters" hidden></div>
+			if !params.Advanced {
+				<a class="search-mode today-advanced-link" href="/today?advanced=1">Advanced search</a>
+			}
+			<div class="today-chips" id="today-chips"></div>
+			if params.QueryError != "" {
+				<p class="today-query-error">{ params.QueryError }</p>
+			}
+			<div class="today-board">
+				<div class="today-tabs" id="today-tabs" role="tablist" hidden></div>
+				<div class="today-feed" id="today-feed">
+					if params.QueryError == "" {
+						for _, day := range feed.Days {
+							<section class="today-day" data-date={ day.DateISO } data-wd={ strconv.Itoa(day.WdIndex) }>
+								<h2 class="today-day-head">
+									if day.Rel != "" {
+										<span class="rel">{ day.Rel }</span>
+									}
+									<span class="wd">{ day.Weekday }</span>
+									<span class="date">{ day.Month }</span>
+								</h2>
+								if day.Empty {
+									<p class="today-empty">No listed drop-in sessions.</p>
+								} else {
+									for _, hr := range day.Hours {
+										<section class="today-hour" data-hour={ strconv.Itoa(hr.Hour) }>
+											<h3 class="today-hour-head">{ hr.Label }</h3>
+											<ol class="today-sessions">
+												for _, s := range hr.Sessions {
+													<li
+														class={ "today-session", templ.KV("fixed", s.Fixed), templ.KV("cancelled", s.EnrichedCancelled), templ.KV("added", s.EnrichedAdded) }
+														data-slug={ s.Slug }
+														data-cats={ strconv.Itoa(s.Cats) }
+														data-start={ strconv.Itoa(s.Start) }
+														data-end={ strconv.Itoa(s.End) }
+													>
+														<span class="t-time">{ s.Time }</span>
+														if s.OldTime != "" {
+															// enrichment-derived: the published time struck out under a trimmed one
+															<span class="t-time-old">{ s.OldTime }</span>
+														}
+														<span class="t-act">{ s.Activity }</span>
+														<span class="t-fac">
+															<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
+															if s.Region != "" {
+																<span class="t-region">{ s.Region }</span>
 															}
-															<span class="t-act">{ s.Activity }</span>
-															<span class="t-fac">
-																<a class="t-fac-name" href={ templ.URL("/schedules/facility/" + s.Slug) }>{ s.Facility }</a>
-																if s.Region != "" {
-																	<span class="t-region">{ s.Region }</span>
-																}
-																<button type="button" class="fac-star" data-fac-star={ s.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
-																<button type="button" class="t-fullsched" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">Full&nbsp;schedule</button>
-																if s.SourceURL != "" {
-																	<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
-																}
-																if !params.Advanced {
-																	<button type="button" class="t-exclude" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden></button>
+															@facStar(s.Slug)
+															<button type="button" class="t-fullsched" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">Full&nbsp;schedule</button>
+															if s.SourceURL != "" {
+																<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
+															}
+															if !params.Advanced {
+																<button type="button" class="t-exclude msym" data-exclude={ s.Slug } title={ "Hide " + s.Facility } aria-label={ "Hide " + s.Facility } hidden></button>
+															}
+														</span>
+														if s.Qual != "" || s.EnrichedOtherChanges {
+															<span class="t-qual">
+																{ s.Qual }
+																if s.EnrichedOtherChanges {
+																	// enrichment-derived: posted changes exist, but none were
+																	// placed in the feed window; links to the same changes modal
+																	<button type="button" class="t-other-changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">(schedule changes for other dates)</button>
 																}
 															</span>
-															if s.Qual != "" || s.EnrichedOtherChanges {
-																<span class="t-qual">
-																	{ s.Qual }
-																	if s.EnrichedOtherChanges {
-																		// enrichment-derived: posted changes exist, but none were
-																		// placed in the feed window; links to the same changes modal
-																		<button type="button" class="t-other-changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">(schedule changes for other dates)</button>
-																	}
-																</span>
-															}
-															@todaySessionWarnings(s)
-															@todaySessionReservation(s)
-														</li>
-													}
-												</ol>
-											</section>
-										}
+														}
+														@todaySessionWarnings(s)
+														@todaySessionReservation(s)
+													</li>
+												}
+											</ol>
+										</section>
 									}
-								</section>
-							}
+								}
+							</section>
 						}
-					</div>
-					<p class="today-noresults" id="today-noresults" hidden>Nothing matches these filters.</p>
+					}
 				</div>
-			</main>
-			@websiteFooter()
-			@templ.JSONScript("today-data", feed.JSON)
-			<script src={ static.Path(static.StarredJS) }></script>
-			if params.Advanced {
-				// enhances the query textarea into the CodeMirror editor before
-				// today.js runs (matching the schedules advanced search)
-				<script src={ static.Path(static.OttrecqlEditorJS) }></script>
-			}
-			<script src={ static.Path(static.TodayJS) }></script>
-		</body>
-	</html>
+				<p class="today-noresults" id="today-noresults" hidden>Nothing matches these filters.</p>
+			</div>
+		</main>
+		@websiteFooter()
+		@templ.JSONScript("today-data", feed.JSON)
+		<script src={ static.Path(static.StarredJS) }></script>
+		if params.Advanced {
+			// enhances the query textarea into the CodeMirror editor before
+			// today.js runs (matching the schedules advanced search)
+			<script src={ static.Path(static.OttrecqlEditorJS) }></script>
+		}
+		<script src={ static.Path(static.TodayJS) }></script>
+	}
 }
 
 // todaySessionWarnings renders a warning line under a session for each caveat.
@@ -162,22 +148,20 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 templ todaySessionWarnings(s todaySession) {
 	if s.EnrichedAdded {
 		// enrichment-derived
-		<button type="button" class="t-warn added" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>This session was added based on posted special hours or schedule changes. Click here for more information.</span>
-		</button>
+		@todayWarnButton("added", "changes", s) {
+			This session was added based on posted special hours or schedule changes. Click here for more information.
+		}
 	}
 	if s.EnrichedTimeChanged {
 		// enrichment-derived
-		<button type="button" class="t-warn changed" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>The time for this session was changed based on posted special hours or schedule changes. Click here for more information.</span>
-		</button>
+		@todayWarnButton("changed", "changes", s) {
+			The time for this session was changed based on posted special hours or schedule changes. Click here for more information.
+		}
 	}
 	if s.EnrichedSeeSchedule {
 		// enrichment-derived
 		<span class="t-warn holiday">
-			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span class="t-warn-ico msym" aria-hidden="true"></span>
 			if s.SourceURL != "" {
 				<a href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">A separate holiday or special event schedule is posted for this facility and may affect this time. Click here to check the official facility page.</a>
 			} else {
@@ -188,7 +172,7 @@ templ todaySessionWarnings(s todaySession) {
 		// partly enrichment-affected: schema-derived, but suppressed when the
 		// enriched see-schedule warning shows instead
 		<span class="t-warn holiday">
-			<span class="t-warn-ico" aria-hidden="true"></span>
+			<span class="t-warn-ico msym" aria-hidden="true"></span>
 			if s.SourceURL != "" {
 				<a href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">This time may be affected by holiday or special event schedules. Click here to check the official facility page.</a>
 			} else {
@@ -198,36 +182,43 @@ templ todaySessionWarnings(s todaySession) {
 	}
 	if s.EnrichedCancelled {
 		// enrichment-derived
-		<button type="button" class="t-warn cancelled" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>This session is marked as cancelled in the posted schedule changes. Click here for more information.</span>
-		</button>
+		@todayWarnButton("cancelled", "changes", s) {
+			This session is marked as cancelled in the posted schedule changes. Click here for more information.
+		}
 	} else if s.EnrichedScopeCancelled {
 		// enrichment-derived
-		<button type="button" class="t-warn scope-cancelled" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>This session may be affected by posted special hours or schedule changes. Click here for more information.</span>
-		</button>
+		@todayWarnButton("scope-cancelled", "changes", s) {
+			This session may be affected by posted special hours or schedule changes. Click here for more information.
+		}
 	} else if s.Changes {
 		// partly enrichment-affected: enrichment scopes it to the feed window;
 		// without it, any posted schedule-changes block sets it
-		<button type="button" class="t-warn changes" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>There are schedule changes posted for this facility. Click here for more information.</span>
-		</button>
+		@todayWarnButton("changes", "changes", s) {
+			There are schedule changes posted for this facility. Click here for more information.
+		}
 	} else if s.EnrichedNotice {
 		// enrichment-derived
-		<button type="button" class="t-warn notice" data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>A notice is posted for this facility. Click here for more information.</span>
-		</button>
+		@todayWarnButton("notice", "changes", s) {
+			A notice is posted for this facility. Click here for more information.
+		}
 	}
 	if s.Incomplete {
-		<button type="button" class="t-warn incomplete" data-warn="errors" data-slug={ s.Slug } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
-			<span>Some data this facility could not be processed, so the times listed here may be incomplete. Click here for more information.</span>
-		</button>
+		@todayWarnButton("incomplete", "errors", s) {
+			Some data this facility could not be processed, so the times listed here may be incomplete. Click here for more information.
+		}
 	}
+}
+
+// todayWarnButton is the shared shell of the session warning lines that open a
+// modal: a t-warn button carrying the modal-fetch attributes (see openWarnModal
+// in today.ts), with the standard icon and the text as children.
+templ todayWarnButton(kind, warn string, s todaySession) {
+	<button type="button" class={ "t-warn", kind } data-warn={ warn } data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+		<span class="t-warn-ico msym" aria-hidden="true"></span>
+		<span>
+			{ children... }
+		</span>
+	</button>
 }
 
 // todaySessionReservation renders the grey boxed note shown below the warnings
@@ -236,14 +227,13 @@ templ todaySessionWarnings(s todaySession) {
 // links.
 templ todaySessionReservation(s todaySession) {
 	if s.Reservations {
-		<button type="button" class="t-warn t-resv" data-warn="reservations" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
-			<span class="t-warn-ico" aria-hidden="true"></span>
+		@todayWarnButton("t-resv", "reservations", s) {
 			if s.ResvDefinite {
-				<span>This activity requires a reservation. Click here to register.</span>
+				This activity requires a reservation. Click here to register.
 			} else {
-				<span>This activity may require a reservation. Click here to register.</span>
+				This activity may require a reservation. Click here to register.
 			}
-		</button>
+		}
 	}
 }
 

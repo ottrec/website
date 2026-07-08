@@ -10,10 +10,12 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/klauspost/compress/zstd"
 	"github.com/ottrec/website/internal/httpx"
+	"github.com/ottrec/website/pkg/ottrecidx"
 )
 
 //go:generate go tool templ fmt .
@@ -227,4 +229,14 @@ func SetHomeExtra(html string) {
 func cutBefore(s, sep string) string {
 	before, _, _ := strings.Cut(s, sep)
 	return before
+}
+
+// localRFC3339 formats t in the schedule timezone for <time datetime>.
+func localRFC3339(t time.Time) string {
+	return t.In(ottrecidx.TZ).Format(time.RFC3339)
+}
+
+// localFormat formats t in the schedule timezone with the given layout.
+func localFormat(t time.Time, layout string) string {
+	return t.In(ottrecidx.TZ).Format(layout)
 }

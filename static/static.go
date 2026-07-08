@@ -393,6 +393,7 @@ var (
 	TodayJS         = assets.Register("today.ts", ts)
 	SchedulesCSS    = assets.Register("schedules.css", css)
 	SchedulesJS     = assets.Register("schedules.ts", ts)
+	SearchCSS       = assets.Register("search.css", css)
 	OttrecqlCSS     = assets.Register("ottrecql.css", css)
 	TimemachineCSS  = assets.Register("timemachine.css", css)
 	TimemachineJS   = assets.Register("timemachine.ts", ts)
@@ -423,6 +424,7 @@ var Website = assets.
 		TodayJS,
 		SchedulesCSS,
 		SchedulesJS,
+		SearchCSS,
 		OttrecqlCSS,
 		OttrecqlEditorJS,
 		TimemachineCSS,

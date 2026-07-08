@@ -1,109 +1,102 @@
 package templates
 
-import "github.com/ottrec/website/static"
+import (
+	"github.com/ottrec/website/internal/asset"
+	"github.com/ottrec/website/static"
+)
 
 templ WebsiteActivitiesPage(params WebsiteParams) {
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="utf-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			@websiteThemeHead()
-			@websiteIconsHead()
-			if params.Base != "" {
-				<link rel="canonical" href={ params.Base + "activities" }/>
-			}
-			<title>Activities - Ottawa Recreation Schedules</title>
-			<meta name="description" content="Which City of Ottawa recreation facilities offer each category of activities, by weekday, time of day, and area."/>
-			@websiteSocialHead(params.Base, params.Base+"activities", "Activities - Ottawa Recreation Schedules", "Which City of Ottawa recreation facilities offer each category of activities, by weekday, time of day, and area.")
-			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.ActivitiesCSS) }/>
-			@websiteHeadExtra()
-		</head>
-		<body class="activities-page">
-			@websiteTopNav("activities", params.Data.Index().Updated())
-			<main>
-				<header class="activities-header">
-					<h1>Activities</h1>
-					<p>This page shows facilities currently offering each category of activity, by area, time of day, and weekday: <b class="per-m">morning</b> (until 11:00), <b class="per-a">afternoon</b> (11:00 to 17:00), <b class="per-e">evening</b> (from 17:00).</p>
-					<p class="activities-about">It covers every City of Ottawa recreation facility currently offering drop-in activities like swimming, lane swim, aquafit, skating, hockey, badminton, basketball, volleyball, and pickleball, so you can see at a glance where and when each is available.</p>
-				</header>
-				//@TempWarning(false)
-				<div class="activity-cards">
-					for _, card := range buildActivityCards(params.Data) {
-						if len(card.Groups) > 0 {
-							<section class="activity-card">
-								<header class="activity-card-head">
-									<div class="activity-card-title">
-										<h2>{ card.Name }</h2>
-										if len(card.Terms) > 0 {
-											<p class="activity-terms">
-												matching&nbsp;
-												for i, t := range card.Terms {
-													if i > 0 {
-														{ ", " }
-													}
-													<code>{ t }</code>
+	@websitePage(websitePageMeta{
+		Base:      params.Base,
+		Path:      "activities",
+		Title:     "Activities - Ottawa Recreation Schedules",
+		Desc:      "Which City of Ottawa recreation facilities offer each category of activities, by weekday, time of day, and area.",
+		BodyClass: "activities-page",
+		Nav:       "activities",
+		Updated:   params.Data.Index().Updated(),
+		CSS:       []*asset.Asset{static.ActivitiesCSS},
+	}) {
+		<main>
+			<header class="activities-header">
+				<h1>Activities</h1>
+				<p>This page shows facilities currently offering each category of activity, by area, time of day, and weekday: <b class="per-m">morning</b> (until 11:00), <b class="per-a">afternoon</b> (11:00 to 17:00), <b class="per-e">evening</b> (from 17:00).</p>
+				<p class="activities-about">It covers every City of Ottawa recreation facility currently offering drop-in activities like swimming, lane swim, aquafit, skating, hockey, badminton, basketball, volleyball, and pickleball, so you can see at a glance where and when each is available.</p>
+			</header>
+			//@TempWarning(false)
+			<div class="activity-cards">
+				for _, card := range buildActivityCards(params.Data) {
+					if len(card.Groups) > 0 {
+						<section class="activity-card">
+							<header class="activity-card-head">
+								<div class="activity-card-title">
+									<h2>{ card.Name }</h2>
+									if len(card.Terms) > 0 {
+										<p class="activity-terms">
+											matching&nbsp;
+											for i, t := range card.Terms {
+												if i > 0 {
+													{ ", " }
 												}
-											</p>
-										}
-									</div>
-									if card.Slug != "" {
-										<a class="activity-all" href={ templ.URL("/schedules/" + card.Slug) }>All&nbsp;Schedules</a>
+												<code>{ t }</code>
+											}
+										</p>
 									}
-								</header>
-								<div class="activity-table">
-									<table>
-										<thead>
-											<tr>
-												<th class="fac" rowspan="2" scope="col">Facility</th>
-												for p, long := range activityPeriodLong {
-													<th colspan="7" scope="colgroup" class={ "per-" + activityPeriodShort[p] }>
-														<abbr title={ activityPeriodTitle[p] }>{ long }</abbr>
-													</th>
-												}
-											</tr>
-											<tr>
-												for range activityPeriodLong {
-													for d := range mapDays {
-														<th scope="col"><abbr title={ activityDayName[d] }>{ activityDayShort[d] }</abbr></th>
-													}
-												}
-											</tr>
-										</thead>
-										for _, g := range card.Groups {
-											<tbody data-sector={ g.Sector }>
-												<tr class="sector-row">
-													<th class="sector" colspan="22" scope="colgroup">{ g.Sector }</th>
-												</tr>
-												for _, f := range g.Facilities {
-													<tr>
-														<th class="fac" scope="row">
-															<button type="button" class="fac-star" data-fac-star={ f.Slug } aria-pressed="false" aria-label="Star facility" hidden></button>
-															<a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a>
-															if f.Region != "" {
-																<span class="fac-region">{ f.Region }</span>
-															}
-														</th>
-														for p := range activityPeriodShort {
-															for d := range mapDays {
-																<td class={ "per-" + activityPeriodShort[p] }><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>
-															}
-														}
-													</tr>
-												}
-											</tbody>
-										}
-									</table>
 								</div>
-							</section>
-						}
+								if card.Slug != "" {
+									<a class="activity-all" href={ templ.URL("/schedules/" + card.Slug) }>All&nbsp;Schedules</a>
+								}
+							</header>
+							<div class="activity-table">
+								<table>
+									<thead>
+										<tr>
+											<th class="fac" rowspan="2" scope="col">Facility</th>
+											for p, long := range activityPeriodLong {
+												<th colspan="7" scope="colgroup" class={ "per-" + activityPeriodShort[p] }>
+													<abbr title={ activityPeriodTitle[p] }>{ long }</abbr>
+												</th>
+											}
+										</tr>
+										<tr>
+											for range activityPeriodLong {
+												for d := range mapDays {
+													<th scope="col"><abbr title={ activityDayName[d] }>{ activityDayShort[d] }</abbr></th>
+												}
+											}
+										</tr>
+									</thead>
+									for _, g := range card.Groups {
+										<tbody data-sector={ g.Sector }>
+											<tr class="sector-row">
+												<th class="sector" colspan="22" scope="colgroup">{ g.Sector }</th>
+											</tr>
+											for _, f := range g.Facilities {
+												<tr>
+													<th class="fac" scope="row">
+														@facStar(f.Slug)
+														<a href={ templ.URL("/schedules/facility/" + f.Slug) }>{ f.Name }</a>
+														if f.Region != "" {
+															<span class="fac-region">{ f.Region }</span>
+														}
+													</th>
+													for p := range activityPeriodShort {
+														for d := range mapDays {
+															<td class={ "per-" + activityPeriodShort[p] }><input type="checkbox" disabled checked?={ f.Available(d, p) }/></td>
+														}
+													}
+												</tr>
+											}
+										</tbody>
+									}
+								</table>
+							</div>
+						</section>
 					}
-				</div>
-			</main>
-			@websiteFooter()
-			<script src={ static.Path(static.StarredJS) }></script>
-			<script src={ static.Path(static.ActivitiesJS) }></script>
-		</body>
-	</html>
+				}
+			</div>
+		</main>
+		@websiteFooter()
+		<script src={ static.Path(static.StarredJS) }></script>
+		<script src={ static.Path(static.ActivitiesJS) }></script>
+	}
 }

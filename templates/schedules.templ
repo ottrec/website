@@ -2,163 +2,164 @@ package templates
 
 import (
 	"cmp"
+	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/static"
 )
 
 templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="utf-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			@websiteThemeHead()
-			@websiteIconsHead()
-			if params.Base != "" {
-				<link rel="canonical" href={ params.Base + params.Canonical }/>
-			}
-			<title>{ params.Title } - Ottawa Recreation Schedules</title>
-			<meta name="description" content={ cmp.Or(params.MetaDescription, params.Description) }/>
-			@websiteSocialHead(params.Base, params.Base+params.Canonical, params.Title+" - Ottawa Recreation Schedules", cmp.Or(params.MetaDescription, params.Description))
-			<link rel="stylesheet" href={ static.Path(static.WebsiteCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.FacilityCSS) }/>
-			<link rel="stylesheet" href={ static.Path(static.SchedulesCSS) }/>
-			if params.Search && params.Advanced {
-				<link rel="stylesheet" href={ static.Path(static.OttrecqlCSS) }/>
-			}
-			@websiteHeadExtra()
-		</head>
-		<body class="schedules-page">
-			@websiteTopNav("schedules", params.Data.Index().Updated())
-			<nav class="schedules-catnav">
-				<div class="schedules-cats">
-					<a href={ templ.URL(schedulesNavHref("/schedules", params.List)) } class={ templ.KV("active", params.Active == "all") }>All</a>
-					for _, cat := range ScheduleCategories {
-						<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
+	{{ css := []*asset.Asset{static.FacilityCSS, static.SearchCSS, static.SchedulesCSS} }}
+	if params.Search && params.Advanced {
+		{{ css = append(css, static.OttrecqlCSS) }}
+	}
+	@websitePage(websitePageMeta{
+		Base:      params.Base,
+		Path:      params.Canonical,
+		Title:     params.Title + " - Ottawa Recreation Schedules",
+		Desc:      cmp.Or(params.MetaDescription, params.Description),
+		BodyClass: "schedules-page",
+		Nav:       "schedules",
+		Updated:   params.Data.Index().Updated(),
+		CSS:       css,
+	}) {
+		<nav class="schedules-catnav">
+			<div class="schedules-cats">
+				<a href={ templ.URL(schedulesNavHref("/schedules", params.List)) } class={ templ.KV("active", params.Active == "all") }>All</a>
+				for _, cat := range ScheduleCategories {
+					<a href={ templ.URL(schedulesNavHref("/schedules/"+cat.Slug, params.List)) } class={ templ.KV("active", params.Active == cat.Slug) }>{ cat.Name }</a>
+				}
+			</div>
+			<div class="schedules-view" role="group" aria-label="Schedule view">
+				<a
+					href={ templ.URL(schedulesViewHref(params, false)) }
+					class={ templ.KV("active", !params.List) }
+					if !params.List {
+						aria-current="true"
 					}
-				</div>
-				<div class="schedules-view" role="group" aria-label="Schedule view">
-					<a
-						href={ templ.URL(schedulesViewHref(params, false)) }
-						class={ templ.KV("active", !params.List) }
-						if !params.List {
-							aria-current="true"
-						}
-					>Table</a>
-					<a
-						href={ templ.URL(schedulesViewHref(params, true)) }
-						class={ templ.KV("active", params.List) }
-						if params.List {
-							aria-current="true"
-						}
-					>List</a>
-				</div>
-			</nav>
-			<main>
-				<div class="schedules-layout">
-					if len(params.TOC) > 0 && params.QueryError == "" && !params.Single {
-						<button type="button" class="schedules-toc-toggle" aria-controls="schedules-toc" aria-expanded="false" hidden>Contents</button>
-						<aside class="schedules-toc" id="schedules-toc">
-							<nav aria-label="Facilities">
-								<div class="schedules-toc-head">
-									<span>Contents</span>
-									<button type="button" class="schedules-toc-close" aria-label="Close contents">&times;</button>
-								</div>
-								<ul>
-									for _, f := range params.TOC {
-										<li>
-											<a href={ templ.URL("#" + f.Slug) } data-fac-starred={ f.Slug }>{ f.Name }</a>
-											if len(f.Groups) > 0 {
-												<ul>
-													for _, g := range f.Groups {
-														<li><a href={ templ.URL("#" + g.ID) }>{ g.Title }</a></li>
-													}
-												</ul>
-											}
-										</li>
-									}
-								</ul>
-							</nav>
-						</aside>
+				>Table</a>
+				<a
+					href={ templ.URL(schedulesViewHref(params, true)) }
+					class={ templ.KV("active", params.List) }
+					if params.List {
+						aria-current="true"
 					}
-					<div class="schedules-content">
-						if !params.Single {
-							<header class="schedules-header">
-								<h1>{ params.Title }</h1>
-								if params.Description != "" {
-									<p>{ params.Description }</p>
-								}
-								if len(params.CategoryTerms) > 0 {
-									<p class="schedules-note">
-										Only includes activities whose names match
-										for i, term := range params.CategoryTerms {
-											if i > 0 {
-												{ "," }
-											}
-											{ " " }
-											<code>{ term }</code>
+				>List</a>
+			</div>
+		</nav>
+		<main>
+			<div class="schedules-layout">
+				if len(params.TOC) > 0 && params.QueryError == "" && !params.Single {
+					<button type="button" class="schedules-toc-toggle" aria-controls="schedules-toc" aria-expanded="false" hidden>Contents</button>
+					<aside class="schedules-toc" id="schedules-toc">
+						<nav aria-label="Facilities">
+							<div class="schedules-toc-head">
+								<span>Contents</span>
+								<button type="button" class="schedules-toc-close" aria-label="Close contents">&times;</button>
+							</div>
+							<ul>
+								for _, f := range params.TOC {
+									<li>
+										<a class="msym" href={ templ.URL("#" + f.Slug) } data-fac-starred={ f.Slug }>{ f.Name }</a>
+										if len(f.Groups) > 0 {
+											<ul>
+												for _, g := range f.Groups {
+													<li><a href={ templ.URL("#" + g.ID) }>{ g.Title }</a></li>
+												}
+											</ul>
 										}
-										{ "." }
-									</p>
+									</li>
 								}
-								if params.Search {
-									if params.Advanced {
-										<form class="schedules-search schedules-search-advanced" action="/schedules" method="get">
-											<input type="hidden" name="advanced" value="1"/>
-											if params.List {
-												<input type="hidden" name="mode" value="list"/>
-											}
-											<textarea name="q" rows="3" placeholder={ `activity("lane sw") and schdate(today) and time(today @ now)` } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities">{ params.Query }</textarea>
-											<div class="row">
-												<button type="submit">Search</button>
-												<a class="schedules-search-mode" href={ templ.URL(schedulesNavHref("/schedules", params.List)) }>Simple search</a>
-											</div>
-										</form>
-										@schedulesQueryHelp()
-									} else {
-										<form class="schedules-search" action="/schedules" method="get">
-											if params.List {
-												<input type="hidden" name="mode" value="list"/>
-											}
-											<input type="search" name="q" value={ params.Query } placeholder="Search by activity or facility name" aria-label="Search by activity or facility name"/>
-											<button type="submit">Search</button>
-											<a class="schedules-search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query, params.List)) }>Advanced search</a>
-										</form>
-									}
-								}
-								if params.Active == "all" && params.Query == "" && !params.Advanced && !params.List {
-									<p class="schedules-about">Every City of Ottawa recreation facility's drop-in schedules on one page, instead of clicking through each facility's own page. Search by activity or facility name above, or build a <a href="/schedules?advanced=1">custom query</a>. Automatically validated and updated daily.</p>
-								}
-								//@TempWarning(false)
-							</header>
-						}
-						if params.QueryError != "" {
-							<p class="schedules-query-error">{ params.QueryError }</p>
-						} else if len(params.TOC) == 0 {
-							<p class="schedules-empty">No matching schedules.</p>
-						} else {
-							for _, f := range params.TOC {
-								<section class="schedules-facility" id={ f.Slug }>
-									if params.Single {
-										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true, List: params.List, Star: f.Slug, Region: true})
-									} else {
-										@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: schedulesNavHref("/schedules/facility/"+f.Slug, params.List), HeaderLinks: true, List: params.List, Star: f.Slug, Region: true})
-									}
-								</section>
+							</ul>
+						</nav>
+					</aside>
+				}
+				<div class="schedules-content">
+					if !params.Single {
+						<header class="schedules-header">
+							<h1>{ params.Title }</h1>
+							if params.Description != "" {
+								<p>{ params.Description }</p>
 							}
+							if len(params.CategoryTerms) > 0 {
+								<p class="schedules-note">
+									Only includes activities whose names match
+									for i, term := range params.CategoryTerms {
+										if i > 0 {
+											{ "," }
+										}
+										{ " " }
+										<code>{ term }</code>
+									}
+									{ "." }
+								</p>
+							}
+							if params.Search {
+								if params.Advanced {
+									@ottrecqlSearchForm("/schedules", `activity("lane sw") and schdate(today) and time(today @ now)`, params.Query, schedulesNavHref("/schedules", params.List), "Simple search") {
+										if params.List {
+											<input type="hidden" name="mode" value="list"/>
+										}
+									}
+									@schedulesQueryHelp()
+								} else {
+									<form class="search-form schedules-search" action="/schedules" method="get">
+										if params.List {
+											<input type="hidden" name="mode" value="list"/>
+										}
+										<input type="search" name="q" value={ params.Query } placeholder="Search by activity or facility name" aria-label="Search by activity or facility name"/>
+										<button type="submit">Search</button>
+										<a class="search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query, params.List)) }>Advanced search</a>
+									</form>
+								}
+							}
+							if params.Active == "all" && params.Query == "" && !params.Advanced && !params.List {
+								<p class="schedules-about">Every City of Ottawa recreation facility's drop-in schedules on one page, instead of clicking through each facility's own page. Search by activity or facility name above, or build a <a href="/schedules?advanced=1">custom query</a>. Automatically validated and updated daily.</p>
+							}
+							//@TempWarning(false)
+						</header>
+					}
+					if params.QueryError != "" {
+						<p class="schedules-query-error">{ params.QueryError }</p>
+					} else if len(params.TOC) == 0 {
+						<p class="schedules-empty">No matching schedules.</p>
+					} else {
+						for _, f := range params.TOC {
+							<section class="schedules-facility" id={ f.Slug }>
+								if params.Single {
+									@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, HeaderLinks: true, List: params.List, Star: f.Slug, Region: true})
+								} else {
+									@WebsiteFacilityArticle(f.Ref, WebsiteFacilityArticleOptions{Anchors: f.Slug, Link: schedulesNavHref("/schedules/facility/"+f.Slug, params.List), HeaderLinks: true, List: params.List, Star: f.Slug, Region: true})
+								}
+							</section>
 						}
-					</div>
+					}
 				</div>
-			</main>
-			@websiteFooter()
-			<script src={ static.Path(static.StarredJS) }></script>
-			if params.Search && params.Advanced {
-				// enhances the query textarea into the CodeMirror editor before
-				// schedules.js runs (so its live-validation no-ops; the editor lints)
-				<script src={ static.Path(static.OttrecqlEditorJS) }></script>
-			}
-			<script src={ static.Path(static.SchedulesJS) }></script>
-		</body>
-	</html>
+			</div>
+		</main>
+		@websiteFooter()
+		<script src={ static.Path(static.StarredJS) }></script>
+		if params.Search && params.Advanced {
+			// enhances the query textarea into the CodeMirror editor before
+			// schedules.js runs (so its live-validation no-ops; the editor lints)
+			<script src={ static.Path(static.OttrecqlEditorJS) }></script>
+		}
+		<script src={ static.Path(static.SchedulesJS) }></script>
+	}
+}
+
+// ottrecqlSearchForm renders the advanced (ottrecql) search form shared by the
+// schedules and today pages: the hidden advanced flag, any extra hidden inputs
+// (children), the query box, and a submit row with a link back to the simple
+// mode. The textarea is progressively enhanced into the CodeMirror editor.
+templ ottrecqlSearchForm(action, placeholder, query, simpleHref, simpleLabel string) {
+	<form class="search-form search-form-advanced" action={ templ.URL(action) } method="get">
+		<input type="hidden" name="advanced" value="1"/>
+		{ children... }
+		<textarea name="q" rows="3" placeholder={ placeholder } aria-label="Search query" data-ottrecql data-lint="/api/ottrecql/validate" data-facilities="/api/ottrecql/facilities" data-activities="/api/ottrecql/activities">{ query }</textarea>
+		<div class="row">
+			<button type="submit">Search</button>
+			<a class="search-mode" href={ templ.URL(simpleHref) }>{ simpleLabel }</a>
+		</div>
+	</form>
 }
 
 // schedulesQueryHelp tucks the ottrecql reference (see ottrecql.templ and
