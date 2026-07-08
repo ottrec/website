@@ -736,15 +736,13 @@
 	margin-top: .35rem;
 	font-size: .85rem;
 
-	/* plain links (blue), with a dotted underline that goes solid on hover so a
-	 * row of them doesn't read as busy */
 	a {
 		color: var(--fxki-bl);
-		text-decoration: underline dotted;
+		text-decoration: none;
 		text-underline-offset: .15em;
 
 		&:hover {
-			text-decoration-style: solid;
+			text-decoration: underline;
 		}
 	}
 }
