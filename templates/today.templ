@@ -123,6 +123,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 				</div>
 				<p class="today-noresults" id="today-noresults" hidden>Nothing matches these filters.</p>
 			</div>
+			@facilityErrorsSection(buildFacilityErrors(params.Filtered, MapFacilitySlugger(params.Data)), "today-facerrs")
 		</main>
 		@websiteFooter()
 		@templ.JSONScript("today-data", feed.JSON)

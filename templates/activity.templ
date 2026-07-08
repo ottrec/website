@@ -272,6 +272,7 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 						}
 					</section>
 				}
+				@facilityErrorsSection(buildFacilityErrors(params.Filtered, MapFacilitySlugger(params.Data)), "")
 			</div>
 		</main>
 		@websiteFooter()

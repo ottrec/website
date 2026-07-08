@@ -826,6 +826,19 @@ function openWarnModal(btn: HTMLElement) {
 	loadModal(url, btn.dataset['source'])
 }
 
+// the incomplete-data section sits outside the feed, so the feed's click
+// handler doesn't cover it; its rows open the same errors modal (the nested
+// facility link keeps its own modal, and modified clicks keep link behavior)
+document.getElementById('today-facerrs')?.addEventListener('click', (ev) => {
+	const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-warn]')
+	if (!el) return
+	const inner = (ev.target as HTMLElement).closest('a, button')
+	if (inner && inner !== el && el.contains(inner)) return
+	if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return
+	ev.preventDefault()
+	openWarnModal(el)
+})
+
 // the full-schedule modal reuses the map's facility fragment, scoped to the
 // session's schedule group via ?group.
 function openScheduleModal(btn: HTMLElement) {

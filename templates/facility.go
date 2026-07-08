@@ -43,6 +43,32 @@ type WebsiteFacilityArticleOptions struct {
 	Region bool
 }
 
+// facilityErrorItem is one facility whose data couldn't be fully read, with
+// the messages, for the incomplete-data section on the today and activity
+// landing pages.
+type facilityErrorItem struct {
+	Facility string
+	Slug     string
+	Errors   []string
+}
+
+// buildFacilityErrors collects the facilities carrying per-facility errors,
+// in data order. slugger must be fresh (consumed once per facility).
+func buildFacilityErrors(data ottrecidx.DataRef, slugger func(string) string) []facilityErrorItem {
+	var out []facilityErrorItem
+	for fac := range data.Facilities() {
+		slug := slugger(fac.GetName())
+		var errs []string
+		for e := range fac.GetErrors() {
+			errs = append(errs, e)
+		}
+		if len(errs) > 0 {
+			out = append(out, facilityErrorItem{Facility: fac.GetName(), Slug: slug, Errors: errs})
+		}
+	}
+	return out
+}
+
 // facilityDirectionsURL returns a Google Maps directions link for the
 // facility, or an empty string if there's nothing to link to.
 func facilityDirectionsURL(fac ottrecidx.FacilityRef) string {

@@ -278,3 +278,36 @@ templ websiteFacilitySchedule(sch ottrecidx.ScheduleRef) {
 		</table>
 	</div>
 }
+
+// facilityErrorsSection lists the facilities whose data couldn't be fully
+// read, with the messages, so parse problems are visible on the page rather
+// than silently missing data (they're rare enough to show in full). Each row
+// opens the same /api/errors modal as the per-session warnings (via the
+// data-warn click handlers on the today and activity landing pages); the
+// facility link keeps its own modal and is the no-JS path. Renders nothing
+// when there are no errors.
+templ facilityErrorsSection(items []facilityErrorItem, id string) {
+	if len(items) > 0 {
+		<section
+			class="facerrs"
+			if id != "" {
+				id={ id }
+			}
+		>
+			<h2>Incomplete data</h2>
+			<p class="facerrs-note">Some information for these facilities couldn't be read automatically and may be incomplete. Check the official facility page before you go.</p>
+			<ul class="facerrs-list">
+				for _, it := range items {
+					<li data-warn="errors" data-slug={ it.Slug }>
+						<a class="facerrs-fac" href={ templ.URL("/schedules/facility/" + it.Slug) } data-facility-modal={ it.Slug }>{ it.Facility }</a>
+						<ul class="facerrs-msgs">
+							for _, e := range it.Errors {
+								<li>{ e }</li>
+							}
+						</ul>
+					</li>
+				}
+			</ul>
+		</section>
+	}
+}

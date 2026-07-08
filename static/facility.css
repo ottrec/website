@@ -344,3 +344,56 @@ article.facility {
 	article.facility tr,
 	article.facility .schedule-list-activity { break-inside: avoid; }
 }
+
+/* incomplete-data section (today + activity landing pages): facilities whose
+ * data couldn't be fully read, with the messages. Rows open the errors modal
+ * (JS); the facility link is the no-JS path. */
+.facerrs {
+	margin: 2rem 0 0;
+
+	h2 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.15rem;
+		margin: 0 0 .5rem;
+	}
+}
+
+.facerrs-note {
+	margin: -.25rem 0 .75rem;
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
+}
+
+.facerrs-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: .85rem;
+
+	> li {
+		padding: .35rem .35rem .4rem;
+		border-top: 1px solid var(--fxki-ui-2);
+		line-height: 1.4;
+		/* the whole row opens the errors modal (JS) */
+		cursor: pointer;
+
+		&:hover {
+			background: light-dark(rgb(0 0 0 / .03), rgb(255 255 255 / .04));
+		}
+	}
+}
+
+.facerrs-fac {
+	color: var(--fxki-tx-2);
+	font-weight: 500;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+.facerrs-msgs {
+	margin: .1rem 0 0;
+	padding: 0 0 0 1.1rem;
+	color: var(--fxki-tx-2);
+}
