@@ -134,10 +134,12 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 																{ nt.Label }
 															</a>
 														} else {
-															<button type="button" class={ "t-note", nt.Kind } data-warn={ nt.Warn } data-slug={ nt.Slug } data-group={ strconv.Itoa(nt.Group) } aria-haspopup="dialog">
+															// a link to the facility page as the no-JS fallback;
+															// activitytoday.ts opens the modal on plain clicks
+															<a class={ "t-note", nt.Kind } href={ templ.URL("/schedules/facility/" + nt.Slug) } data-warn={ nt.Warn } data-slug={ nt.Slug } data-group={ strconv.Itoa(nt.Group) } aria-haspopup="dialog">
 																<span class={ "t-note-ico", "msym", nt.Icon } aria-hidden="true"></span>
 																{ nt.Label }
-															</button>
+															</a>
 														}
 													}
 												</span>

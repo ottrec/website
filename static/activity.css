@@ -227,6 +227,19 @@
 	border-radius: .5rem;
 	transition: max-height .15s ease;
 
+	/* scroll shadows hinting at more sessions above/below: the shadow
+	 * gradients are pinned to the box edges, and the page-colored cover
+	 * gradients scroll with the content (background-attachment: local) to
+	 * hide them at the ends of the list */
+	background:
+		linear-gradient(var(--fxki-bg) 33%, transparent) center top,
+		linear-gradient(transparent, var(--fxki-bg) 66%) center bottom,
+		linear-gradient(light-dark(rgb(0 0 0 / .16), rgb(255 255 255 / .14)), transparent) center top,
+		linear-gradient(transparent, light-dark(rgb(0 0 0 / .16), rgb(255 255 255 / .14))) center bottom;
+	background-repeat: no-repeat;
+	background-size: 100% 2.25rem, 100% 2.25rem, 100% .8rem, 100% .8rem;
+	background-attachment: local, local, scroll, scroll;
+
 	&.expanded {
 		max-height: 44rem;
 	}
@@ -355,6 +368,11 @@
 	text-decoration: none;
 	cursor: pointer;
 
+	&:hover {
+		background: light-dark(rgb(0 0 0 / .05), rgb(255 255 255 / .06));
+		box-shadow: 0 1px 2px light-dark(rgb(0 0 0 / .12), rgb(0 0 0 / .45));
+		text-decoration: none;
+	}
 	&.alert {
 		color: var(--fxki-re);
 	}

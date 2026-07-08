@@ -87,6 +87,31 @@ if (list) {
 	window.addEventListener('pageshow', clearFilters)
 }
 
+// --- auto-scroll to now ---
+
+// start the list at the first session that hasn't ended yet, so the visitor
+// sees what's on now rather than this morning's sessions. Session times are in
+// Ottawa time (same trick as today.ts).
+{
+	const box = document.querySelector<HTMLElement>('.activity-today-scroll')
+	const items = box ? [...box.querySelectorAll<HTMLLIElement>('.today-session')] : []
+	if (box && items.length) {
+		const parts = new Intl.DateTimeFormat('en-GB', {
+			timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false,
+		}).formatToParts(new Date())
+		const get = (t: string) => Number(parts.find((p) => p.type === t)?.value || 0)
+		const now = (get('hour') % 24) * 60 + get('minute')
+		const target = items.find((li) => +(li.dataset['end'] || '0') > now)
+		if (!target) {
+			box.scrollTop = box.scrollHeight // everything's over; show the evening
+		} else if (target !== items[0]) {
+			// a sliver of the previous session stays visible under the shadow,
+			// reinforcing that the list scrolls
+			box.scrollTop = target.getBoundingClientRect().top - box.getBoundingClientRect().top - 8
+		}
+	}
+}
+
 // --- expand toggle ---
 
 const scroll = document.querySelector<HTMLElement>('.activity-today-scroll')
@@ -200,11 +225,14 @@ async function openWarn(url: string) {
 	}
 }
 
-// the warning lines (from todaySessionWarnings/todaySessionReservation) are
-// buttons carrying data-warn/data-slug/data-group, mirroring the today page
+// the notice chips are links to the facility page (the no-JS fallback)
+// carrying data-warn/data-slug/data-group, mirroring the today page; plain
+// clicks open the modal instead, modified clicks keep the link behavior
 document.addEventListener('click', (ev) => {
-	const btn = (ev.target as HTMLElement).closest<HTMLButtonElement>('button[data-warn]')
+	const btn = (ev.target as HTMLElement).closest<HTMLElement>('[data-warn]')
 	if (!btn) return
+	if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return
+	ev.preventDefault()
 	const slug = encodeURIComponent(btn.dataset['slug'] || '')
 	const group = encodeURIComponent(btn.dataset['group'] || '0')
 	const kind = btn.dataset['warn']
