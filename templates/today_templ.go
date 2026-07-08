@@ -56,7 +56,7 @@ func WebsiteTodayPage(params WebsiteTodayParams) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"today-main\"><header class=\"page-header\"><h1>What's on</h1><p>Browse upcoming drop-in recreation sessions for the current week. Select a day to view all drop-in sessions, and use the filters to narrow it down. Times are shown in Ottawa time. Only facilities with sessions during the current week are included.</p></header>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"today-main\"><header class=\"page-header\"><h1>Upcoming sessions</h1><p>Browse upcoming drop-in recreation sessions for the current week. Select a day to view all drop-in sessions, and use the filters to narrow it down. Times are shown in Ottawa time. Only facilities with sessions during the current week are included.</p></header>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
