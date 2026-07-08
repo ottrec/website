@@ -99,6 +99,13 @@ func schedulesAdvancedHref(q string, list bool) string {
 	return href
 }
 
+// scheduleTodayHref returns the /today feed link pre-filtered to a category,
+// using the shared f-cat filter param keyed by the category's display name
+// (ScheduleCategories mirror the map/today categories 1:1).
+func scheduleTodayHref(cat ScheduleCategory) string {
+	return "/today?f-cat=" + url.QueryEscape(cat.Name)
+}
+
 // schedulesNavHref returns the link to another schedules page, preserving the
 // current view mode.
 func schedulesNavHref(path string, list bool) string {

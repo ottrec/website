@@ -243,6 +243,27 @@
 			padding: 0 .25em;
 		}
 	}
+	/* category pages: plain blue link out to the pre-filtered /today feed (the
+	 * arrow glyph base comes from .msym in website.css) */
+	.schedules-today-cta {
+		display: inline-block;
+		margin: 0 0 1rem;
+		font-size: 1.05rem;
+		font-weight: 500;
+		color: var(--fxki-bl);
+		text-decoration: underline dotted;
+
+		&::after {
+			content: '\e941'; /* arrow_right_alt */
+			font-size: 1.2em;
+			vertical-align: -.15em;
+			margin-left: .3em;
+			text-decoration: none;
+		}
+		&:hover {
+			text-decoration: underline solid;
+		}
+	}
 }
 
 /* search box (the shared base styles live in search.css) */

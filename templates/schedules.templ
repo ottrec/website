@@ -79,6 +79,9 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 							if params.Description != "" {
 								<p>{ params.Description }</p>
 							}
+							if cat, ok := ScheduleCategoryBySlug(params.Active); ok {
+								<a class="schedules-today-cta msym" href={ templ.URL(scheduleTodayHref(cat)) }>See this week's { cat.Name } sessions hour by hour</a>
+							}
 							if len(params.CategoryTerms) > 0 {
 								<p class="schedules-note">
 									Only includes activities whose names match

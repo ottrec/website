@@ -367,6 +367,7 @@ var (
 			'\ue002', // warning
 			'\ue88e', // info
 			'\ue5c5', // arrow_drop_down
+			'\ue941', // arrow_right_alt
 			'\ue518', // light_mode
 			'\ue51c', // dark_mode
 			'\ue1ab', // brightness_auto
