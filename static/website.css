@@ -511,7 +511,9 @@ button.fac-star {
     color: var(--fxki-tx-3);
     cursor: pointer;
     line-height: 0;
-    vertical-align: -.05em;
+    /* matches the -.2em the decorative inline stars use (schedules TOC,
+     * activity-today rows); anything less sits high next to text */
+    vertical-align: -.2em;
 
     &::before {
         content: '\f09a'; /* star */

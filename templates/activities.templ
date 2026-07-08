@@ -2,7 +2,6 @@ package templates
 
 import (
 	"net/url"
-	"strings"
 
 	"github.com/ottrec/website/internal/asset"
 	"github.com/ottrec/website/static"
@@ -36,7 +35,7 @@ templ WebsiteActivitiesPage(params WebsiteParams) {
 						<span class="activities-dir-text">
 							<span class="activities-dir-name">{ cat.Name }</span>
 							if len(cat.Activities) > 0 {
-								<span class="activities-dir-terms">Activities matching { strings.Join(cat.Activities, ", ") }</span>
+								<span class="activities-dir-terms">Activities matching { activityQuotedTerms(cat.Activities) }</span>
 							}
 						</span>
 					</a>

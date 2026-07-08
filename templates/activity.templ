@@ -185,6 +185,9 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 					if len(params.Cat.Activities) > 0 {
 						<p class="activity-facilities-note">Facilities currently offering activities matching { activityQuotedTerms(params.Cat.Activities) }.</p>
 					}
+					if len(sectors) > 0 {
+						<p class="activity-facilities-note">{ activityWhenPeriodsNote() }</p>
+					}
 					if len(sectors) == 0 {
 						<p>No facilities currently offer this.</p>
 					}

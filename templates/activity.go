@@ -647,6 +647,38 @@ func activityFacilityCount(sectors []activityLandingSector) int {
 
 var activityWhenPeriodWord = []string{"mornings", "afternoons", "evenings"}
 
+// activityWhenPeriodsNote spells out the period boundaries behind the
+// morning/afternoon/evening when-summaries, derived from activityPeriods.
+func activityWhenPeriodsNote() string {
+	clock := func(m int) string {
+		h, ap := m/60%24, "am"
+		if h >= 12 {
+			ap = "pm"
+			if h > 12 {
+				h -= 12
+			}
+		}
+		if h == 0 {
+			h = 12
+		}
+		return strconv.Itoa(h) + ap
+	}
+	parts := make([]string, len(activityPeriods))
+	for i, p := range activityPeriods {
+		var rng string
+		switch {
+		case p[0] == 0:
+			rng = "before " + clock(p[1])
+		case p[1] == 24*60:
+			rng = "after " + clock(p[0])
+		default:
+			rng = clock(p[0]) + "–" + clock(p[1])
+		}
+		parts[i] = strings.ToLower(activityPeriodLong[i]) + " (" + rng + ")"
+	}
+	return "Time periods: " + strings.Join(parts, ", ") + "."
+}
+
 // activityWhenSummary renders a [7]byte weekday/period availability mask (byte
 // d bit p set = offered on weekday d, period p) as a concise sentence like "Evenings on
 // weekdays; mornings and afternoons on weekends" or "Evenings every day".
