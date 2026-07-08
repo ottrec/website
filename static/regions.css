@@ -64,7 +64,7 @@
 		color: var(--fxki-tx-2);
 		display: none;
 	}
-	.region-map.zoomed .region-label-minor span {
+	&.zoomed .region-label-minor span {
 		display: inline;
 	}
 	.sector-label span {

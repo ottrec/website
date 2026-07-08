@@ -339,7 +339,7 @@ func WebsiteSchedulesPage(params WebsiteSchedulesParams) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			if !params.Single {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<header class=\"schedules-header\"><h1>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<header class=\"page-header schedules-header\"><h1>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

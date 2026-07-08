@@ -1,25 +1,41 @@
 /* page layout */
 
-.activities-page main {
-	max-width: 64rem;
-	margin: 0 auto;
-	padding: 1rem;
+.activities-page {
+	/* highlight color for the hovered row and column */
+	--row-col-hl: light-dark(rgb(0 0 0 / .05), rgb(255 255 255 / .07));
+	/* time period color coding: morning yellow, afternoon orange, evening purple */
+	--per-m: var(--fxki-ye);
+	--per-a: var(--fxki-or);
+	--per-e: var(--fxki-pu);
+	--per-m-check: light-dark(var(--fxki-yellow-200), var(--fxki-yellow-850));
+	--per-a-check: light-dark(var(--fxki-orange-200), var(--fxki-orange-850));
+	--per-e-check: light-dark(var(--fxki-purple-200), var(--fxki-purple-850));
+	--per-m-faint: light-dark(var(--fxki-yellow-150), var(--fxki-yellow-900));
+	--per-a-faint: light-dark(var(--fxki-orange-150), var(--fxki-orange-900));
+	--per-e-faint: light-dark(var(--fxki-purple-150), var(--fxki-purple-900));
+	/* "now" column: current weekday + time of day in Ottawa, set by activities.js */
+	--now-hl: light-dark(rgb(32 94 166 / .1), rgb(131 173 234 / .16));
+
+	main {
+		max-width: 64rem;
+		margin: 0 auto;
+		padding: 1rem;
+	}
 }
-.activities-header h1 {
-	font-family: 'Source Serif 4', serif;
-	font-size: 1.4rem;
-	margin: 0 0 .25rem;
-}
-.activities-header p {
-	margin: 0 0 1rem;
-	font-size: .85rem;
-	color: var(--fxki-tx-2);
-}
-/* secondary descriptive blurb (mainly for SEO) */
-.activities-header .activities-about {
-	margin: -.6rem 0 1rem;
-	font-size: .8rem;
-	color: var(--fxki-tx-3);
+/* the title/intro base comes from .page-header in website.css */
+.activities-header {
+	p {
+		font-size: .85rem;
+	}
+	/* secondary descriptive blurb (mainly for SEO) */
+	.activities-about {
+		margin: -.6rem 0 1rem;
+		font-size: .8rem;
+		color: var(--fxki-tx-3);
+	}
+	.per-m { color: var(--per-m); }
+	.per-a { color: var(--per-a); }
+	.per-e { color: var(--per-e); }
 }
 
 /* category cards */
@@ -35,6 +51,12 @@
 	border-radius: .5rem;
 	background: var(--fxki-bg-2);
 	padding: .75rem 1rem 1rem;
+
+	h2 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.05rem;
+		margin: 0;
+	}
 }
 .activity-card-head {
 	display: flex;
@@ -43,20 +65,16 @@
 	gap: 1rem;
 	margin: 0 0 .5rem;
 }
-.activity-card h2 {
-	font-family: 'Source Serif 4', serif;
-	font-size: 1.05rem;
-	margin: 0;
-}
 /* small note under the title listing the activity terms this category matches */
 .activity-card-title .activity-terms {
 	margin: .1rem 0 0;
 	font-size: .7rem;
 	color: var(--fxki-tx-3);
-}
-.activity-card-title .activity-terms code {
-	font-family: ui-monospace, monospace;
-	color: var(--fxki-tx-2);
+
+	code {
+		font-family: ui-monospace, monospace;
+		color: var(--fxki-tx-2);
+	}
 }
 /* "All Schedules" link for the category */
 .activity-all {
@@ -65,153 +83,138 @@
 	color: var(--fxki-bl);
 	text-decoration: none;
 	white-space: nowrap;
-}
-.activity-all:hover {
-	text-decoration: underline;
+
+	&:hover {
+		text-decoration: underline;
+	}
 }
 
 /* availability tables */
 
 .activity-table {
 	overflow-x: auto;
-}
-.activity-table table {
-	border-collapse: collapse;
-	width: 100%;
-	font-size: .8rem;
-	overflow: hidden; /* clips the column hover overlay */
-}
-/* highlight the hovered row and column */
-.activities-page {
-	--row-col-hl: light-dark(rgb(0 0 0 / .05), rgb(255 255 255 / .07));
-}
-.activity-table tbody tr:hover {
-	background: var(--row-col-hl);
-}
-.activity-table td {
-	position: relative;
-}
-.activity-table td:hover::after {
-	content: '';
-	position: absolute;
-	inset: -5000px 0;
-	background: var(--row-col-hl);
-	pointer-events: none;
-}
-.activity-table th,
-.activity-table td {
-	padding: .15rem .1rem;
-	text-align: center;
-}
-.activity-table th.fac {
-	text-align: left;
-}
-.activity-table thead th {
-	color: var(--fxki-tx-2);
-	font-weight: 600;
-}
-.activity-table thead tr + tr th {
-	font-weight: 400;
-	font-size: .72rem;
-}
-/* time period color coding: morning yellow, afternoon orange, evening purple */
-.activities-page {
-	--per-m: var(--fxki-ye);
-	--per-a: var(--fxki-or);
-	--per-e: var(--fxki-pu);
-	--per-m-check: light-dark(var(--fxki-yellow-200), var(--fxki-yellow-850));
-	--per-a-check: light-dark(var(--fxki-orange-200), var(--fxki-orange-850));
-	--per-e-check: light-dark(var(--fxki-purple-200), var(--fxki-purple-850));
-	--per-m-faint: light-dark(var(--fxki-yellow-150), var(--fxki-yellow-900));
-	--per-a-faint: light-dark(var(--fxki-orange-150), var(--fxki-orange-900));
-	--per-e-faint: light-dark(var(--fxki-purple-150), var(--fxki-purple-900));
-}
-.activities-header .per-m { color: var(--per-m); }
-.activities-header .per-a { color: var(--per-a); }
-.activities-header .per-e { color: var(--per-e); }
-/* time-of-day color coding, keyed by class (columns are grouped by period) */
-.activity-table thead th.per-m { color: var(--per-m); }
-.activity-table thead th.per-a { color: var(--per-a); }
-.activity-table thead th.per-e { color: var(--per-e); }
-.activity-table td.per-m { --per-check: var(--per-m-check); --per-faint: var(--per-m-faint); }
-.activity-table td.per-a { --per-check: var(--per-a-check); --per-faint: var(--per-a-faint); }
-.activity-table td.per-e { --per-check: var(--per-e-check); --per-faint: var(--per-e-faint); }
-/* "now" column: current weekday + time of day in Ottawa, set by activities.js */
-.activities-page {
-	--now-hl: light-dark(rgb(32 94 166 / .1), rgb(131 173 234 / .16));
-}
-.activity-table .now {
-	background: var(--now-hl);
-}
-.activity-table thead abbr {
-	text-decoration: none;
-	cursor: help;
-}
-.activity-table tbody tr {
-	border-top: 1px solid var(--fxki-ui);
-}
-.activity-table tbody th.fac {
-	font-weight: 400;
-	white-space: nowrap;
-	padding-right: .5rem;
-}
-.activity-table tbody th.fac .fac-star {
-	margin-right: .3em;
-	vertical-align: -.1em;
-	font-size: .9rem;
-}
-.activity-table tbody th.fac a {
-	color: inherit;
-	text-decoration: none;
-}
-.activity-table tbody th.fac a:hover {
-	color: var(--fxki-bl);
-	text-decoration: underline;
-}
-/* separators between the time-of-day column groups (each spans 7 weekdays) */
-.activity-table td:nth-of-type(7n+1),
-.activity-table thead tr:first-child th:not(.fac),
-.activity-table thead tr + tr th:nth-of-type(7n+1) {
-	border-left: 1px solid var(--fxki-ui-2);
-}
-.activity-table input[type="checkbox"] {
-	appearance: none;
-	display: block;
-	margin: 0 auto;
-	width: .8rem;
-	height: .8rem;
-	border: 1px solid var(--per-faint, var(--fxki-ui-3));
-	border-radius: .15rem;
-	background: var(--fxki-bg);
-}
-.activity-table input[type="checkbox"]:checked {
-	background: var(--per-check, var(--fxki-bl));
-	border-color: var(--per-check, var(--fxki-bl));
-}
-/* top-level sector group header rows */
-.activity-table tr.sector-row th.sector {
-	text-align: left;
-	font-weight: 600;
-	font-size: .72rem;
-	letter-spacing: .03em;
-	text-transform: uppercase;
-	color: var(--fxki-tx-2);
-	/* darker than the card in light mode (lighter would distract); dark is fine */
-	background: light-dark(var(--fxki-ui), var(--fxki-bg));
-	padding: .35rem .4rem .25rem;
-}
-.activity-table tbody.sector-starred tr.sector-row th.sector {
-	color: var(--fxki-bl);
-}
-.activity-table tbody tr.sector-row:hover {
-	background: none;
-}
-/* the place name, faint, beside the facility name */
-.activity-table tbody th.fac .fac-region {
-	margin-left: .5em;
-	font-size: .9em;
-	font-weight: 400;
-	color: var(--fxki-tx-3);
+
+	table {
+		border-collapse: collapse;
+		width: 100%;
+		font-size: .8rem;
+		overflow: hidden; /* clips the column hover overlay */
+	}
+	tbody tr {
+		border-top: 1px solid var(--fxki-ui);
+
+		&:hover {
+			background: var(--row-col-hl);
+		}
+	}
+	td {
+		position: relative;
+
+		&:hover::after {
+			content: '';
+			position: absolute;
+			inset: -5000px 0;
+			background: var(--row-col-hl);
+			pointer-events: none;
+		}
+	}
+	th, td {
+		padding: .15rem .1rem;
+		text-align: center;
+	}
+	th.fac {
+		text-align: left;
+	}
+	thead {
+		th {
+			color: var(--fxki-tx-2);
+			font-weight: 600;
+		}
+		tr + tr th {
+			font-weight: 400;
+			font-size: .72rem;
+		}
+		/* time-of-day color coding, keyed by class (columns are grouped by period) */
+		th.per-m { color: var(--per-m); }
+		th.per-a { color: var(--per-a); }
+		th.per-e { color: var(--per-e); }
+		abbr {
+			text-decoration: none;
+			cursor: help;
+		}
+	}
+	td.per-m { --per-check: var(--per-m-check); --per-faint: var(--per-m-faint); }
+	td.per-a { --per-check: var(--per-a-check); --per-faint: var(--per-a-faint); }
+	td.per-e { --per-check: var(--per-e-check); --per-faint: var(--per-e-faint); }
+	.now {
+		background: var(--now-hl);
+	}
+	tbody th.fac {
+		font-weight: 400;
+		white-space: nowrap;
+		padding-right: .5rem;
+
+		.fac-star {
+			margin-right: .3em;
+			vertical-align: -.1em;
+			font-size: .9rem;
+		}
+		a {
+			color: inherit;
+			text-decoration: none;
+
+			&:hover {
+				color: var(--fxki-bl);
+				text-decoration: underline;
+			}
+		}
+		/* the place name, faint, beside the facility name */
+		.fac-region {
+			margin-left: .5em;
+			font-size: .9em;
+			font-weight: 400;
+			color: var(--fxki-tx-3);
+		}
+	}
+	/* separators between the time-of-day column groups (each spans 7 weekdays) */
+	td:nth-of-type(7n+1),
+	thead tr:first-child th:not(.fac),
+	thead tr + tr th:nth-of-type(7n+1) {
+		border-left: 1px solid var(--fxki-ui-2);
+	}
+	input[type="checkbox"] {
+		appearance: none;
+		display: block;
+		margin: 0 auto;
+		width: .8rem;
+		height: .8rem;
+		border: 1px solid var(--per-faint, var(--fxki-ui-3));
+		border-radius: .15rem;
+		background: var(--fxki-bg);
+
+		&:checked {
+			background: var(--per-check, var(--fxki-bl));
+			border-color: var(--per-check, var(--fxki-bl));
+		}
+	}
+	/* top-level sector group header rows */
+	tr.sector-row th.sector {
+		text-align: left;
+		font-weight: 600;
+		font-size: .72rem;
+		letter-spacing: .03em;
+		text-transform: uppercase;
+		color: var(--fxki-tx-2);
+		/* darker than the card in light mode (lighter would distract); dark is fine */
+		background: light-dark(var(--fxki-ui), var(--fxki-bg));
+		padding: .35rem .4rem .25rem;
+	}
+	tbody.sector-starred tr.sector-row th.sector {
+		color: var(--fxki-bl);
+	}
+	tbody tr.sector-row:hover {
+		background: none;
+	}
 }
 
 /* print: use the full page width and keep each category card together */

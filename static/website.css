@@ -294,22 +294,40 @@ main.error-page {
     margin: 4rem auto;
     padding: 0 1rem;
     text-align: center;
+
+    h1 {
+        font-family: 'Source Serif 4', serif;
+        font-size: 1.5rem;
+        margin: 0 0 .5rem;
+    }
+    p {
+        margin: .5rem 0;
+        color: var(--fxki-tx-2);
+    }
+    a {
+        color: var(--fxki-bl);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
-main.error-page h1 {
-    font-family: 'Source Serif 4', serif;
-    font-size: 1.5rem;
-    margin: 0 0 .5rem;
-}
-main.error-page p {
-    margin: .5rem 0;
-    color: var(--fxki-tx-2);
-}
-main.error-page a {
-    color: var(--fxki-bl);
-    text-decoration: none;
-}
-main.error-page a:hover {
-    text-decoration: underline;
+
+/* shared page header (the today, schedules, and activities pages): a serif
+ * title over a muted intro line; pages layer their own tweaks on top */
+
+.page-header {
+    h1 {
+        font-family: 'Source Serif 4', serif;
+        font-size: 1.4rem;
+        margin: 0 0 .25rem;
+    }
+    p {
+        margin: 0 0 1rem;
+        font-size: .9rem;
+        color: var(--fxki-tx-2);
+    }
 }
 
 /* top nav shared by every page (including the data site) */
@@ -324,6 +342,73 @@ main.error-page a:hover {
     background: var(--fxki-bg);
     position: relative;
     z-index: 1300;
+
+    .brand {
+        font-family: 'Source Serif 4', serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: inherit;
+        text-decoration: none;
+    }
+    a.nav {
+        color: var(--fxki-tx-2);
+        text-decoration: none;
+        font-size: 1rem;
+
+        &:hover {
+            color: var(--fxki-tx);
+            text-decoration: underline;
+        }
+        &.active {
+            color: var(--fxki-tx);
+            font-weight: 600;
+        }
+    }
+    /* the theme toggle and updated time, pushed to the right as a group (the
+     * container, not the toggle, carries margin-left:auto so the time stays
+     * right-aligned even before theme.js reveals the toggle) */
+    .topnav-end {
+        margin-left: auto;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+    time {
+        font-size: .72rem;
+        line-height: 1.2;
+        text-align: right;
+        color: var(--fxki-tx-2);
+        white-space: nowrap;
+    }
+    .theme-toggle {
+        padding: .25em;
+        border: 1px solid var(--fxki-ui-2);
+        border-radius: 50%;
+        background: none;
+        color: var(--fxki-tx-2);
+        cursor: pointer;
+        line-height: 0;
+
+        &::before {
+            font-size: 1rem;
+        }
+        &[data-theme="auto"]::before { content: '\e1ab'; }
+        &[data-theme="light"]::before { content: '\e518'; }
+        &[data-theme="dark"]::before { content: '\e51c'; }
+        &:hover {
+            color: var(--fxki-tx);
+            border-color: var(--fxki-ui-3);
+        }
+    }
+    @media (max-width: 540px) {
+        /* tighter spacing so the links fit before wrapping */
+        column-gap: .9rem;
+        /* it gets cut off by the nav links otherwise */
+        time {
+            display: none;
+        }
+    }
 }
 /* the homepages open with a hero rather than content, so the nav divider reads
  * as heavy there */
@@ -331,72 +416,6 @@ body.home-page .site-topnav,
 body.data-page .site-topnav,
 body.error-page .site-topnav {
     border-bottom: none;
-}
-.site-topnav .brand {
-    font-family: 'Source Serif 4', serif;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: inherit;
-    text-decoration: none;
-}
-.site-topnav a.nav {
-    color: var(--fxki-tx-2);
-    text-decoration: none;
-    font-size: 1rem;
-}
-.site-topnav a.nav:hover {
-    color: var(--fxki-tx);
-    text-decoration: underline;
-}
-.site-topnav a.nav.active {
-    color: var(--fxki-tx);
-    font-weight: 600;
-}
-/* the theme toggle and updated time, pushed to the right as a group (the
- * container, not the toggle, carries margin-left:auto so the time stays right-
- * aligned even before theme.js reveals the toggle) */
-.site-topnav .topnav-end {
-    margin-left: auto;
-    align-self: center;
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-}
-.site-topnav time {
-    font-size: .72rem;
-    line-height: 1.2;
-    text-align: right;
-    color: var(--fxki-tx-2);
-    white-space: nowrap;
-}
-.site-topnav .theme-toggle {
-    padding: .25em;
-    border: 1px solid var(--fxki-ui-2);
-    border-radius: 50%;
-    background: none;
-    color: var(--fxki-tx-2);
-    cursor: pointer;
-    line-height: 0;
-}
-.site-topnav .theme-toggle::before {
-    font-size: 1rem;
-}
-.site-topnav .theme-toggle[data-theme="auto"]::before { content: '\e1ab'; }
-.site-topnav .theme-toggle[data-theme="light"]::before { content: '\e518'; }
-.site-topnav .theme-toggle[data-theme="dark"]::before { content: '\e51c'; }
-.site-topnav .theme-toggle:hover {
-    color: var(--fxki-tx);
-    border-color: var(--fxki-ui-3);
-}
-@media (max-width: 540px) {
-    /* tighter spacing so the links fit before wrapping */
-    .site-topnav {
-        column-gap: .9rem;
-    }
-    /* it gets cut off by the nav links otherwise */
-    .site-topnav time {
-        display: none;
-    }
 }
 
 /* shared site footer (homepage and the data site) */
@@ -407,6 +426,33 @@ body.error-page .site-topnav {
     border-top: 1px solid var(--fxki-ui-2);
     font-size: .8rem;
     color: var(--fxki-tx-2);
+
+    p {
+        margin: .25rem 0;
+    }
+    nav {
+        ul {
+            list-style: none;
+            margin: .25rem 0;
+            padding: 0;
+        }
+        li {
+            display: inline;
+
+            &:not(:last-of-type)::after {
+                content: "\00a0\2022\00a0";
+                color: var(--fxki-tx-3);
+            }
+        }
+        a {
+            color: var(--fxki-bl);
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
 }
 /* full-width by default; constrained to the content column on the centered pages */
 body.home-page .site-footer {
@@ -416,28 +462,6 @@ body.home-page .site-footer {
 body.about-page .site-footer {
     max-width: 44rem;
     margin-inline: auto;
-}
-.site-footer p {
-    margin: .25rem 0;
-}
-.site-footer nav ul {
-    list-style: none;
-    margin: .25rem 0;
-    padding: 0;
-}
-.site-footer nav li {
-    display: inline;
-}
-.site-footer nav li:not(:last-of-type)::after {
-    content: "\00a0\2022\00a0";
-    color: var(--fxki-tx-3);
-}
-.site-footer nav a {
-    color: var(--fxki-bl);
-    text-decoration: none;
-}
-.site-footer nav a:hover {
-    text-decoration: underline;
 }
 
 /* Material Symbols glyph base: .msym elements render an icon in ::before or
@@ -474,19 +498,21 @@ button.fac-star {
     cursor: pointer;
     line-height: 0;
     vertical-align: -.05em;
-}
-button.fac-star::before {
-    content: '\f09a'; /* star */
-    font-size: 1.1em;
-}
-button.fac-star:hover {
-    color: var(--fxki-tx-2);
-}
-button.fac-star.on {
-    color: var(--fxki-gr);
-}
-button.fac-star.on::before {
-    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+
+    &::before {
+        content: '\f09a'; /* star */
+        font-size: 1.1em;
+    }
+    &:hover {
+        color: var(--fxki-tx-2);
+    }
+    &.on {
+        color: var(--fxki-gr);
+
+        &::before {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    }
 }
 
 .ott-html {

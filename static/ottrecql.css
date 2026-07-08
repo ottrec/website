@@ -12,29 +12,31 @@
 	border: 1px solid var(--fxki-ui-2);
 	border-radius: .4rem;
 	overflow-wrap: break-word;
-}
-.ottrecql-help summary {
-	width: fit-content;
-	cursor: pointer;
-	color: var(--fxki-bl);
-	font-weight: 600;
-}
-.ottrecql-help summary:hover {
-	text-decoration: underline;
-}
-.ottrecql-help[open] summary {
-	margin-bottom: .5rem;
-}
-.ottrecql-help h3 {
-	margin: 1.4rem 0 .6rem;
-	font-size: .7rem;
-	font-weight: 700;
-	letter-spacing: .07em;
-	text-transform: uppercase;
-	color: var(--fxki-tx-2);
-}
-.ottrecql-help p {
-	margin: .5rem 0;
+
+	summary {
+		width: fit-content;
+		cursor: pointer;
+		color: var(--fxki-bl);
+		font-weight: 600;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+	&[open] summary {
+		margin-bottom: .5rem;
+	}
+	h3 {
+		margin: 1.4rem 0 .6rem;
+		font-size: .7rem;
+		font-weight: 700;
+		letter-spacing: .07em;
+		text-transform: uppercase;
+		color: var(--fxki-tx-2);
+	}
+	p {
+		margin: .5rem 0;
+	}
 }
 .ottrecql-tip {
 	margin-top: 1.1rem;
@@ -43,13 +45,15 @@
 /* link from the schedules help out to the full /about/ottrecql page */
 .ottrecql-more {
 	margin-top: 1.1rem;
-}
-.ottrecql-more a {
-	color: var(--fxki-bl);
-	text-decoration: none;
-}
-.ottrecql-more a:hover {
-	text-decoration: underline;
+
+	a {
+		color: var(--fxki-bl);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
 }
 
 .ottrecql-examples,
@@ -133,31 +137,47 @@
 
 /* ---- standalone /about/ottrecql page ---- */
 
-.ottrecql-page main {
-	max-width: 56rem;
-	margin: 0 auto;
-	padding: 1.5rem 1rem 3rem;
-}
-.ottrecql-page h1 {
-	font-family: 'Source Serif 4', serif;
-	font-size: 1.4rem;
-	margin: 0 0 .75rem;
+.ottrecql-page {
+	main {
+		max-width: 56rem;
+		margin: 0 auto;
+		padding: 1.5rem 1rem 3rem;
+	}
+	h1 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.4rem;
+		margin: 0 0 .75rem;
+	}
+	/* on the page the reference is always-open documentation, so it sits flush
+	 * rather than reading as a collapsible utility box */
+	.ottrecql-help {
+		margin: 0;
+		padding: 0;
+		background: none;
+		border: none;
+
+		h3:first-of-type {
+			margin-top: 0;
+		}
+	}
 }
 .ottrecql-lede {
 	margin: 0;
 	font-size: 1rem;
 	line-height: 1.6;
 	color: var(--fxki-tx);
-}
-.ottrecql-lede code {
-	font-size: .85em;
-}
-.ottrecql-lede a {
-	color: var(--fxki-bl);
-	text-decoration: none;
-}
-.ottrecql-lede a:hover {
-	text-decoration: underline;
+
+	code {
+		font-size: .85em;
+	}
+	a {
+		color: var(--fxki-bl);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
 }
 
 /* the query box is the focus of this page, so it's larger and bolder than the
@@ -168,45 +188,36 @@
 	align-items: stretch;
 	gap: .75rem;
 	margin: 1.5rem 0 2.25rem;
-}
-.ottrecql-search textarea,
-.ottrecql-search ottrecql-editor {
-	min-height: 5rem;
-	font-family: ui-monospace, monospace;
-	font-size: 1rem;
-	border: 1px solid var(--fxki-ui-3);
-	border-radius: .5rem;
-	background: var(--fxki-bg);
-	color: inherit;
-}
-.ottrecql-search textarea {
-	padding: .65em .8em;
-	resize: vertical;
-}
-.ottrecql-search button {
-	align-self: flex-start;
-	font: inherit;
-	font-size: .9rem;
-	font-weight: 600;
-	padding: .4em 1.1em;
-	border: none;
-	border-radius: .4rem;
-	background: var(--fxki-bg-3);
-	color: var(--fxki-bl);
-	cursor: pointer;
-}
-.ottrecql-search button:hover {
-	background: var(--fxki-bl);
-	color: var(--fxki-paper);
-}
-/* on the page the reference is always-open documentation, so it sits flush
- * rather than reading as a collapsible utility box */
-.ottrecql-page .ottrecql-help {
-	margin: 0;
-	padding: 0;
-	background: none;
-	border: none;
-}
-.ottrecql-page .ottrecql-help h3:first-of-type {
-	margin-top: 0;
+
+	textarea,
+	ottrecql-editor {
+		min-height: 5rem;
+		font-family: ui-monospace, monospace;
+		font-size: 1rem;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: .5rem;
+		background: var(--fxki-bg);
+		color: inherit;
+	}
+	textarea {
+		padding: .65em .8em;
+		resize: vertical;
+	}
+	button {
+		align-self: flex-start;
+		font: inherit;
+		font-size: .9rem;
+		font-weight: 600;
+		padding: .4em 1.1em;
+		border: none;
+		border-radius: .4rem;
+		background: var(--fxki-bg-3);
+		color: var(--fxki-bl);
+		cursor: pointer;
+
+		&:hover {
+			background: var(--fxki-bl);
+			color: var(--fxki-paper);
+		}
+	}
 }

@@ -9,60 +9,64 @@
 	align-items: center;
 	gap: .5rem;
 	margin: .25rem 0 1rem;
-}
-.search-form button {
-	font: inherit;
-	font-size: .9rem;
-	padding: .35em 1em;
-	border: 1px solid var(--fxki-ui-3);
-	border-radius: .35rem;
-	background: var(--fxki-bg-2);
-	color: inherit;
-	cursor: pointer;
-}
-.search-form button:hover {
-	background: var(--fxki-bg-3);
+
+	button {
+		font: inherit;
+		font-size: .9rem;
+		padding: .35em 1em;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: .35rem;
+		background: var(--fxki-bg-2);
+		color: inherit;
+		cursor: pointer;
+
+		&:hover {
+			background: var(--fxki-bg-3);
+		}
+	}
 }
 .search-form-advanced {
 	flex-direction: column;
 	align-items: flex-start;
-}
-.search-form-advanced textarea {
-	align-self: stretch;
-	max-width: none;
-	font-family: ui-monospace, monospace;
-	font-size: .85rem;
-	padding: .35em .6em;
-	border: 1px solid var(--fxki-ui-3);
-	border-radius: .35rem;
-	background: var(--fxki-bg);
-	color: inherit;
-	resize: vertical;
-}
-/* the textarea is progressively enhanced into this editor (ottrecql-editor) */
-.search-form-advanced ottrecql-editor {
-	align-self: stretch;
-	font-size: .85rem;
-}
-.search-form-advanced .row {
-	display: flex;
-	align-items: baseline;
-	gap: 1rem;
+
+	textarea {
+		align-self: stretch;
+		max-width: none;
+		font-family: ui-monospace, monospace;
+		font-size: .85rem;
+		padding: .35em .6em;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: .35rem;
+		background: var(--fxki-bg);
+		color: inherit;
+		resize: vertical;
+	}
+	/* the textarea is progressively enhanced into this editor (ottrecql-editor) */
+	ottrecql-editor {
+		align-self: stretch;
+		font-size: .85rem;
+	}
+	.row {
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+	}
+	.query-error {
+		margin: 0;
+	}
 }
 .search-mode {
 	font-size: .8rem;
 	color: var(--fxki-bl);
 	text-decoration: none;
-}
-.search-mode:hover {
-	text-decoration: underline;
+
+	&:hover {
+		text-decoration: underline;
+	}
 }
 /* query parse/limit errors, both the server-rendered <p> and the live-
  * validation one schedules.js inserts into the advanced form */
 .query-error {
 	color: var(--fxki-re);
 	font-size: .85rem;
-}
-.search-form-advanced .query-error {
-	margin: 0;
 }

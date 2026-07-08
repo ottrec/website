@@ -45,7 +45,7 @@ func WebsiteActivitiesPage(params WebsiteParams) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main><header class=\"activities-header\"><h1>Activities</h1><p>This page shows facilities currently offering each category of activity, by area, time of day, and weekday: <b class=\"per-m\">morning</b> (until 11:00), <b class=\"per-a\">afternoon</b> (11:00 to 17:00), <b class=\"per-e\">evening</b> (from 17:00).</p><p class=\"activities-about\">It covers every City of Ottawa recreation facility currently offering drop-in activities like swimming, lane swim, aquafit, skating, hockey, badminton, basketball, volleyball, and pickleball, so you can see at a glance where and when each is available.</p></header><div class=\"activity-cards\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main><header class=\"page-header activities-header\"><h1>Activities</h1><p>This page shows facilities currently offering each category of activity, by area, time of day, and weekday: <b class=\"per-m\">morning</b> (until 11:00), <b class=\"per-a\">afternoon</b> (11:00 to 17:00), <b class=\"per-e\">evening</b> (from 17:00).</p><p class=\"activities-about\">It covers every City of Ottawa recreation facility currently offering drop-in activities like swimming, lane swim, aquafit, skating, hockey, badminton, basketball, volleyball, and pickleball, so you can see at a glance where and when each is available.</p></header><div class=\"activity-cards\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

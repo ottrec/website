@@ -7,62 +7,65 @@
 	padding: .45rem 1rem;
 	border-bottom: 1px solid var(--fxki-ui-2);
 	background: var(--fxki-bg-2);
-}
-/* only the category links scroll on narrow screens, so the view toggle beside
- * them stays put (rather than scrolling off, or links peeking under it) */
-.schedules-cats {
-	display: flex;
-	align-items: center;
-	align-self: stretch;
-	gap: 1rem;
-	min-width: 0;
-	overflow-x: auto;
-	/* bleed past the navbar's vertical padding so the scrollbar sits flush at
-	 * the bottom edge (a bigger, easier target) rather than inset within it;
-	 * the matching padding keeps the links in place and cancels out when there
-	 * is no scrollbar */
-	margin: -.45rem 0;
-	padding: .45rem 0;
-}
-.schedules-catnav a {
-	color: var(--fxki-tx-2);
-	text-decoration: none;
-	font-size: .85rem;
-	white-space: nowrap;
-}
-.schedules-catnav a:hover {
-	color: var(--fxki-tx);
-	text-decoration: underline;
-}
-.schedules-catnav a.active {
-	color: var(--fxki-bl);
-	font-weight: 600;
-}
 
-/* table/list view toggle */
+	/* only the category links scroll on narrow screens, so the view toggle beside
+	 * them stays put (rather than scrolling off, or links peeking under it) */
+	.schedules-cats {
+		display: flex;
+		align-items: center;
+		align-self: stretch;
+		gap: 1rem;
+		min-width: 0;
+		overflow-x: auto;
+		/* bleed past the navbar's vertical padding so the scrollbar sits flush at
+		 * the bottom edge (a bigger, easier target) rather than inset within it;
+		 * the matching padding keeps the links in place and cancels out when there
+		 * is no scrollbar */
+		margin: -.45rem 0;
+		padding: .45rem 0;
+	}
+	a {
+		color: var(--fxki-tx-2);
+		text-decoration: none;
+		font-size: .85rem;
+		white-space: nowrap;
 
-.schedules-catnav .schedules-view {
-	display: flex;
-	flex-shrink: 0;
-	margin-left: auto;
-	border: 1px solid var(--fxki-ui-2);
-	border-radius: .35rem;
-	overflow: hidden;
-}
-.schedules-catnav .schedules-view a {
-	padding: .1rem .6rem;
-	font-size: .75rem;
-}
-.schedules-catnav .schedules-view a:hover {
-	text-decoration: none;
-}
-.schedules-catnav .schedules-view a + a {
-	border-left: 1px solid var(--fxki-ui-2);
-}
-.schedules-catnav .schedules-view a.active {
-	background: var(--fxki-ui);
-	color: var(--fxki-tx);
-	font-weight: 600;
+		&:hover {
+			color: var(--fxki-tx);
+			text-decoration: underline;
+		}
+		&.active {
+			color: var(--fxki-bl);
+			font-weight: 600;
+		}
+	}
+
+	/* table/list view toggle */
+	.schedules-view {
+		display: flex;
+		flex-shrink: 0;
+		margin-left: auto;
+		border: 1px solid var(--fxki-ui-2);
+		border-radius: .35rem;
+		overflow: hidden;
+
+		a {
+			padding: .1rem .6rem;
+			font-size: .75rem;
+
+			&:hover {
+				text-decoration: none;
+			}
+			& + a {
+				border-left: 1px solid var(--fxki-ui-2);
+			}
+			&.active {
+				background: var(--fxki-ui);
+				color: var(--fxki-tx);
+				font-weight: 600;
+			}
+		}
+	}
 }
 
 /* page layout */
@@ -92,56 +95,59 @@
 	max-height: calc(100vh - 2rem);
 	overflow-y: auto;
 	font-size: .7rem;
-}
-.schedules-toc ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-.schedules-toc ul ul {
-	padding-left: 1.3rem;
-}
-.schedules-toc > nav > ul > li {
-	margin: .4rem 0;
-}
-.schedules-toc a {
-	display: block;
-	padding: .05rem 0;
-	color: var(--fxki-tx-3);
-	text-decoration: none;
-}
-.schedules-toc > nav > ul > li > a {
-	color: var(--fxki-tx-2);
-	position: relative;
-	padding-left: .9em;
-}
-/* arrow gutter for the currently visible facility (set by schedules.js) */
-.schedules-toc > nav > ul > li > a::before {
-	content: '';
-	position: absolute;
-	left: 0;
-	color: var(--fxki-tx-3);
-}
-.schedules-toc > nav > ul > li > a.active::before {
-	content: '▸';
-}
-.schedules-toc a.active {
-	color: var(--fxki-tx);
-	font-weight: 600;
-}
-/* starred facility indicator (.starred is set by starred.js; the glyph base
- * comes from .msym in website.css) */
-.schedules-toc a.starred::after {
-	content: '\f09a'; /* star */
-	font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
-	font-size: 1.15em;
-	vertical-align: -.2em;
-	margin-left: .25em;
-	color: var(--fxki-gr);
-}
-.schedules-toc a:hover {
-	color: var(--fxki-bl);
-	text-decoration: underline;
+
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+
+		ul {
+			padding-left: 1.3rem;
+		}
+	}
+	> nav > ul > li {
+		margin: .4rem 0;
+	}
+	a {
+		display: block;
+		padding: .05rem 0;
+		color: var(--fxki-tx-3);
+		text-decoration: none;
+	}
+	> nav > ul > li > a {
+		color: var(--fxki-tx-2);
+		position: relative;
+		padding-left: .9em;
+
+		/* arrow gutter for the currently visible facility (set by schedules.js) */
+		&::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			color: var(--fxki-tx-3);
+		}
+		&.active::before {
+			content: '▸';
+		}
+	}
+	a.active {
+		color: var(--fxki-tx);
+		font-weight: 600;
+	}
+	/* starred facility indicator (.starred is set by starred.js; the glyph base
+	 * comes from .msym in website.css) */
+	a.starred::after {
+		content: '\f09a'; /* star */
+		font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+		font-size: 1.15em;
+		vertical-align: -.2em;
+		margin-left: .25em;
+		color: var(--fxki-gr);
+	}
+	a:hover {
+		color: var(--fxki-bl);
+		text-decoration: underline;
+	}
 }
 /* the toggle button and overlay header only exist on mobile (see media query) */
 .schedules-toc-toggle,
@@ -152,6 +158,46 @@
 	/* hidden until the button is tapped open (and until JS reveals the button) */
 	.schedules-toc {
 		display: none;
+
+		&.open {
+			display: block;
+			position: fixed;
+			inset: 0;
+			z-index: 1400;
+			width: auto;
+			max-height: none;
+			margin: 0;
+			padding: 0 1.25rem 1.25rem;
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			background: var(--fxki-bg);
+			font-size: .95rem;
+
+			.schedules-toc-head {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				position: sticky;
+				top: 0;
+				padding: .75rem 0;
+				background: var(--fxki-bg);
+				border-bottom: 1px solid var(--fxki-ui-2);
+				font-weight: 600;
+			}
+			.schedules-toc-close {
+				padding: 0 .25rem;
+				border: 0;
+				background: none;
+				color: var(--fxki-tx-2);
+				font-size: 1.5rem;
+				line-height: 1;
+				cursor: pointer;
+			}
+			/* larger tap targets in the overlay */
+			a {
+				padding: .35rem 0;
+			}
+		}
 	}
 	.schedules-toc-toggle:not([hidden]) {
 		display: inline-flex;
@@ -169,44 +215,6 @@
 		box-shadow: 0 1px 4px rgb(0 0 0 / .25);
 		cursor: pointer;
 	}
-	.schedules-toc.open {
-		display: block;
-		position: fixed;
-		inset: 0;
-		z-index: 1400;
-		width: auto;
-		max-height: none;
-		margin: 0;
-		padding: 0 1.25rem 1.25rem;
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		background: var(--fxki-bg);
-		font-size: .95rem;
-	}
-	.schedules-toc.open .schedules-toc-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		position: sticky;
-		top: 0;
-		padding: .75rem 0;
-		background: var(--fxki-bg);
-		border-bottom: 1px solid var(--fxki-ui-2);
-		font-weight: 600;
-	}
-	.schedules-toc.open .schedules-toc-close {
-		padding: 0 .25rem;
-		border: 0;
-		background: none;
-		color: var(--fxki-tx-2);
-		font-size: 1.5rem;
-		line-height: 1;
-		cursor: pointer;
-	}
-	/* larger tap targets in the overlay */
-	.schedules-toc.open a {
-		padding: .35rem 0;
-	}
 }
 .schedules-facility,
 .schedules-page .schedule-group {
@@ -215,51 +223,50 @@
 .schedules-page article.facility h1 {
 	font-size: 1.15rem;
 }
-.schedules-header h1 {
-	font-family: 'Source Serif 4', serif;
-	font-size: 1.4rem;
-	margin: 0 0 .25rem;
-}
-.schedules-header p {
-	margin: 0 0 .75rem;
-	font-size: .85rem;
-	color: var(--fxki-tx-2);
-}
-.schedules-header .schedules-note {
-	margin: -.5rem 0 .75rem;
-	font-size: .75rem;
-	color: var(--fxki-tx-3);
-}
-.schedules-header .schedules-note code {
-	font-family: ui-monospace, monospace;
-	font-size: .95em;
-	background: var(--fxki-bg-2);
-	border: 1px solid var(--fxki-ui);
-	border-radius: .2em;
-	padding: 0 .25em;
+/* the title/intro base comes from .page-header in website.css */
+.schedules-header {
+	p {
+		margin-bottom: .75rem;
+		font-size: .85rem;
+	}
+	.schedules-note {
+		margin: -.5rem 0 .75rem;
+		font-size: .75rem;
+		color: var(--fxki-tx-3);
+
+		code {
+			font-family: ui-monospace, monospace;
+			font-size: .95em;
+			background: var(--fxki-bg-2);
+			border: 1px solid var(--fxki-ui);
+			border-radius: .2em;
+			padding: 0 .25em;
+		}
+	}
 }
 
 /* search box (the shared base styles live in search.css) */
 
-.schedules-search input {
-	flex: 1;
-	font: inherit;
-	font-size: .9rem;
-	padding: .35em .6em;
-	border: 1px solid var(--fxki-ui-3);
-	border-radius: .35rem;
-	background: var(--fxki-bg);
-	color: inherit;
-}
-/* simple search: wrap the advanced-search link onto its own line, tight under
- * the input on the left, in slightly smaller text */
 .schedules-search {
+	/* simple search: wrap the advanced-search link onto its own line, tight
+	 * under the input on the left, in slightly smaller text */
 	flex-wrap: wrap;
 	row-gap: .1rem;
-}
-.schedules-search .search-mode {
-	flex-basis: 100%;
-	font-size: .72rem;
+
+	input {
+		flex: 1;
+		font: inherit;
+		font-size: .9rem;
+		padding: .35em .6em;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: .35rem;
+		background: var(--fxki-bg);
+		color: inherit;
+	}
+	.search-mode {
+		flex-basis: 100%;
+		font-size: .72rem;
+	}
 }
 /* root-page descriptive blurb (mainly for SEO) */
 .schedules-about {
@@ -267,14 +274,17 @@
 	font-size: .8rem;
 	line-height: 1.5;
 	color: var(--fxki-tx-3);
+
+	a {
+		color: var(--fxki-bl);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
 }
-.schedules-about a {
-	color: var(--fxki-bl);
-	text-decoration: none;
-}
-.schedules-about a:hover {
-	text-decoration: underline;
-}
+
 /* facility sections */
 
 .schedules-empty {
@@ -284,10 +294,11 @@
 	margin: 1.5rem 0;
 	padding-top: 1rem;
 	border-top: 2px solid var(--fxki-ui-2);
-}
-.schedules-facility:first-of-type {
-	border-top: none;
-	padding-top: 0;
+
+	&:first-of-type {
+		border-top: none;
+		padding-top: 0;
+	}
 }
 
 /* print: drop the navigation and search, print the schedules full width */

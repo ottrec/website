@@ -1,57 +1,62 @@
-.about-page main {
-	max-width: 44rem;
-	margin: 0 auto;
-	padding: 1rem 1rem 3rem;
-}
-.about-page h1 {
-	font-family: 'Source Serif 4', serif;
-	font-size: 1.4rem;
-	margin: 0 0 .25rem;
-}
-.about-page h2 {
-	font-family: 'Source Serif 4', serif;
-	font-size: 1.05rem;
-	margin: 1.75rem 0 .25rem;
-}
-.about-page section {
-	scroll-margin-top: .75rem;
-}
-.about-page p,
-.about-page li {
-	font-size: .9rem;
-	line-height: 1.6;
-	margin: .5rem 0;
-}
-.about-page ul {
-	padding-left: 1.25rem;
-}
-.about-page a {
-	color: var(--fxki-bl);
-	text-decoration: none;
-}
-.about-page a:hover {
-	text-decoration: underline;
-}
+.about-page {
+	main {
+		max-width: 44rem;
+		margin: 0 auto;
+		padding: 1rem 1rem 3rem;
+	}
+	h1 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.4rem;
+		margin: 0 0 .25rem;
+	}
+	h2 {
+		font-family: 'Source Serif 4', serif;
+		font-size: 1.05rem;
+		margin: 1.75rem 0 .25rem;
+	}
+	section {
+		scroll-margin-top: .75rem;
+	}
+	p,
+	li {
+		font-size: .9rem;
+		line-height: 1.6;
+		margin: .5rem 0;
+	}
+	ul {
+		padding-left: 1.25rem;
+	}
+	a {
+		color: var(--fxki-bl);
+		text-decoration: none;
 
-/* starred facility save/restore/clear buttons (revealed by starred.js) */
-.about-page .starred-actions {
-	display: flex;
-	gap: .5rem;
-}
-.about-page .starred-actions[hidden] {
-	/* the flex display would override the hidden attribute otherwise */
-	display: none;
-}
-.about-page .starred-actions button {
-	font: inherit;
-	font-size: .85rem;
-	padding: .25em .9em;
-	border: 1px solid var(--fxki-ui-3);
-	border-radius: .3rem;
-	background: var(--fxki-bg-2);
-	color: var(--fxki-tx);
-	cursor: pointer;
-}
-.about-page .starred-actions button:hover {
-	background: var(--fxki-ui);
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	/* starred facility save/restore/clear buttons (revealed by starred.js) */
+	.starred-actions {
+		display: flex;
+		gap: .5rem;
+
+		&[hidden] {
+			/* the flex display would override the hidden attribute otherwise */
+			display: none;
+		}
+		button {
+			font: inherit;
+			font-size: .85rem;
+			padding: .25em .9em;
+			border: 1px solid var(--fxki-ui-3);
+			border-radius: .3rem;
+			background: var(--fxki-bg-2);
+			color: var(--fxki-tx);
+			cursor: pointer;
+
+			&:hover {
+				background: var(--fxki-ui);
+			}
+		}
+	}
 }
