@@ -45,15 +45,6 @@
 /* link from the schedules help out to the full /about/ottrecql page */
 .ottrecql-more {
 	margin-top: 1.1rem;
-
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 }
 
 .ottrecql-examples,
@@ -169,14 +160,6 @@
 
 	code {
 		font-size: .85em;
-	}
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
 	}
 }
 

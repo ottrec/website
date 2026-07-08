@@ -44,14 +44,6 @@
 		color: var(--fxki-tx-2);
 		line-height: 1.55;
 	}
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 
 	/* download links — quiet bordered buttons */
 	.dl {

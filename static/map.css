@@ -105,9 +105,6 @@ body.map-page {
 		max-width: 30rem;
 		color: var(--fxki-tx-2);
 	}
-	a {
-		color: var(--fxki-bl);
-	}
 }
 #map {
 	position: absolute;
@@ -425,10 +422,8 @@ ul#fac-list {
 	}
 }
 
-.leaflet-container {
-	background: var(--fxki-bg-2);
-	font: inherit;
-}
+/* the shared flexoki restyling (container, attribution, tooltips) comes from
+ * leaflet-theme.css; only the map page's own leaflet chrome is styled here */
 .leaflet-bar a {
 	background: var(--fxki-bg);
 	color: var(--fxki-tx);
@@ -442,20 +437,6 @@ ul#fac-list {
 	&.leaflet-disabled {
 		background: var(--fxki-bg-2);
 		color: var(--fxki-tx-3);
-	}
-}
-.leaflet-container .leaflet-control-attribution {
-	/* --fxki-bg (paper/black) with alpha; can't use color-mix since postcss
-	 * may drop it for older targets, leaving leaflet's white fallback */
-	background: light-dark(rgba(255, 252, 240, .8), rgba(16, 15, 15, .8));
-	color: var(--fxki-tx-2);
-
-	a {
-		color: var(--fxki-bl);
-
-		&:hover {
-			color: var(--fxki-bl);
-		}
 	}
 }
 .leaflet-popup-content-wrapper,
@@ -472,22 +453,6 @@ ul#fac-list {
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip-container {
 	animation: fac-popup-in .2s ease-out;
-}
-.leaflet-control-attribution {
-	font-size: 80%;
-}
-.leaflet-tooltip {
-	font: inherit;
-	font-size: .75rem;
-	padding: .15rem .5rem;
-	background: var(--fxki-bg);
-	color: var(--fxki-tx);
-	border: 1px solid var(--fxki-ui-2);
-	border-radius: .3rem;
-	box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
-}
-.leaflet-tooltip-top::before {
-	border-top-color: var(--fxki-ui-2);
 }
 .leaflet-container a.leaflet-popup-close-button {
 	width: 2rem;

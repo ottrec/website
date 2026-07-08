@@ -15,7 +15,7 @@ templ WebsiteMapPage(params WebsiteParams) {
 		BodyClass: "map-page",
 		Nav:       "map",
 		Updated:   params.Data.Index().Updated(),
-		CSS:       []*asset.Asset{static.LeafletCSS, static.FacilityCSS, static.MapCSS},
+		CSS:       []*asset.Asset{static.LeafletCSS, static.LeafletThemeCSS, static.FacilityCSS, static.MapCSS},
 	}) {
 		<h1 class="visually-hidden">Map of City of Ottawa drop-in recreation facilities</h1>
 		<div class="map-filterbar">

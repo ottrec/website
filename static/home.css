@@ -75,14 +75,6 @@ body.home-page {
 		margin: 0;
 		line-height: 1.4;
 	}
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 }
 
 /* section tiles */
@@ -169,14 +161,6 @@ body.home-page {
 		color: var(--fxki-tx-2);
 		line-height: 1.45;
 	}
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 	@media (max-width: 30rem) {
 		li {
 			flex-direction: column;
@@ -210,14 +194,6 @@ body.home-page {
 			color: var(--fxki-tx-2);
 		}
 	}
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 }
 
 /* injected home extra (templates.SetHomeExtra): give an injected <section>'s
@@ -238,13 +214,5 @@ body.home-page {
 		font-size: .9rem;
 		line-height: 1.45;
 		color: var(--fxki-tx-2);
-	}
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
 	}
 }

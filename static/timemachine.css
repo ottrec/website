@@ -619,6 +619,7 @@ a.tm-fac-card:focus {
 .tm-cat-pill:hover,
 .tm-cat-pill:focus {
 	border-color: var(--fxki-bl);
+	text-decoration: none; /* it's a pill, not a text link */
 }
 .tm-cat-pill.active {
 	background: var(--fxki-bl);

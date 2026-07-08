@@ -18,7 +18,7 @@ var aboutContentBlocks = map[string]aboutContentBlock{
 	"regions-map": {
 		Body: regionsMapBody,
 		Foot: regionsMapFoot,
-		CSS:  []*asset.Asset{static.LeafletCSS, static.RegionsCSS},
+		CSS:  []*asset.Asset{static.LeafletCSS, static.LeafletThemeCSS, static.RegionsCSS},
 	},
 	"regions-table": {
 		Body: regionsTableBody,

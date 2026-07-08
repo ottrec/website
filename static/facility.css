@@ -21,15 +21,6 @@ article.facility {
 		padding-top: .1rem;
 		font-size: .72rem;
 		white-space: nowrap;
-
-		a {
-			color: var(--fxki-bl);
-			text-decoration: none;
-
-			&:hover {
-				text-decoration: underline;
-			}
-		}
 	}
 	h1 {
 		margin: 0;
@@ -87,14 +78,6 @@ article.facility {
 		margin: .4rem 0;
 		font-size: .8rem;
 
-		a {
-			color: var(--fxki-bl);
-			text-decoration: none;
-
-			&:hover {
-				text-decoration: underline;
-			}
-		}
 		&:empty {
 			display: none;
 		}
@@ -104,54 +87,21 @@ article.facility {
 
 		a {
 			color: light-dark(var(--fxki-blue-400), var(--fxki-blue-600));
-			text-decoration: none;
 			word-break: break-all;
-
-			&:hover {
-				text-decoration: underline;
-			}
 		}
 	}
-	.facility-special-hours,
-	.facility-notifications,
-	.schedule-group-changes {
-		background: light-dark(var(--fxki-yellow-50), var(--fxki-yellow-950));
-		border: 1px solid light-dark(var(--fxki-yellow-150), var(--fxki-yellow-900));
-		border-radius: .35rem;
-		padding: .35rem .5rem;
+	/* the box chrome for the special hours, notifications, schedule changes,
+	 * errors, and reservation sections comes from .note-box in website.css */
+	.facility-errors ul {
+		margin: .15rem 0 0;
+		padding-left: 1.1em;
+		font-size: .72rem;
+		color: var(--fxki-re);
 	}
-	.facility-errors {
-		background: light-dark(var(--fxki-red-50), var(--fxki-red-950));
-		border: 1px solid light-dark(var(--fxki-red-150), var(--fxki-red-900));
-		border-radius: .35rem;
-		padding: .35rem .5rem;
-
-		ul {
-			margin: .15rem 0 0;
-			padding-left: 1.1em;
-			font-size: .72rem;
-			color: var(--fxki-re);
-		}
-	}
-	.schedule-group-reservation {
-		background: var(--fxki-bg-2);
-		border: 1px solid var(--fxki-ui-2);
-		border-radius: .35rem;
-		padding: .35rem .5rem;
-
-		ul {
-			margin: 0;
-			padding-left: 1.1em;
-			font-size: .75rem;
-		}
-		a {
-			color: var(--fxki-bl);
-			text-decoration: none;
-
-			&:hover {
-				text-decoration: underline;
-			}
-		}
+	.schedule-group-reservation ul {
+		margin: 0;
+		padding-left: 1.1em;
+		font-size: .75rem;
 	}
 	.raw-html {
 		font-size: .72rem;

@@ -374,8 +374,10 @@ var (
 	))
 
 	// leaflet's JS is imported and bundled by map.ts; only its stylesheet is
-	// served, read straight from the vendored package
-	LeafletCSS = assets.RegisterFS("lib/leaflet.css", pkgFS("leaflet"), "dist/leaflet.css")
+	// served, read straight from the vendored package. leaflet-theme.css is the
+	// shared flexoki restyling layered on it by the map and regions pages.
+	LeafletCSS      = assets.RegisterFS("lib/leaflet.css", pkgFS("leaflet"), "dist/leaflet.css")
+	LeafletThemeCSS = assets.Register("leaflet-theme.css", css)
 
 	FaviconSVG        = assets.Register("favicon.svg")
 	FaviconICO        = assets.Register("favicon.ico")
@@ -444,6 +446,7 @@ var Website = assets.
 		AsapWOFF2,
 		AsapItalicWOFF2,
 		LeafletCSS,
+		LeafletThemeCSS,
 		FaviconSVG,
 		FaviconICO,
 		AppleTouchIconPNG,

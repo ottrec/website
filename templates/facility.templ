@@ -71,7 +71,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 			</section>
 		}
 		if h := strings.TrimSpace(fac.GetSpecialHoursHTML()); h != "" {
-			<section class="facility-special-hours">
+			<section class="facility-special-hours note-box note-warn">
 				// it's unfortunate that I have to repeat the facility name
 				// here, but without it, LLMs reading the page (especially
 				// ChatGPT) misinterpret the cancellations as applying to all
@@ -82,7 +82,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 			</section>
 		}
 		if h := strings.TrimSpace(fac.GetNotificationsHTML()); h != "" {
-			<section class="facility-notifications">
+			<section class="facility-notifications note-box note-warn">
 				// same about the repeated facility name
 				@facilityBox("Notifications \u2013 "+fac.GetName(), false, opts.List) {
 					@rawScrapedHTML(h)
@@ -90,7 +90,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 			</section>
 		}
 		if hasFacilityErrors(fac) {
-			<section class="facility-errors">
+			<section class="facility-errors note-box note-error">
 				<h2>Errors</h2>
 				<ul>
 					for e := range fac.GetErrors() {
@@ -112,7 +112,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 							<h3>{ grp.GetTitle() }</h3>
 						}
 						if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
-							<section class="schedule-group-changes">
+							<section class="schedule-group-changes note-box note-warn">
 								// same about the repeated facility/group name
 								@facilityBox("Schedule Changes \u2013 "+fac.GetName()+" \u2013 "+grp.GetTitle(), true, opts.List) {
 									@rawScrapedHTML(h)
@@ -120,7 +120,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 							</section>
 						}
 						if hasReservationLinks(grp) {
-							<section class="schedule-group-reservation">
+							<section class="schedule-group-reservation note-box">
 								// same about the repeated facility/group name
 								<h4>{ "Reservation \u2013 "+fac.GetName()+" \u2013 "+grp.GetTitle() }</h4>
 								<ul>

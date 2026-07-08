@@ -94,7 +94,7 @@ func WebsiteMapPage(params WebsiteParams) templ.Component {
 			BodyClass: "map-page",
 			Nav:       "map",
 			Updated:   params.Data.Index().Updated(),
-			CSS:       []*asset.Asset{static.LeafletCSS, static.FacilityCSS, static.MapCSS},
+			CSS:       []*asset.Asset{static.LeafletCSS, static.LeafletThemeCSS, static.FacilityCSS, static.MapCSS},
 		}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

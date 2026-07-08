@@ -1,0 +1,34 @@
+/* flexoki theme for the embedded Leaflet maps, shared by the map page and the
+ * /about/regions map. Loaded after leaflet.css so equal-specificity rules win;
+ * page-specific chrome (popups, zoom bar, layers control) stays in map.css and
+ * regions.css. */
+
+.leaflet-container {
+	background: var(--fxki-bg-2);
+	font: inherit;
+
+	/* leaflet.css sets its own link blue */
+	a {
+		color: var(--fxki-bl);
+	}
+	.leaflet-control-attribution {
+		/* --fxki-bg (paper/black) with alpha; can't use color-mix since postcss
+		 * may drop it for older targets, leaving leaflet's white fallback */
+		background: light-dark(rgba(255, 252, 240, .8), rgba(16, 15, 15, .8));
+		color: var(--fxki-tx-2);
+		font-size: 80%;
+	}
+}
+.leaflet-tooltip {
+	font: inherit;
+	font-size: .75rem;
+	padding: .15rem .5rem;
+	background: var(--fxki-bg);
+	color: var(--fxki-tx);
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .3rem;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+}
+.leaflet-tooltip-top::before {
+	border-top-color: var(--fxki-ui-2);
+}

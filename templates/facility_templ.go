@@ -279,7 +279,7 @@ func WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArtic
 			}
 		}
 		if h := strings.TrimSpace(fac.GetSpecialHoursHTML()); h != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<section class=\"facility-special-hours\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<section class=\"facility-special-hours note-box note-warn\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -311,7 +311,7 @@ func WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArtic
 			}
 		}
 		if h := strings.TrimSpace(fac.GetNotificationsHTML()); h != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<section class=\"facility-notifications\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<section class=\"facility-notifications note-box note-warn\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -343,7 +343,7 @@ func WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArtic
 			}
 		}
 		if hasFacilityErrors(fac) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<section class=\"facility-errors\"><h2>Errors</h2><ul>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<section class=\"facility-errors note-box note-error\"><h2>Errors</h2><ul>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -442,7 +442,7 @@ func WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArtic
 					}
 				}
 				if h := strings.TrimSpace(grp.GetScheduleChangesHTML()); h != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "<section class=\"schedule-group-changes\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "<section class=\"schedule-group-changes note-box note-warn\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -474,7 +474,7 @@ func WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArtic
 					}
 				}
 				if hasReservationLinks(grp) {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<section class=\"schedule-group-reservation\"><h4>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "<section class=\"schedule-group-reservation note-box\"><h4>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

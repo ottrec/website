@@ -57,12 +57,6 @@
 }
 .search-mode {
 	font-size: .8rem;
-	color: var(--fxki-bl);
-	text-decoration: none;
-
-	&:hover {
-		text-decoration: underline;
-	}
 }
 /* query parse/limit errors, both the server-rendered <p> and the live-
  * validation one schedules.js inserts into the advanced form */

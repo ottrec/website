@@ -578,6 +578,7 @@
 
 	&:hover {
 		background: light-dark(rgb(32 94 166 / .2), rgb(131 173 234 / .26));
+		text-decoration: none; /* it's a pill, not a text link */
 	}
 }
 /* small grey "full schedule" button opening the schedule modal */
@@ -845,19 +846,12 @@ button.t-warn {
 	li {
 		margin: .2rem 0;
 	}
-	a {
-		color: var(--fxki-bl);
-	}
 }
 .today-modal-source {
 	margin: 1rem 0 0;
 	padding-top: .75rem;
 	border-top: 1px solid var(--fxki-ui);
 	font-size: .85rem;
-
-	a {
-		color: var(--fxki-bl);
-	}
 }
 
 @media (max-width: 480px) {

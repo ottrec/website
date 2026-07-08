@@ -274,6 +274,16 @@ table {
     font-variation-settings: "wdth" 87.5;
 }
 
+/* default link style; components override the color (or suppress the hover
+ * underline) where needed */
+a {
+    color: var(--fxki-bl);
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
 /* hidden visually but available to screen readers and crawlers */
 .visually-hidden {
     position: absolute;
@@ -304,14 +314,6 @@ main.error-page {
         margin: .5rem 0;
         color: var(--fxki-tx-2);
     }
-    a {
-        color: var(--fxki-bl);
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
 }
 
 /* shared page header (the today, schedules, and activities pages): a serif
@@ -327,6 +329,26 @@ main.error-page {
         margin: 0 0 1rem;
         font-size: .9rem;
         color: var(--fxki-tx-2);
+    }
+}
+
+/* tinted note boxes (the facility article's special hours, notifications,
+ * schedule changes, errors, and reservations): grey by default, with yellow
+ * (advisory) and red (problem) variants */
+
+.note-box {
+    border: 1px solid var(--fxki-ui-2);
+    border-radius: .35rem;
+    padding: .35rem .5rem;
+    background: var(--fxki-bg-2);
+
+    &.note-warn {
+        background: light-dark(var(--fxki-yellow-50), var(--fxki-yellow-950));
+        border-color: light-dark(var(--fxki-yellow-150), var(--fxki-yellow-900));
+    }
+    &.note-error {
+        background: light-dark(var(--fxki-red-50), var(--fxki-red-950));
+        border-color: light-dark(var(--fxki-red-150), var(--fxki-red-900));
     }
 }
 
@@ -442,14 +464,6 @@ body.error-page .site-topnav {
             &:not(:last-of-type)::after {
                 content: "\00a0\2022\00a0";
                 color: var(--fxki-tx-3);
-            }
-        }
-        a {
-            color: var(--fxki-bl);
-            text-decoration: none;
-
-            &:hover {
-                text-decoration: underline;
             }
         }
     }

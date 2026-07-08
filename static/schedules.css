@@ -274,15 +274,6 @@
 	font-size: .8rem;
 	line-height: 1.5;
 	color: var(--fxki-tx-3);
-
-	a {
-		color: var(--fxki-bl);
-		text-decoration: none;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 }
 
 /* facility sections */
