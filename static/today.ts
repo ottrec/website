@@ -133,6 +133,13 @@ for (const d of days) {
 	d.tab.type = 'button'
 	d.tab.className = 'today-tab' + (d.today ? ' today' : '')
 	d.tab.setAttribute('role', 'tab')
+	// wire up the tab <-> panel association (the day section is the panel)
+	d.tab.id = 'today-tab-' + d.date
+	d.tab.setAttribute('aria-controls', 'today-panel-' + d.date)
+	d.el.setAttribute('role', 'tabpanel')
+	d.el.id = 'today-panel-' + d.date
+	d.el.setAttribute('aria-labelledby', d.tab.id)
+	d.el.tabIndex = 0
 	const wd = document.createElement('span')
 	wd.className = 'tab-wd'
 	wd.textContent = d.today ? 'Today' : d.weekday
@@ -147,6 +154,26 @@ for (const d of days) {
 	tabsEl.append(d.tab)
 }
 
+// arrow-key roving focus over the day tabs (horizontal tablist, automatic
+// activation: moving focus selects the day). apply() keeps aria-selected and
+// the roving tabindex in sync.
+tabsEl.addEventListener('keydown', (ev) => {
+	const idx = days.findIndex((d) => d.date === activeDate)
+	if (idx < 0) return
+	let next: number
+	switch (ev.key) {
+		case 'ArrowRight': next = (idx + 1) % days.length; break
+		case 'ArrowLeft': next = (idx - 1 + days.length) % days.length; break
+		case 'Home': next = 0; break
+		case 'End': next = days.length - 1; break
+		default: return
+	}
+	ev.preventDefault()
+	activeDate = days[next]!.date
+	apply()
+	days[next]!.tab.focus()
+})
+
 // main apply: show the active day, filter its sessions, and refresh everything
 // that depends on it.
 function apply() {
@@ -158,6 +185,8 @@ function apply() {
 		const isActive = d.date === activeDate
 		d.el.hidden = !isActive
 		d.tab.classList.toggle('active', isActive)
+		d.tab.setAttribute('aria-selected', isActive ? 'true' : 'false')
+		d.tab.tabIndex = isActive ? 0 : -1 // roving tabindex
 		if (isActive) {
 			for (const s of d.sessions) {
 				const vis = sessionVisible(s)
