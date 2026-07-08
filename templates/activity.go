@@ -443,7 +443,7 @@ func activityMonFirst(d int) int {
 // activityWhenPeriods labels the set periods in a mask byte.
 func activityWhenPeriods(b byte) string {
 	if b == 0b111 {
-		return "all day"
+		return "throughout the day" // not "all day" since that may be misleading
 	}
 	var words []string
 	for p := range 3 {
