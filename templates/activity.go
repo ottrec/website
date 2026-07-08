@@ -10,67 +10,73 @@ import (
 )
 
 // ActivityLink is an external resource linked from an activity landing page
-// (e.g. the City's pool-accessibility or outdoor-rink pages).
+// (e.g. the City's pool-accessibility or outdoor-rink pages). Cats lists the
+// category slugs it applies to; an empty Cats applies to every category.
 type ActivityLink struct {
 	Label string
 	URL   string
-	Note  string // short trailing note (may be "")
+	Note  string   // short trailing note (may be "")
+	Cats  []string // category slugs this link applies to; empty = all categories
 }
 
-// activityLinks holds the per-activity value-add links, keyed by schedule
-// category slug. Only categories with an entry show a related-links section.
-var activityLinks = map[string][]ActivityLink{
-	"swimming": {{
+// activityLinks are the value-add links, each tagged with the categories it
+// applies to (in display order). A category shows every link whose Cats include
+// its slug, plus any link with no Cats (which applies to all categories).
+var activityLinks = []ActivityLink{
+	{
+		Label: "Drop-in recreation memberships",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/active-ottawa-membership/member-pricing",
+		Note:  "from the City of Ottawa",
+		Cats:  nil,
+	},
+	{
 		Label: "Pool temperatures and accessibility features",
 		URL:   "https://ottawa.ca/en/recreation-and-parks/accessible-features-and-places/accessibility-pools",
 		Note:  "from the City of Ottawa",
-	}, {
+		Cats:  []string{"swimming", "lane-swim"},
+	},
+	{
 		Label: "Rules and safety information",
 		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/swimming-aquafitness-and-wave-swim/safety-and-supervision",
 		Note:  "from the City of Ottawa",
-	}},
-	"lane-swim": {{
-		Label: "Pool temperatures and accessibility features",
-		URL:   "https://ottawa.ca/en/recreation-and-parks/accessible-features-and-places/accessibility-pools",
-		Note:  "from the City of Ottawa",
-	}, {
-		Label: "Rules and safety information",
-		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/swimming-aquafitness-and-wave-swim/safety-and-supervision",
-		Note:  "from the City of Ottawa",
-	}},
-	"hockey": {{
-		Label: "Outdoor rink locations",
-		URL:   "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/skating/outdoor-rinks/outdoor-rink-locations",
-		Note:  "from the City of Ottawa",
-	}, {
-		Label: "Rules and activity information",
-		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/skating-and-ice-sport-drop-descriptions",
-		Note:  "from the City of Ottawa",
-	}, {
-		Label: "Fees at stand-alone arenas",
-		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/fees-stand-alone-arenas",
-		Note:  "from the City of Ottawa",
-	}},
-	"skating": {{
-		Label: "Rules and activity information",
-		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/skating-and-ice-sport-drop-descriptions",
-		Note:  "from the City of Ottawa",
-	}, {
-		Label: "Fees at stand-alone arenas",
-		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/fees-stand-alone-arenas",
-		Note:  "from the City of Ottawa",
-	}},
-	"aquafit": {{
+		Cats:  []string{"swimming", "lane-swim"},
+	},
+	{
 		Label: "Activity information",
 		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/swimming-aquafitness-and-wave-swim/aquafitness-drop-descriptions",
 		Note:  "from the City of Ottawa",
-	}},
+		Cats:  []string{"aquafit"},
+	},
+	{
+		Label: "Outdoor rink locations",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/skating/outdoor-rinks/outdoor-rink-locations",
+		Note:  "from the City of Ottawa",
+		Cats:  []string{"hockey"},
+	},
+	{
+		Label: "Rules and activity information",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/skating-and-ice-sport-drop-descriptions",
+		Note:  "from the City of Ottawa",
+		Cats:  []string{"hockey", "skating"},
+	},
+	{
+		Label: "Fees at stand-alone arenas",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/fees-stand-alone-arenas",
+		Note:  "from the City of Ottawa",
+		Cats:  []string{"hockey", "skating"},
+	},
 }
 
-// ActivityLinksBySlug returns the value-add links for a category slug (nil if
-// none).
+// ActivityLinksBySlug returns the value-add links for a category slug: those
+// tagged with it, plus any tagged for all categories (empty Cats), in order.
 func ActivityLinksBySlug(slug string) []ActivityLink {
-	return activityLinks[slug]
+	var out []ActivityLink
+	for _, l := range activityLinks {
+		if len(l.Cats) == 0 || slices.Contains(l.Cats, slug) {
+			out = append(out, l)
+		}
+	}
+	return out
 }
 
 // WebsiteActivityParams parameterizes the activity landing page at

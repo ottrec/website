@@ -37,6 +37,7 @@ if (el && dataEl) {
 		maxBoundsViscosity: 1,
 		minZoom: 10,
 		scrollWheelZoom: false, // don't hijack page scroll in an embedded widget
+		dragging: !L.Browser.mobile, // on touch, let a single-finger drag scroll the page
 	}).setView([45.4215, -75.6972], 11)
 
 	const tiles = L.tileLayer(tileURL(effectiveDark()), {
