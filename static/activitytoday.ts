@@ -101,6 +101,41 @@ if (scroll && expandBtn) {
 	})
 }
 
+// --- sticky sidebar height ---
+
+// the wide-layout sticky box (the sidebar aside, or the today section alone on
+// short screens where the map moves to the main column) should fill the
+// viewport below its current on-screen top, which starts under the navbars and
+// rises to the sticky offset as they scroll away. CSS alone can't express
+// that, so its fallback height just leaves room for the navbars; this measures
+// the real position and keeps the height exact.
+{
+	const boxes = [
+		document.querySelector<HTMLElement>('.activity-side'),
+		document.querySelector<HTMLElement>('.activity-today'),
+	].filter((el) => el !== null)
+	const mq = window.matchMedia('(min-width: 64rem)') // the wide-layout breakpoint
+	if (boxes.length) {
+		let raf = 0
+		const update = () => {
+			raf = 0
+			for (const el of boxes) el.style.height = ''
+			if (!mq.matches) return
+			const box = boxes.find((el) => getComputedStyle(el).position === 'sticky')
+			if (!box) return
+			const top = box.getBoundingClientRect().top
+			box.style.height = 'calc(100vh - ' + Math.max(0, top) + 'px - 1.5rem)'
+		}
+		const schedule = () => {
+			if (!raf) raf = requestAnimationFrame(update)
+		}
+		update()
+		window.addEventListener('scroll', schedule, {passive: true})
+		window.addEventListener('resize', schedule)
+		mq.addEventListener('change', schedule)
+	}
+}
+
 // --- starred facilities ---
 
 // move starred facilities to the front of each sector's list, on load only

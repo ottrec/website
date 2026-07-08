@@ -43,35 +43,42 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 		<nav class="schedules-catnav">
 			@schedulesCats(params.Cat.Slug, false)
 		</nav>
-		<main class="activity-main">
-			<header class="activity-header">
-				<h1>Ottawa Drop-In { params.Cat.Name }</h1>
-				<p>{ desc }</p>
-			</header>
-			if len(names) > 0 {
-				<div class="activity-includes">
-					<span class="activity-includes-label">Includes</span>
-					<ul class="activity-tags">
-						for _, name := range names {
-							<li>{ name }</li>
-						}
-					</ul>
-				</div>
-			}
-			<p class="activity-see-all">
-				<a href={ templ.URL("/schedules/" + params.Cat.Slug + "/all") }>
-					<span class="msym activity-see-all-ico" aria-hidden="true"></span>
-					<span class="activity-see-all-text">See all { strings.ToLower(params.Cat.Name) } schedules</span>
-				</a>
-				<a href={ templ.URL(todayHref) }>
-					<span class="msym activity-see-all-ico" aria-hidden="true"></span>
-					<span class="activity-see-all-text">See upcoming sessions for the next week</span>
-				</a>
-			</p>
-			<p class="today-updated" role="note">
-				This data was last updated <time datetime={ localRFC3339(updated) } data-reltime>{ localFormat(updated, "Jan 2, 3:04 PM") }</time>. Check the official facility page before you go.
-			</p>
-			<div class="activity-overview">
+		// activity-landing scopes the wide two-column layout (the activities
+		// directory shares activity-main)
+		<main class="activity-main activity-landing">
+			<div class="activity-intro">
+				<header class="activity-header">
+					<h1>Ottawa Drop-In { params.Cat.Name }</h1>
+					<p>{ desc }</p>
+				</header>
+				if len(names) > 0 {
+					<div class="activity-includes">
+						<span class="activity-includes-label">Includes</span>
+						<ul class="activity-tags">
+							for _, name := range names {
+								<li>{ name }</li>
+							}
+						</ul>
+					</div>
+				}
+				<p class="activity-see-all">
+					<a href={ templ.URL("/schedules/" + params.Cat.Slug + "/all") }>
+						<span class="msym activity-see-all-ico" aria-hidden="true"></span>
+						<span class="activity-see-all-text">See all { strings.ToLower(params.Cat.Name) } schedules</span>
+					</a>
+					<a href={ templ.URL(todayHref) }>
+						<span class="msym activity-see-all-ico" aria-hidden="true"></span>
+						<span class="activity-see-all-text">See upcoming sessions for the next week</span>
+					</a>
+				</p>
+				<p class="today-updated" role="note">
+					This data was last updated <time datetime={ localRFC3339(updated) } data-reltime>{ localFormat(updated, "Jan 2, 3:04 PM") }</time>. Check the official facility page before you go.
+				</p>
+			</div>
+			// a sticky viewport-height sidebar on wide viewports (today on top,
+			// map pinned at the bottom); dissolved (display: contents) when
+			// stacked, where flex order moves the map to the bottom of the page
+			<aside class="activity-side">
 				<section class="activity-today">
 					<div class="activity-today-head">
 						<h2>
@@ -168,72 +175,74 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 						@templ.JSONScript("activity-map-data", mapFacs)
 					</section>
 				}
-			</div>
-			<section class="activity-facilities">
-				<h2>Facilities</h2>
-				if len(params.Cat.Activities) > 0 {
-					<p class="activity-facilities-note">Facilities currently offering activities matching { activityQuotedTerms(params.Cat.Activities) }.</p>
-				}
-				if len(sectors) == 0 {
-					<p>No facilities currently offer this.</p>
-				}
-				for _, sec := range sectors {
-					<div class="activity-sector">
-						<h3>{ sec.Sector }</h3>
-						<ul>
-							for _, f := range sec.Facilities {
-								<li>
-									<span class="activity-fac-head">
-										<span class="activity-fac-name">{ f.Name }</span>
-										if f.Region != "" {
-											<span class="activity-fac-region">{ f.Region }</span>
-										}
-										@facStar(f.Slug)
-									</span>
-									if len(f.Ranges) > 0 {
-										<ul class="activity-fac-ranges">
-											for _, rg := range f.Ranges {
-												<li>
-													<span class="activity-fac-range-label">{ rg.Label }</span>
-													if rg.Summary != "" {
-														<span class="activity-fac-range-summary">{ rg.Summary }</span>
-													}
-												</li>
+			</aside>
+			<div class="activity-rest">
+				<section class="activity-facilities">
+					<h2>Facilities</h2>
+					if len(params.Cat.Activities) > 0 {
+						<p class="activity-facilities-note">Facilities currently offering activities matching { activityQuotedTerms(params.Cat.Activities) }.</p>
+					}
+					if len(sectors) == 0 {
+						<p>No facilities currently offer this.</p>
+					}
+					for _, sec := range sectors {
+						<div class="activity-sector">
+							<h3>{ sec.Sector }</h3>
+							<ul>
+								for _, f := range sec.Facilities {
+									<li>
+										<span class="activity-fac-head">
+											<span class="activity-fac-name">{ f.Name }</span>
+											if f.Region != "" {
+												<span class="activity-fac-region">{ f.Region }</span>
 											}
-										</ul>
-									} else {
-										if f.When != "" {
-											<span class="activity-fac-when">{ f.When }</span>
+											@facStar(f.Slug)
+										</span>
+										if len(f.Ranges) > 0 {
+											<ul class="activity-fac-ranges">
+												for _, rg := range f.Ranges {
+													<li>
+														<span class="activity-fac-range-label">{ rg.Label }</span>
+														if rg.Summary != "" {
+															<span class="activity-fac-range-summary">{ rg.Summary }</span>
+														}
+													</li>
+												}
+											</ul>
+										} else {
+											if f.When != "" {
+												<span class="activity-fac-when">{ f.When }</span>
+											}
+											if f.Holiday {
+												<span class="activity-fac-holiday">Holiday schedule</span>
+											}
 										}
-										if f.Holiday {
-											<span class="activity-fac-holiday">Holiday schedule</span>
-										}
+										<span class="activity-fac-links">
+											<a href={ templ.URL("/today?f-fac=" + f.Slug + "&" + catQuery) }>Upcoming sessions and cancellations</a>
+											<a href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>Full schedule</a>
+										</span>
+									</li>
+								}
+							</ul>
+						</div>
+					}
+				</section>
+				if len(params.Links) > 0 {
+					<section class="activity-related">
+						<h2>Related</h2>
+						<ul>
+							for _, l := range params.Links {
+								<li>
+									<a href={ templ.URL(l.URL) }>{ l.Label }</a>
+									if l.Note != "" {
+										<span class="activity-related-note">{ l.Note }</span>
 									}
-									<span class="activity-fac-links">
-										<a href={ templ.URL("/today?f-fac=" + f.Slug + "&" + catQuery) }>Upcoming sessions and cancellations</a>
-										<a href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>Full schedule</a>
-									</span>
 								</li>
 							}
 						</ul>
-					</div>
+					</section>
 				}
-			</section>
-			if len(params.Links) > 0 {
-				<section class="activity-related">
-					<h2>Related</h2>
-					<ul>
-						for _, l := range params.Links {
-							<li>
-								<a href={ templ.URL(l.URL) }>{ l.Label }</a>
-								if l.Note != "" {
-									<span class="activity-related-note">{ l.Note }</span>
-								}
-							</li>
-						}
-					</ul>
-				</section>
-			}
+			</div>
 		</main>
 		@websiteFooter()
 		<script src={ static.Path(static.RelTimeJS) }></script>

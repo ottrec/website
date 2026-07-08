@@ -1,18 +1,22 @@
 .activity-main {
 	width: 100%;
-	max-width: 64rem;
+	max-width: 72rem;
 	margin: 0 auto;
 	padding: 1.5rem 1.5rem 3rem;
 }
 
-/* today + map side by side on desktop (single column when narrow), so the
- * facilities list stays closer to the top */
-.activity-overview {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
-	gap: 1.5rem;
-	align-items: stretch;
-	margin: .75rem 0 1rem;
+/* the landing page is intro / sidebar (today + map) / facilities in source
+ * order. stacked (narrow): the sidebar dissolves (display: contents) into the
+ * flex column and the map is ordered to the bottom of the page. wide viewports
+ * (media query at the bottom of this file, so its overrides win) become a
+ * two-column grid with a sticky viewport-height sidebar. */
+.activity-main.activity-landing {
+	display: flex;
+	flex-direction: column;
+}
+
+.activity-side {
+	display: contents;
 }
 
 .activity-header {
@@ -96,6 +100,7 @@
 
 .activity-today {
 	min-width: 0; /* let the grid column shrink instead of overflowing */
+	margin: .75rem 0 0;
 }
 
 .activity-today-head {
@@ -227,9 +232,10 @@
 	}
 }
 
-/* denser session rows in the narrow activity-page column */
+/* denser session rows in the narrow activity-page column (the time column
+ * still fits "11:30am–1:30pm" at this font size) */
 .activity-today .today-session {
-	grid-template-columns: 6.25rem 1fr;
+	grid-template-columns: 7rem 1fr;
 	gap: .05rem .55rem;
 	padding: .25rem .3rem;
 	font-size: .85rem;
@@ -521,6 +527,8 @@
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
+	order: 1; /* stacked: after the facilities, at the bottom of the page */
+	margin: 2rem 0 0; /* stacked: separate from the facilities above */
 }
 
 .activity-map-head {
@@ -720,4 +728,96 @@
 	margin-left: .35rem;
 	font-size: .85rem;
 	color: var(--fxki-tx-3);
+}
+
+/* wide-viewport layout for the landing page: a two-column grid whose right
+ * column is a sticky, viewport-height sidebar with today on top, the map
+ * pinned at the bottom, and the session list flexing to fill the space
+ * between. sticky + flex inside the sidebar only: the main column stays plain
+ * flow, so page scrolling is untouched. kept last so its overrides win over
+ * the base rules above */
+@media (min-width: 64rem) {
+	.activity-main.activity-landing {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 24rem;
+		grid-template-rows: auto 1fr;
+		grid-template-areas:
+			"intro side"
+			"rest  side";
+		column-gap: 2.5rem;
+	}
+	.activity-intro {
+		grid-area: intro;
+	}
+	.activity-rest {
+		grid-area: rest;
+	}
+	.activity-side {
+		grid-area: side;
+		align-self: start;
+		position: sticky;
+		top: 1.5rem;
+		/* fallback height leaving room for the navbars above the page, so the
+		 * map is never cut off at the top of the page; activitytoday.ts
+		 * progressively enhances this to track the exact on-screen position,
+		 * filling the viewport once the navbars scroll away */
+		height: calc(100vh - 8rem);
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		min-width: 0;
+	}
+	.activity-today {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		margin: 1rem 0 0; /* align with the intro h1 */
+	}
+	/* the list takes its natural height, shrinking (and scrolling) when the
+	 * sidebar runs out of room, instead of capping at a fixed height */
+	.activity-today-scroll {
+		flex: 0 1 auto;
+		min-height: 8rem;
+		max-height: none;
+	}
+	/* pointless when the list already fills the viewport */
+	.activity-today-expand {
+		display: none;
+	}
+	.activity-map-section {
+		flex: none;
+		order: 1;
+		margin: 0;
+	}
+}
+
+/* the sidebar can't fit both the session list and the map on short screens:
+ * the aside dissolves, today alone becomes the sticky viewport box, and the
+ * map moves to the bottom of the main column (stacked layouts scroll, so the
+ * map already sits at the page bottom there) */
+@media (min-width: 64rem) and (max-height: 800px) {
+	.activity-main.activity-landing {
+		grid-template-rows: auto 1fr auto;
+		grid-template-areas:
+			"intro side"
+			"rest  side"
+			"map   side";
+	}
+	.activity-side {
+		display: contents;
+		position: static;
+	}
+	.activity-today {
+		grid-area: side;
+		align-self: start;
+		position: sticky;
+		top: 1.5rem;
+		height: calc(100vh - 8rem); /* same fallback; activitytoday.ts refines */
+	}
+	.activity-map-section {
+		grid-area: map;
+		order: 0;
+		margin: 2rem 0 0;
+	}
 }
