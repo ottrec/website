@@ -464,9 +464,9 @@ func WebsiteTodayPage(params WebsiteTodayParams) templ.Component {
 									return templ_7745c5c3_Err
 								}
 								var templ_7745c5c3_Var27 string
-								templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.Itoa(s.GroupIndex))
+								templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.GroupKey)
 								if templ_7745c5c3_Err != nil {
-									return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 93, Col: 117}
+									return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 93, Col: 101}
 								}
 								_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var27)
 								if templ_7745c5c3_Err != nil {
@@ -479,7 +479,7 @@ func WebsiteTodayPage(params WebsiteTodayParams) templ.Component {
 								var templ_7745c5c3_Var28 string
 								templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.SourceURL)
 								if templ_7745c5c3_Err != nil {
-									return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 93, Col: 145}
+									return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 93, Col: 129}
 								}
 								_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var28)
 								if templ_7745c5c3_Err != nil {
@@ -607,9 +607,9 @@ func WebsiteTodayPage(params WebsiteTodayParams) templ.Component {
 											return templ_7745c5c3_Err
 										}
 										var templ_7745c5c3_Var36 string
-										templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.Itoa(s.GroupIndex))
+										templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.GroupKey)
 										if templ_7745c5c3_Err != nil {
-											return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 108, Col: 176}
+											return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 108, Col: 160}
 										}
 										_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var36)
 										if templ_7745c5c3_Err != nil {
@@ -622,7 +622,7 @@ func WebsiteTodayPage(params WebsiteTodayParams) templ.Component {
 										var templ_7745c5c3_Var37 string
 										templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.SourceURL)
 										if templ_7745c5c3_Err != nil {
-											return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 108, Col: 204}
+											return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 108, Col: 188}
 										}
 										_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var37)
 										if templ_7745c5c3_Err != nil {
@@ -1144,9 +1144,9 @@ func todayWarnButton(kind, warn string, s todaySession) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var58 string
-		templ_7745c5c3_Var58, templ_7745c5c3_Err = templ.ResolveAttributeValue(strconv.Itoa(s.GroupIndex))
+		templ_7745c5c3_Var58, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.GroupKey)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 220, Col: 160}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 220, Col: 144}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var58)
 		if templ_7745c5c3_Err != nil {
@@ -1159,7 +1159,7 @@ func todayWarnButton(kind, warn string, s todaySession) templ.Component {
 		var templ_7745c5c3_Var59 string
 		templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.ResolveAttributeValue(s.SourceURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 220, Col: 188}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `today.templ`, Line: 220, Col: 172}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var59)
 		if templ_7745c5c3_Err != nil {

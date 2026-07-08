@@ -225,16 +225,21 @@ async function openWarn(url: string) {
 	}
 }
 
-// the notice chips are links to the facility page (the no-JS fallback)
-// carrying data-warn/data-slug/data-group, mirroring the today page; plain
-// clicks open the modal instead, modified clicks keep the link behavior
+// modal openers carry data-warn/data-slug/data-group, mirroring the today
+// page: the session notice chips (links to the facility page as the no-JS
+// fallback) and the whole rows of the cancellations/notices lists. Plain
+// clicks open the modal; modified clicks keep the link behavior.
 document.addEventListener('click', (ev) => {
 	const btn = (ev.target as HTMLElement).closest<HTMLElement>('[data-warn]')
 	if (!btn) return
+	// a link or button nested inside (e.g. the facility link within a
+	// clickable row) keeps its own behavior
+	const inner = (ev.target as HTMLElement).closest('a, button')
+	if (inner && inner !== btn && btn.contains(inner)) return
 	if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return
 	ev.preventDefault()
 	const slug = encodeURIComponent(btn.dataset['slug'] || '')
-	const group = encodeURIComponent(btn.dataset['group'] || '0')
+	const group = encodeURIComponent(btn.dataset['group'] || '')
 	const kind = btn.dataset['warn']
 	const url =
 		kind === 'errors'

@@ -34,10 +34,10 @@ type WebsiteFacilityArticleOptions struct {
 	// Star, if non-empty, is the facility slug for a star toggle button next
 	// to the facility name (hidden until starred.js reveals it).
 	Star string
-	// Group, if non-nil, restricts the rendered schedules to the schedule group
-	// at that index (in document order); the other facility sections are
-	// unaffected. Out-of-range values render no groups.
-	Group *int
+	// GroupKey, if non-empty, restricts the rendered schedules to the schedule
+	// group with that [ScheduleGroupKey]; the other facility sections are
+	// unaffected. A key matching no group renders no groups.
+	GroupKey string
 	// Region shows the facility's region and sector under its name (the map
 	// popups omit it since the location is already visible on the map).
 	Region bool

@@ -815,7 +815,7 @@ async function loadModal(url: string, fallbackSource?: string) {
 
 function openWarnModal(btn: HTMLElement) {
 	const slug = encodeURIComponent(btn.dataset['slug'] || '')
-	const group = encodeURIComponent(btn.dataset['group'] || '0')
+	const group = encodeURIComponent(btn.dataset['group'] || '')
 	const kind = btn.dataset['warn']
 	const url = kind === 'errors'
 		? '/api/errors?facility=' + slug
@@ -830,9 +830,9 @@ function openWarnModal(btn: HTMLElement) {
 // session's schedule group via ?group.
 function openScheduleModal(btn: HTMLElement) {
 	const slug = encodeURIComponent(btn.dataset['slug'] || '')
-	const group = encodeURIComponent(btn.dataset['group'] || '0')
+	const group = encodeURIComponent(btn.dataset['group'] || '')
 	modal.classList.add('wide') // room for the full week's schedule table
-	loadModal('/map/facility/' + slug + '?group=' + group, btn.dataset['source'])
+	loadModal('/map/facility/' + slug + (group ? '?group=' + group : ''), btn.dataset['source'])
 }
 
 // turn the server-rendered "updated at X" timestamp into a relative one

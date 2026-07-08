@@ -93,19 +93,20 @@ type WebsiteMapPopupParams struct {
 	Base     string
 	Slug     string
 	Facility ottrecidx.FacilityRef
-	// Group, if non-nil, restricts the popup to one schedule group (used by the
-	// /today full-schedule modal); nil shows the whole facility.
-	Group *int
+	// GroupKey, if non-empty, restricts the popup to the schedule group with
+	// that [ScheduleGroupKey] (used by the /today full-schedule modal); empty
+	// shows the whole facility.
+	GroupKey string
 }
 
 // WebsiteMapPopup is the HTML fragment fetched over XHR for facility popups on
 // the map page.
 templ WebsiteMapPopup(params WebsiteMapPopupParams) {
 	<div class="fac-popup">
-		@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{Star: params.Slug, Group: params.Group}) {
+		@WebsiteFacilityArticle(params.Facility, WebsiteFacilityArticleOptions{Star: params.Slug, GroupKey: params.GroupKey}) {
 			<a href={ templ.URL("/schedules/facility/" + params.Slug) } data-facility-modal={ params.Slug }>Full Schedule</a>
 		}
-		if params.Group != nil {
+		if params.GroupKey != "" {
 			@todayModalSource(params.Facility.GetSourceURL())
 		}
 	</div>

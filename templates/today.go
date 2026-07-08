@@ -2,8 +2,11 @@ package templates
 
 import (
 	"fmt"
+	"hash/fnv"
+	"io"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -69,7 +72,7 @@ type todaySession struct {
 	Qual       string // date-range qualifier, shown only for bounded/seasonal schedules
 	Fixed      bool   // a published fixed-date (holiday/special) session
 	SourceURL  string // City of Ottawa facility page (for warning lines + the source link)
-	GroupIndex int    // index of the session's schedule group within the facility (for /api/changes)
+	GroupKey   string // the session's schedule group key (see [ScheduleGroupKey]; for /api/changes)
 
 	// warning flags (per facility/group), each shown as a warning line under
 	// the session opening a modal sourced from /api/changes or
@@ -198,17 +201,38 @@ type todayFacilityJSON struct {
 	Sector string `json:"sector"`
 }
 
-// FacilityGroupAt returns the i'th schedule group of a facility (document
-// order), for resolving the /api/changes group parameter.
-func FacilityGroupAt(fac ottrecidx.FacilityRef, i int) (ottrecidx.ScheduleGroupRef, bool) {
+// ScheduleGroupKey returns a short URL-safe identifier for a facility's
+// schedule group, derived from its raw label. Unlike a document-order index,
+// it stays valid across dataset updates, so modal fetches from stale pages
+// still resolve the right group (as long as the label survives).
+func ScheduleGroupKey(grp ottrecidx.ScheduleGroupRef) string {
+	h := fnv.New64a()
+	io.WriteString(h, grp.GetLabel())
+	return strconv.FormatUint(h.Sum64(), 32)
+}
+
+// FacilityGroupByKey returns the facility schedule group matching a
+// [ScheduleGroupKey], and whether one was found. Bare numeric values (from
+// pages rendered when groups were addressed by document-order index) fall
+// back to positional lookup; a key match always wins.
+func FacilityGroupByKey(fac ottrecidx.FacilityRef, key string) (ottrecidx.ScheduleGroupRef, bool) {
+	if key == "" {
+		return ottrecidx.ScheduleGroupRef{}, false
+	}
+	idx, idxErr := strconv.Atoi(key)
+	var atIdx ottrecidx.ScheduleGroupRef
+	atIdxOK := false
 	n := 0
 	for g := range fac.ScheduleGroups() {
-		if n == i {
+		if ScheduleGroupKey(g) == key {
 			return g, true
+		}
+		if idxErr == nil && n == idx {
+			atIdx, atIdxOK = g, true
 		}
 		n++
 	}
-	return ottrecidx.ScheduleGroupRef{}, false
+	return atIdx, atIdxOK
 }
 
 // todayHasChangesContent reports whether the schedule-changes modal would show
@@ -324,9 +348,8 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 		facSee := enOK && enFac.SeeSchedule(winStart, winEnd)
 
 		facHasSession := false
-		gi := -1
 		for grp := range fac.ScheduleGroups() {
-			gi++
+			gk := ScheduleGroupKey(grp)
 
 			// with enrichment, warn only when posted content may actually
 			// apply during the feed window (the milder notice tier covers
@@ -401,7 +424,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							Cats:        cats,
 							Qual:        qual,
 							SourceURL:   sourceURL,
-							GroupIndex:  gi,
+							GroupKey:    gk,
 							Holiday:              holiday,
 							EnrichedSeeSchedule:  seeSched,
 							Changes:              changes,
@@ -522,7 +545,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 					Cats:        cats,
 					Weekday:     int(dates[i].Weekday()),
 					SourceURL:   sourceURL,
-					GroupIndex:  gi,
+					GroupKey:    gk,
 					Holiday:             holiday,
 					EnrichedSeeSchedule: seeSched,
 					Incomplete:          incomplete,

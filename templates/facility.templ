@@ -50,7 +50,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 		<nav class="facility-links">
 			{ children... }
 		</nav>
-		if !opts.HeaderLinks && opts.Group == nil {
+		if !opts.HeaderLinks && opts.GroupKey == "" {
 			<section class="facility-address">
 				<h2>Address</h2>
 				<address>
@@ -101,7 +101,7 @@ templ WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArti
 		}
 		<section class={ "facility-schedules", templ.KV("facility-schedules-list", opts.List) }>
 			for i, grp := range indexedSeq(fac.ScheduleGroups()) {
-				if opts.Group == nil || *opts.Group == i {
+				if opts.GroupKey == "" || ScheduleGroupKey(grp) == opts.GroupKey {
 					<section
 						class="schedule-group"
 						if opts.Anchors != "" {

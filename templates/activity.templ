@@ -13,6 +13,7 @@ import (
 templ WebsiteActivityPage(params WebsiteActivityParams) {
 	{{ sectors, names := buildActivityLanding(params.Filtered, MapFacilitySlugger(params.Data)) }}
 	{{ mapFacs := buildActivityMap(params.Filtered, MapFacilitySlugger(params.Data)) }}
+	{{ cancels, noticeItems := buildActivityChanges(params.Filtered, params.Enrich, MapFacilitySlugger(params.Data), timeNow()) }}
 	{{ feed := buildTodayFeed(params.Filtered, params.Enrich, MapFacilitySlugger(params.Data), timeNow()) }}
 	{{ today, hasToday := activityTodayDay(feed) }}
 	{{ catQuery := "f-cat=" + strings.ReplaceAll(url.QueryEscape(params.Cat.Name), "+", "%20") }}
@@ -136,7 +137,7 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 														} else {
 															// a link to the facility page as the no-JS fallback;
 															// activitytoday.ts opens the modal on plain clicks
-															<a class={ "t-note", nt.Kind } href={ templ.URL("/schedules/facility/" + nt.Slug) } data-warn={ nt.Warn } data-slug={ nt.Slug } data-group={ strconv.Itoa(nt.Group) } aria-haspopup="dialog">
+															<a class={ "t-note", nt.Kind } href={ templ.URL("/schedules/facility/" + nt.Slug) } data-warn={ nt.Warn } data-slug={ nt.Slug } data-group={ nt.Group } aria-haspopup="dialog">
 																<span class={ "t-note-ico", "msym", nt.Icon } aria-hidden="true"></span>
 																{ nt.Label }
 															</a>
@@ -244,6 +245,34 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 						</ul>
 					</section>
 				}
+				// last (the related links above read more easily); hidden
+				// entirely when enrichment is unavailable (no data is not the
+				// same as nothing posted)
+				if params.Enrich.OK() {
+					<section class="activity-changes">
+						<h2>Cancellations and notices</h2>
+						<p class="activity-changes-blurb">Posted by the City of Ottawa for these schedules at these facilities. Click an item to see the full details. The city does not always post cancellations, so call the facility if you're unsure.</p>
+						if len(cancels) == 0 && len(noticeItems) == 0 {
+							<p class="activity-changes-empty">Nothing is currently posted.</p>
+						}
+						if len(cancels) > 0 {
+							<h3>Cancellations</h3>
+							<ul class="activity-changes-list">
+								for _, it := range cancels {
+									@activityChangeRow(it)
+								}
+							</ul>
+						}
+						if len(noticeItems) > 0 {
+							<h3>Notices</h3>
+							<ul class="activity-changes-list">
+								for _, it := range noticeItems {
+									@activityChangeRow(it)
+								}
+							</ul>
+						}
+					</section>
+				}
 			</div>
 		</main>
 		@websiteFooter()
@@ -257,4 +286,26 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 		}
 		<script src={ static.Path(static.FacilityModalJS) }></script>
 	}
+}
+
+// activityChangeRow is one compact row in the landing page's cancellations/
+// notices lists: the facility and the posted text as written, with the
+// resolved dates as chips on top. When the dates couldn't be fully read, the
+// chip shows them as the facility wrote them with a visible "?" mark; when
+// there are none at all, a plain-words placeholder ("dates unknown" / "no
+// dates found") so the absence can't be misread — everything in page text,
+// never tooltip-only. The whole row carries data-warn so activitytoday.ts
+// opens the schedule-changes modal on click (the nested facility link keeps
+// its own modal); the anchor and text span stay on one source line so no
+// space separates the facility from its colon.
+templ activityChangeRow(it activityChangeItem) {
+	// dates-inline collapses the chips onto the text's line when there are few
+	<li class={ templ.KV("dates-inline", len(it.Dates) <= 3) } data-warn="changes" data-slug={ it.Slug } data-group={ it.GroupKey }>
+		<span class="activity-change-dates">
+			for _, d := range it.Dates {
+				<span class={ "activity-change-date", templ.KV("ambig", it.DateAmbig), templ.KV("na", it.DateNA) }>{ d }</span>
+			}
+		</span>
+		<span class="activity-change-body"><a class="activity-change-fac" href={ templ.URL("/schedules/facility/" + it.Slug) } data-facility-modal={ it.Slug }>{ it.Facility }</a><span class="activity-change-text">: { it.Text }</span></span>
+	</li>
 }

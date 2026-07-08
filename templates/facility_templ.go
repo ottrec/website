@@ -214,7 +214,7 @@ func WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArtic
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if !opts.HeaderLinks && opts.Group == nil {
+		if !opts.HeaderLinks && opts.GroupKey == "" {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<section class=\"facility-address\"><h2>Address</h2><address>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -403,7 +403,7 @@ func WebsiteFacilityArticle(fac ottrecidx.FacilityRef, opts WebsiteFacilityArtic
 			return templ_7745c5c3_Err
 		}
 		for i, grp := range indexedSeq(fac.ScheduleGroups()) {
-			if opts.Group == nil || *opts.Group == i {
+			if opts.GroupKey == "" || ScheduleGroupKey(grp) == opts.GroupKey {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<section class=\"schedule-group\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

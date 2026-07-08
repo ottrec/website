@@ -802,13 +802,13 @@ func (h *websiteTodayChangesHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Cache-Control", "public, no-cache")
 
 	slug := r.URL.Query().Get("facility")
-	group, _ := strconv.Atoi(r.URL.Query().Get("group"))
+	group := r.URL.Query().Get("group")
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
 		fac, ok := templates.MapFacilityBySlug(data, slug)
 		if !ok {
 			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
 		}
-		grp, hasGroup := templates.FacilityGroupAt(fac, group)
+		grp, hasGroup := templates.FacilityGroupByKey(fac, group)
 		return templates.WebsiteTodayChanges(templates.WebsiteTodayChangesParams{
 			Facility: fac,
 			Group:    grp,
@@ -849,13 +849,13 @@ func (h *websiteTodayReservationsHandler) ServeHTTP(w http.ResponseWriter, r *ht
 	w.Header().Set("Cache-Control", "public, no-cache")
 
 	slug := r.URL.Query().Get("facility")
-	group, _ := strconv.Atoi(r.URL.Query().Get("group"))
+	group := r.URL.Query().Get("group")
 	h.render(w, r, func(data ottrecidx.DataRef) (templ.Component, int, error) {
 		fac, ok := templates.MapFacilityBySlug(data, slug)
 		if !ok {
 			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
 		}
-		grp, hasGroup := templates.FacilityGroupAt(fac, group)
+		grp, hasGroup := templates.FacilityGroupByKey(fac, group)
 		return templates.WebsiteTodayReservations(templates.WebsiteTodayReservationsParams{
 			Facility: fac,
 			Group:    grp,
@@ -934,18 +934,16 @@ func (h *websiteMapFacilityHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	w.Header().Add("Vary", "Accept-Encoding")
 	w.Header().Set("Cache-Control", "public, no-cache")
 
-	// the only allowed query param is `group` (a schedule group index, used by
-	// the /today full-schedule modal); canonicalize anything else away so the
-	// URLs stay cacheable.
-	var group *int
-	if g := r.URL.Query().Get("group"); g != "" {
-		if n, err := strconv.Atoi(g); err == nil && n >= 0 {
-			group = &n
-		}
+	// the only allowed query param is `group` (a schedule group key, used by
+	// the /today full-schedule modal; legacy pages sent a numeric index);
+	// canonicalize anything else away so the URLs stay cacheable.
+	group := ""
+	if g := r.URL.Query().Get("group"); websiteGroupToken(g) {
+		group = g
 	}
 	canonicalQuery := ""
-	if group != nil {
-		canonicalQuery = "group=" + strconv.Itoa(*group)
+	if group != "" {
+		canonicalQuery = "group=" + group
 	}
 	if r.URL.RawQuery != canonicalQuery {
 		w.Header().Set("Cache-Control", "no-store")
@@ -963,11 +961,32 @@ func (h *websiteMapFacilityHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 		if !ok {
 			return templates.WebsiteErrorPage("Not Found", "no facility matching "+strconv.Quote(slug)), http.StatusNotFound, nil
 		}
+		// resolve to the canonical key ("" shows the whole facility, also
+		// the graceful answer for keys that no longer match any group)
+		groupKey := ""
+		if grp, ok := templates.FacilityGroupByKey(fac, group); ok {
+			groupKey = templates.ScheduleGroupKey(grp)
+		}
 		return templates.WebsiteMapPopup(templates.WebsiteMapPopupParams{
 			Base:     h.base(r),
 			Slug:     slug,
 			Facility: fac,
-			Group:    group,
+			GroupKey: groupKey,
 		}), http.StatusOK, nil
 	})
+}
+
+// websiteGroupToken reports whether s is a plausible schedule group key (or
+// legacy numeric index): short lowercase base-32 digits, safe to echo into a
+// canonical URL.
+func websiteGroupToken(s string) bool {
+	if s == "" || len(s) > 16 {
+		return false
+	}
+	for _, c := range s {
+		if (c < '0' || c > '9') && (c < 'a' || c > 'v') {
+			return false
+		}
+	}
+	return true
 }

@@ -90,7 +90,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 																<span class="t-region">{ s.Region }</span>
 															}
 															@facStar(s.Slug)
-															<button type="button" class="t-fullsched" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">Full&nbsp;schedule</button>
+															<button type="button" class="t-fullsched" data-slug={ s.Slug } data-group={ s.GroupKey } data-source={ s.SourceURL } aria-haspopup="dialog">Full&nbsp;schedule</button>
 															if s.SourceURL != "" {
 																<a class="t-source" href={ templ.URL(s.SourceURL) } target="_blank" rel="noopener">official&nbsp;page</a>
 															}
@@ -105,7 +105,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 																	// enrichment-derived: posted changes exist, but none were
 																	// placed in the feed window; opens the same changes modal
 																	// (facility page without JS)
-																	<a class="t-other-changes" href={ templ.URL("/schedules/facility/" + s.Slug) } data-warn="changes" data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">(schedule changes for other dates)</a>
+																	<a class="t-other-changes" href={ templ.URL("/schedules/facility/" + s.Slug) } data-warn="changes" data-slug={ s.Slug } data-group={ s.GroupKey } data-source={ s.SourceURL } aria-haspopup="dialog">(schedule changes for other dates)</a>
 																}
 															</span>
 														}
@@ -217,7 +217,7 @@ templ todaySessionWarnings(s todaySession) {
 // navigates to the facility details), with the standard icon and the text as
 // children.
 templ todayWarnButton(kind, warn string, s todaySession) {
-	<a class={ "t-warn", kind } href={ templ.URL("/schedules/facility/" + s.Slug) } data-warn={ warn } data-slug={ s.Slug } data-group={ strconv.Itoa(s.GroupIndex) } data-source={ s.SourceURL } aria-haspopup="dialog">
+	<a class={ "t-warn", kind } href={ templ.URL("/schedules/facility/" + s.Slug) } data-warn={ warn } data-slug={ s.Slug } data-group={ s.GroupKey } data-source={ s.SourceURL } aria-haspopup="dialog">
 		<span class="t-warn-ico msym" aria-hidden="true"></span>
 		<span>
 			{ children... }

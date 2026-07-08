@@ -626,6 +626,7 @@
 }
 
 .activity-facilities h2,
+.activity-changes h2,
 .activity-related h2 {
 	font-family: 'Source Serif 4', serif;
 	font-size: 1.15rem;
@@ -728,6 +729,114 @@
 		&:hover {
 			text-decoration-style: solid;
 		}
+	}
+}
+
+/* cancellations and notices posted for the category's facilities */
+
+.activity-changes-blurb {
+	margin: -.25rem 0 .75rem;
+	font-size: .85rem;
+	color: var(--fxki-tx-3);
+}
+
+.activity-changes-empty {
+	margin: .5rem 0;
+	font-size: .9rem;
+	color: var(--fxki-tx-3);
+}
+
+.activity-changes h3 {
+	font-size: .75rem;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--fxki-tx-3);
+	margin: 1.25rem 0 .25rem;
+}
+
+/* compact rows: facility + posted text, with the dates as chips underneath */
+.activity-changes-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: .85rem;
+
+	li {
+		padding: .35rem .35rem .4rem;
+		border-top: 1px solid var(--fxki-ui-2);
+		line-height: 1.4;
+		/* the whole row opens the schedule-changes modal (JS) */
+		cursor: pointer;
+
+		&:hover {
+			background: light-dark(rgb(0 0 0 / .03), rgb(255 255 255 / .04));
+		}
+	}
+}
+
+.activity-change-body {
+	display: block;
+	color: var(--fxki-tx-2);
+}
+
+/* quiet facility link (the row itself is the affordance): body text color,
+ * just slightly heavier, underlining on hover */
+.activity-change-fac {
+	color: var(--fxki-tx-2);
+	font-weight: 500;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+/* chips above the text; rows with few chips (li.dates-inline) collapse to a
+ * single flowing line of chips + text */
+.activity-change-dates {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .25rem .35rem;
+	margin-bottom: .25rem;
+}
+
+.activity-changes-list li.dates-inline {
+	.activity-change-dates {
+		display: inline;
+		margin: 0;
+	}
+	.activity-change-date {
+		display: inline-block;
+		margin-right: .3rem;
+	}
+	.activity-change-body {
+		display: inline;
+	}
+}
+
+.activity-change-date {
+	padding: .02rem .4rem;
+	border: 1px solid var(--fxki-ui-2);
+	border-radius: .3rem;
+	font-size: .75rem;
+	color: var(--fxki-tx-2);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+
+	/* the dates as the facility wrote them, marked uncertain: the parser
+	 * couldn't fully read them */
+	&.ambig {
+		white-space: normal; /* raw text can be long */
+
+		&::after {
+			content: '?';
+			margin-left: .3em;
+			color: var(--fxki-or);
+			font-weight: 600;
+		}
+	}
+	/* plain-words placeholder ("dates unknown" / "no dates found") */
+	&.na {
+		color: var(--fxki-tx-3);
 	}
 }
 

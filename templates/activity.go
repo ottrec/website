@@ -4,8 +4,10 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ottrec/data-enrichment/enrichidx"
+	"github.com/ottrec/scraper/schema"
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottregions"
 )
@@ -102,7 +104,7 @@ type activityNotice struct {
 	Warn  string // data-warn value ("changes"/"errors"/"reservations"); "" if Href
 	Href  string // external source link; "" for modal chips
 	Slug  string
-	Group int
+	Group string // schedule group key (see [ScheduleGroupKey])
 }
 
 // activitySessionNotices condenses a session's warnings/reservation into compact
@@ -110,7 +112,7 @@ type activityNotice struct {
 func activitySessionNotices(s todaySession) []activityNotice {
 	var ns []activityNotice
 	modal := func(label, kind, icon string) activityNotice {
-		return activityNotice{Label: label, Kind: kind, Icon: icon, Warn: "changes", Slug: s.Slug, Group: s.GroupIndex}
+		return activityNotice{Label: label, Kind: kind, Icon: icon, Warn: "changes", Slug: s.Slug, Group: s.GroupKey}
 	}
 	if s.EnrichedAdded {
 		ns = append(ns, modal("added", "good", "info"))
@@ -184,6 +186,204 @@ func activityQuotedTerms(terms []string) string {
 		quoted[i] = "“" + t + "”"
 	}
 	return strings.Join(quoted, ", ")
+}
+
+// activityChangeItem is one posted cancellation or notice surfaced in the
+// landing page's changes section, joined to its facility.
+type activityChangeItem struct {
+	Facility  string
+	Slug      string
+	GroupKey  string   // schedule group key for /api/changes; "" = facility-scoped
+	Dates     []string // date chips like "Sun, Jul 12", or plain words when nothing usable resolved
+	DateAmbig bool     // Dates is the raw text as posted, shown with a "?" (not a full interpretation)
+	DateNA    bool     // Dates is a plain-words placeholder ("dates unknown" / "no dates found")
+	Text      string   // the posted text as written
+}
+
+// buildActivityChanges collects the still-relevant posted items for the
+// category's facilities from the enrichment: date-associated cancellations in
+// one list (chronological), everything else (informational notices, undated
+// cancellations, and freeform text that can't be ruled out) in the other
+// (dated items first, chronological). Both are empty when enrichment is
+// unavailable; slugger must be fresh (consumed per facility, like
+// [buildActivityMap]).
+func buildActivityChanges(filtered ottrecidx.DataRef, enrich enrichidx.Ref, slugger func(string) string, now time.Time) (cancels, notices []activityChangeItem) {
+	if !enrich.OK() {
+		return nil, nil
+	}
+	from := schema.MakeDateFromGo(now.In(ottrecidx.TZ))
+	type entry struct {
+		it        enrichidx.Item
+		fac, slug string
+		group     string // group key for the changes modal; "" = facility-scoped
+	}
+	var all []entry
+	seen := map[string]bool{}
+	for fac := range filtered.Facilities() {
+		name := fac.GetName()
+		slug := slugger(name)
+		ef := enrich.Facility(name)
+		add := func(items []enrichidx.Item, group string) {
+			for _, it := range items {
+				if !seen[it.ID] {
+					seen[it.ID] = true
+					all = append(all, entry{it: it, fac: name, slug: slug, group: group})
+				}
+			}
+		}
+		add(ef.Items(from), "")
+		for grp := range fac.ScheduleGroups() {
+			add(ef.Group(grp.GetLabel()).Items(from), ScheduleGroupKey(grp))
+		}
+	}
+	// dated items chronologically, undated ones last (stable: source order)
+	slices.SortStableFunc(all, func(a, b entry) int {
+		if a.it.Dated != b.it.Dated {
+			if a.it.Dated {
+				return -1
+			}
+			return 1
+		}
+		return int(a.it.Date/10) - int(b.it.Date/10)
+	})
+	for _, e := range all {
+		item := activityChangeItem{
+			Facility: e.fac,
+			Slug:     e.slug,
+			GroupKey: e.group,
+			Text:     e.it.Text,
+		}
+		// prefer an exact reading of the resolved dates; when the span can't
+		// be expressed faithfully, show the dates as the facility wrote them
+		// (marked with a "?") rather than a partial reading, and otherwise a
+		// plain-words placeholder so the absence can't be misread
+		switch chips, exact := activityChangeDateChips(e.it, from); {
+		case exact:
+			item.Dates = chips
+		case len(chips) > 0:
+			item.Dates, item.DateAmbig = chips, true
+		case e.it.Unparsed:
+			item.Dates, item.DateNA = []string{"dates unknown"}, true
+		default:
+			item.Dates, item.DateNA = []string{"no dates found"}, true
+		}
+		if e.it.Cancelled && e.it.Dated {
+			cancels = append(cancels, item)
+		} else {
+			notices = append(notices, item)
+		}
+	}
+	return cancels, notices
+}
+
+// activityChangeDateChips renders the item's resolved dates as chips, and
+// whether they're an exact reading. Exact chips: every upcoming posted date
+// ("Sun, Jul 12"), or one chip for a range ("Fri, Jul 10 to Mon, Jul 20",
+// including one already begun so its start stays visible; "until Mon, Jul 20"
+// when only an end was posted; "from Fri, Jul 10"), an open-ended posting
+// ("ongoing"), and a weekday restriction combined with any of those
+// ("Fridays", "Fridays until Mon, Jul 20", "Fridays, Jul 10 to Aug 29").
+//
+// A chip must never claim more or less than what actually resolved, so
+// anything this can't express faithfully (a partial weekday resolution, an
+// unformattable date, an empty result for a span that claimed to resolve)
+// falls back to the raw date text as the facility wrote it, returned with
+// exact=false; (nil, false) means there's nothing usable at all.
+func activityChangeDateChips(it enrichidx.Item, from schema.Date) ([]string, bool) {
+	raw := func() ([]string, bool) {
+		if it.DateText != "" {
+			return []string{it.DateText}, false
+		}
+		return nil, false
+	}
+	if !it.Dated || it.WeekdaysPartial {
+		return raw()
+	}
+	f := func(d schema.Date) string {
+		t, ok := d.GoTime(ottrecidx.TZ)
+		if !ok {
+			return ""
+		}
+		return t.Format("Mon, Jan 2")
+	}
+	if len(it.Dates) > 0 {
+		// explicit dates; the site's warning logic resolves the posting by
+		// these alone, so they're the faithful reading even when range or
+		// weekday fields coexist
+		ds := make([]schema.Date, 0, len(it.Dates))
+		for _, d := range it.Dates {
+			if int(d)/10 >= int(from)/10 {
+				ds = append(ds, d)
+			}
+		}
+		slices.Sort(ds)
+		out := make([]string, 0, len(ds))
+		for _, d := range ds {
+			s := f(d)
+			if s == "" {
+				return raw()
+			}
+			out = append(out, s)
+		}
+		return out, true
+	}
+	var label string
+	switch {
+	case it.From != 0 && it.To != 0 && int(it.From)/10 > int(it.To)/10:
+		return raw() // a backwards range is a parse gone wrong
+	case it.From != 0 && it.To != 0 && int(it.From)/10 == int(it.To)/10:
+		label = f(it.From) // a single-day range reads as one date
+	case it.From != 0 && it.To != 0:
+		if a, b := f(it.From), f(it.To); a != "" && b != "" {
+			label = a + " to " + b
+		}
+	case it.To != 0:
+		if b := f(it.To); b != "" {
+			label = "until " + b
+		}
+	case it.From != 0:
+		if a := f(it.From); a != "" {
+			label = "from " + a
+		}
+	case it.OpenEnded:
+		label = "ongoing"
+	}
+	if wd := activityChangeWeekdays(it.Weekdays); wd != "" {
+		switch {
+		case label == "" || label == "ongoing":
+			// a bare or open-ended weekday restriction is just the weekdays
+			label = wd
+		case strings.HasPrefix(label, "until ") || strings.HasPrefix(label, "from "):
+			label = wd + " " + label // "Fridays until Mon, Jul 20"
+		default:
+			label = wd + ", " + label // "Fridays, Jul 10 to Aug 29"
+		}
+	}
+	if label == "" {
+		// the span claimed to resolve but nothing was expressible
+		return raw()
+	}
+	return []string{label}, true
+}
+
+// activityChangeWeekdays names a weekday restriction ("Fridays", "Saturdays
+// and Sundays"), Monday-first. Empty when there is none.
+func activityChangeWeekdays(wds []time.Weekday) string {
+	if len(wds) == 0 {
+		return ""
+	}
+	sorted := slices.Clone(wds)
+	slices.SortFunc(sorted, func(a, b time.Weekday) int {
+		return activityMonFirst(int(a)) - activityMonFirst(int(b))
+	})
+	names := make([]string, len(sorted))
+	for i, wd := range sorted {
+		names[i] = activityDayName[wd] + "s"
+	}
+	if len(names) == 1 {
+		return names[0]
+	}
+	return strings.Join(names[:len(names)-1], ", ") + " and " + names[len(names)-1]
 }
 
 // activityTodayDay returns the "Today" day from a feed built for the landing
