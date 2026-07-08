@@ -24,10 +24,45 @@ var activityLinks = map[string][]ActivityLink{
 		Label: "Pool temperatures and accessibility features",
 		URL:   "https://ottawa.ca/en/recreation-and-parks/accessible-features-and-places/accessibility-pools",
 		Note:  "from the City of Ottawa",
+	}, {
+		Label: "Rules and safety information",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/swimming-aquafitness-and-wave-swim/safety-and-supervision",
+		Note:  "from the City of Ottawa",
+	}},
+	"lane-swim": {{
+		Label: "Pool temperatures and accessibility features",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/accessible-features-and-places/accessibility-pools",
+		Note:  "from the City of Ottawa",
+	}, {
+		Label: "Rules and safety information",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/swimming-aquafitness-and-wave-swim/safety-and-supervision",
+		Note:  "from the City of Ottawa",
 	}},
 	"hockey": {{
 		Label: "Outdoor rink locations",
 		URL:   "https://ottawa.ca/en/recreation-and-parks/register-courses-and-camps/skating/outdoor-rinks/outdoor-rink-locations",
+		Note:  "from the City of Ottawa",
+	}, {
+		Label: "Rules and activity information",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/skating-and-ice-sport-drop-descriptions",
+		Note:  "from the City of Ottawa",
+	}, {
+		Label: "Fees at stand-alone arenas",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/fees-stand-alone-arenas",
+		Note:  "from the City of Ottawa",
+	}},
+	"skating": {{
+		Label: "Rules and activity information",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/skating-and-ice-sport-drop-descriptions",
+		Note:  "from the City of Ottawa",
+	}, {
+		Label: "Fees at stand-alone arenas",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/skating-and-ice-sports/fees-stand-alone-arenas",
+		Note:  "from the City of Ottawa",
+	}},
+	"aquafit": {{
+		Label: "Activity information",
+		URL:   "https://ottawa.ca/en/recreation-and-parks/drop-activities/descriptions-safety-locations/swimming-aquafitness-and-wave-swim/aquafitness-drop-descriptions",
 		Note:  "from the City of Ottawa",
 	}},
 }
