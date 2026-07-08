@@ -99,6 +99,8 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 							<div class="activity-today-times">
 								<label class="activity-today-time">From <input type="time" id="activity-today-from" autocomplete="off"/></label>
 								<label class="activity-today-time">To <input type="time" id="activity-today-to" autocomplete="off"/></label>
+								// clears the time window and scrolls back to the current session
+								<button type="button" class="activity-today-now" id="activity-today-now">Now</button>
 							</div>
 						</div>
 						<p class="activity-today-filterbar">

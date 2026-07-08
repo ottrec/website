@@ -21,6 +21,7 @@ if (list) {
 	const noMatch = document.getElementById('activity-today-nomatch')
 	const count = document.getElementById('activity-today-count')
 	const clear = document.getElementById('activity-today-clear')
+	const nowBtn = document.getElementById('activity-today-now')
 
 	// the filter inputs are server-hidden since they need JS
 	const filters = document.querySelector<HTMLElement>('.activity-today-filters')
@@ -83,34 +84,53 @@ if (list) {
 
 	clear?.addEventListener('click', clearFilters)
 
+	// the Now button clears the time window and jumps back to the current
+	// session
+	nowBtn?.addEventListener('click', () => {
+		if (from) from.value = ''
+		if (to) to.value = ''
+		apply()
+		jumpToNow(true)
+	})
+
 	// don't retain filter values across reloads or bfcache restores
 	window.addEventListener('pageshow', clearFilters)
 }
 
-// --- auto-scroll to now ---
+// --- session states + scroll to now ---
 
-// start the list at the first session that hasn't ended yet, so the visitor
-// sees what's on now rather than this morning's sessions. Session times are in
-// Ottawa time (same trick as today.ts).
-{
+// grey out sessions that have ended and tint the ones on now (the same classes
+// the /today feed uses), then start the list at the first session that hasn't
+// ended yet, so the visitor sees what's on now rather than this morning's
+// sessions. Session times are in Ottawa time (same trick as today.ts). The Now
+// button re-runs this, skipping filtered-out rows.
+function jumpToNow(smooth?: boolean) {
 	const box = document.querySelector<HTMLElement>('.activity-today-scroll')
 	const items = box ? [...box.querySelectorAll<HTMLLIElement>('.today-session')] : []
-	if (box && items.length) {
-		const parts = new Intl.DateTimeFormat('en-GB', {
-			timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false,
-		}).formatToParts(new Date())
-		const get = (t: string) => Number(parts.find((p) => p.type === t)?.value || 0)
-		const now = (get('hour') % 24) * 60 + get('minute')
-		const target = items.find((li) => +(li.dataset['end'] || '0') > now)
-		if (!target) {
-			box.scrollTop = box.scrollHeight // everything's over; show the evening
-		} else if (target !== items[0]) {
-			// a sliver of the previous session stays visible under the shadow,
-			// reinforcing that the list scrolls
-			box.scrollTop = target.getBoundingClientRect().top - box.getBoundingClientRect().top - 8
-		}
+	if (!box || !items.length) return
+	const parts = new Intl.DateTimeFormat('en-GB', {
+		timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false,
+	}).formatToParts(new Date())
+	const get = (t: string) => Number(parts.find((p) => p.type === t)?.value || 0)
+	const now = (get('hour') % 24) * 60 + get('minute')
+	for (const li of items) {
+		li.classList.remove('now', 'past')
+		if (+(li.dataset['end'] || '0') <= now) li.classList.add('past')
+		else if (+(li.dataset['start'] || '0') <= now) li.classList.add('now')
 	}
+	const visible = items.filter((li) => !li.hidden)
+	const target = visible.find((li) => +(li.dataset['end'] || '0') > now)
+	let top = 0
+	if (!target) {
+		top = box.scrollHeight // everything's over; show the evening
+	} else if (target !== visible[0]) {
+		// a sliver of the previous session stays visible under the shadow,
+		// reinforcing that the list scrolls
+		top = target.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 8
+	}
+	box.scrollTo({top, behavior: smooth ? 'smooth' : 'auto'})
 }
+jumpToNow()
 
 // --- expand toggle ---
 

@@ -179,6 +179,22 @@
 		border: 0;
 		background: none;
 	}
+	/* clears the time window and scrolls back to the current session */
+	.activity-today-now {
+		padding: .3em .7em;
+		border: 1px solid var(--fxki-ui-3);
+		border-radius: .35rem;
+		background: none;
+		font: inherit;
+		font-size: .85rem;
+		color: var(--fxki-tx-2);
+		cursor: pointer;
+
+		&:hover {
+			background: var(--fxki-bg-2);
+			color: var(--fxki-tx);
+		}
+	}
 }
 
 /* session-count banner attached to the top of the list (the clear button in it
@@ -254,8 +270,9 @@
 	font-size: .85rem;
 	border-radius: 0; /* square, so the row dividers reach the edges */
 
-	&:hover {
-		background: none; /* no row highlight in the compact widget */
+	&:not(.now):hover {
+		background: none; /* no row highlight in the compact widget; the
+		                     current-session tint stays */
 	}
 }
 
