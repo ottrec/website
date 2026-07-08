@@ -747,6 +747,46 @@ button.t-warn {
 	font-size: .82rem;
 	color: var(--fxki-tx-3);
 }
+/* "show earlier sessions" note + toggle at the top of today, added client-side */
+.today-past-note {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: .3rem .5rem;
+	margin: .3rem 0 .5rem;
+	font-size: .78rem;
+	color: var(--fxki-tx-2);
+
+	&[hidden] {
+		display: none;
+	}
+	button {
+		display: inline-flex;
+		align-items: center;
+		gap: .1em;
+		padding: .25rem .6rem .25rem .45rem;
+		border: 1px solid var(--fxki-ui-2);
+		border-radius: 999px;
+		background: var(--fxki-bg-2);
+		font: inherit;
+		color: var(--fxki-tx-2);
+		cursor: pointer;
+
+		&::before {
+			content: '\e5cf'; /* expand_more */
+			font-size: 1.35em;
+			margin: -.3em 0;
+			color: var(--fxki-tx-3);
+		}
+		&.open::before {
+			content: '\e5ce'; /* expand_less */
+		}
+		&:hover {
+			border-color: var(--fxki-ui-3);
+			color: var(--fxki-tx);
+		}
+	}
+}
 .today-noresults {
 	margin: 1rem 0;
 	font-size: .85rem;

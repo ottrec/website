@@ -95,6 +95,24 @@ const filter = {
 
 let activeDate = (days.find((d) => d.today) || days[0])?.date || ''
 
+// past sessions on the today tab are hidden by default, with an inline toggle
+// at the top of the day to show them (dimmed via the .past class). Client-side
+// like the "now" line, since cached pages can't trust the server clock.
+let showPast = false
+const pastNote = document.createElement('p')
+pastNote.className = 'today-past-note'
+pastNote.hidden = true
+const pastText = document.createElement('span')
+const pastBtn = document.createElement('button')
+pastBtn.type = 'button'
+pastBtn.className = 'msym' // the expand/collapse chevron base (website.css)
+pastNote.append(pastText, pastBtn)
+pastBtn.addEventListener('click', () => {
+	showPast = !showPast
+	apply()
+})
+days.find((d) => d.today)?.el.querySelector('.today-day-head')?.after(pastNote)
+
 // session matching (everything except the per-day weekday split, which the tabs
 // handle)
 function sessionVisible(s: Session): boolean {
@@ -174,13 +192,15 @@ tabsEl.addEventListener('keydown', (ev) => {
 	days[next]!.tab.focus()
 })
 
-// main apply: show the active day, filter its sessions, and refresh everything
-// that depends on it.
-function apply() {
+// refresh the feed: show the active day, filter its sessions (dropping past
+// ones on the today tab unless toggled on), and re-mark the "now" line. Also
+// run on a timer so sessions drop out as they end.
+function refreshFeed() {
 	if (!days.some((d) => d.date === activeDate))
 		activeDate = (days.find((d) => d.today) || days[0])?.date || ''
 
 	let shownCount = 0
+	let pastHidden = 0
 	for (const d of days) {
 		const isActive = d.date === activeDate
 		d.el.hidden = !isActive
@@ -188,18 +208,44 @@ function apply() {
 		d.tab.setAttribute('aria-selected', isActive ? 'true' : 'false')
 		d.tab.tabIndex = isActive ? 0 : -1 // roving tabindex
 		if (isActive) {
+			const nowMins = d.today ? ottawaNowMinutes() : null
+			let past = 0
 			for (const s of d.sessions) {
-				const vis = sessionVisible(s)
+				let vis = sessionVisible(s)
+				if (vis && nowMins !== null && s.end <= nowMins) {
+					past++
+					if (!showPast) {
+						vis = false
+						pastHidden++
+					}
+				}
 				s.el.hidden = !vis
 				if (vis) shownCount++
 			}
 			// hide hour groups left with no visible sessions
 			for (const hr of d.el.querySelectorAll<HTMLElement>('.today-hour'))
 				hr.hidden = ![...hr.querySelectorAll<HTMLElement>('.today-session')].some((el) => !el.hidden)
+			if (d.today) {
+				pastNote.hidden = past === 0
+				if (past > 0 && nowMins !== null) {
+					pastText.textContent = showPast
+						? `Sessions that ended before ${clockLabel(nowMins)} are greyed out.`
+						: past === 1
+							? `1 session that ended before ${clockLabel(nowMins)} is hidden.`
+							: `${past} sessions that ended before ${clockLabel(nowMins)} are hidden.`
+					pastBtn.textContent = showPast ? 'Hide earlier sessions' : 'Show earlier sessions'
+					pastBtn.classList.toggle('open', showPast)
+				}
+			}
 		}
 	}
-	noResultsEl.hidden = advanced || shownCount > 0
+	noResultsEl.hidden = advanced || shownCount > 0 || pastHidden > 0
 	markNow()
+}
+
+// main apply: refresh the feed and everything else that depends on the filters.
+function apply() {
+	refreshFeed()
 	if (!advanced) {
 		updateExcludeButtons()
 		renderChips()
@@ -758,5 +804,5 @@ if (!advanced) filtersEl.hidden = false
 tabsEl.hidden = false
 apply()
 relativeUpdated()
-setInterval(markNow, 60_000)
+setInterval(refreshFeed, 60_000)
 setInterval(relativeUpdated, 60_000)
