@@ -117,7 +117,7 @@ type todayFeedDay struct {
 	Empty   bool // no sessions at all
 }
 
-// todayClockLabel formats a clock range like [clockRangeLabel] but elides the
+// todayClockLabel formats a clock range like [clockRangeParts] but elides the
 // minutes when they're zero ("9–11am" instead of "9:00–11:00am"), for the
 // denser today feed.
 func todayClockLabel(r schema.ClockRange) string {

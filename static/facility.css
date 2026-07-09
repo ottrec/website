@@ -117,6 +117,16 @@ article.facility {
 	.facility-schedules > h2 {
 		display: none;
 	}
+	/* times and date ranges (table and list views, popups, modal) */
+	.time,
+	.schedule-date,
+	.facility-updated {
+		font-variant-numeric: tabular-nums;
+	}
+	/* de-emphasized am/pm suffixes on parsed times */
+	.time .ampm {
+		font-size: .85em;
+	}
 	.schedule-group {
 		margin: .75rem 0;
 
@@ -160,6 +170,21 @@ article.facility {
 			background: var(--fxki-bg-2);
 			text-align: center;
 			min-width: 5.5em;
+
+			/* abbreviated day names on narrow screens */
+			.day-abbr {
+				display: none;
+			}
+			@media (max-width: 700px) {
+				min-width: 3em;
+
+				.day-full {
+					display: none;
+				}
+				.day-abbr {
+					display: inline;
+				}
+			}
 		}
 		tbody th {
 			text-align: left;

@@ -113,14 +113,33 @@ func activityLabel(act ottrecidx.ActivityRef) string {
 	return act.GetLabel()
 }
 
-func timeLabel(tm ottrecidx.TimeRef) string {
-	if r, ok := tm.GetRange(); ok {
-		return clockRangeLabel(r)
+// timeText renders a time label, wrapping the am/pm suffixes of parsed times
+// in .ampm spans so they can be de-emphasized. Unparsed times render as their
+// raw label.
+func timeText(tm ottrecidx.TimeRef) templ.Component {
+	r, ok := tm.GetRange()
+	if !ok {
+		return templ.Raw(html.EscapeString(tm.GetLabel()))
 	}
-	return tm.GetLabel()
+	start, ssuf, end, esuf := clockRangeParts(r)
+	var b strings.Builder
+	b.WriteString(start)
+	if ssuf != "" {
+		b.WriteString(`<span class="ampm">`)
+		b.WriteString(ssuf)
+		b.WriteString(`</span>`)
+	}
+	b.WriteString(end)
+	b.WriteString(`<span class="ampm">`)
+	b.WriteString(esuf)
+	b.WriteString(`</span>`)
+	return templ.Raw(b.String())
 }
 
-func clockRangeLabel(r schema.ClockRange) string {
+// clockRangeParts formats a clock range as label pieces with the am/pm
+// suffixes separate: the start time, its suffix (empty when both ends share
+// one), the dash plus end time, and the end suffix.
+func clockRangeParts(r schema.ClockRange) (start, startSuf, end, endSuf string) {
 	_, sh, sm := r.Start.Split()
 	_, eh, em := r.End.Split()
 
@@ -132,22 +151,19 @@ func clockRangeLabel(r schema.ClockRange) string {
 	if edh == 0 {
 		edh = 12
 	}
-	esuf := "am"
+	endSuf = "am"
 	if eh >= 12 {
-		esuf = "pm"
+		endSuf = "pm"
 	}
-
-	var st string
-	if (sh < 12) == (eh < 12) {
-		st = fmt.Sprintf("%d:%02d", sdh, sm)
-	} else {
-		ssuf := "am"
+	if (sh < 12) != (eh < 12) {
+		startSuf = "am"
 		if sh >= 12 {
-			ssuf = "pm"
+			startSuf = "pm"
 		}
-		st = fmt.Sprintf("%d:%02d%s", sdh, sm, ssuf)
 	}
-	return st + "–" + fmt.Sprintf("%d:%02d%s", edh, em, esuf)
+	start = fmt.Sprintf("%d:%02d", sdh, sm)
+	end = fmt.Sprintf("–%d:%02d", edh, em)
+	return
 }
 
 func scheduleDateRangeLabel(sch ottrecidx.ScheduleRef) string {
@@ -194,21 +210,28 @@ func scheduleClass(sch ottrecidx.ScheduleRef) string {
 	return "schedule"
 }
 
+// scheduleDayLabels returns the label for the i'th day of a schedule, plus a
+// compact form with the leading weekday name abbreviated (equal to full when
+// there's nothing to abbreviate).
+func scheduleDayLabels(sch ottrecidx.ScheduleRef, i int) (full, abbr string) {
+	if d, ok := sch.GetDayDate(i); ok {
+		full = d.String()
+	} else {
+		full = sch.GetDay(i)
+	}
+	for wd := time.Sunday; wd <= time.Saturday; wd++ {
+		if name := wd.String(); strings.HasPrefix(full, name) {
+			return full, name[:3] + full[len(name):]
+		}
+	}
+	return full, full
+}
+
 // scheduleListDayLabel returns the compact label for the i'th day of a
 // schedule in the list view, abbreviating leading weekday names.
 func scheduleListDayLabel(sch ottrecidx.ScheduleRef, i int) string {
-	var s string
-	if d, ok := sch.GetDayDate(i); ok {
-		s = d.String()
-	} else {
-		s = sch.GetDay(i)
-	}
-	for wd := time.Sunday; wd <= time.Saturday; wd++ {
-		if name := wd.String(); strings.HasPrefix(s, name) {
-			return name[:3] + s[len(name):]
-		}
-	}
-	return s
+	_, abbr := scheduleDayLabels(sch, i)
+	return abbr
 }
 
 func activityHasTimes(act ottrecidx.ActivityRef) bool {

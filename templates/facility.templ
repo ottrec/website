@@ -217,7 +217,9 @@ templ websiteFacilityScheduleList(sch ottrecidx.ScheduleRef) {
 									<span class="day">{ scheduleListDayLabel(sch, i) }</span>
 									<span class="times">
 										for tm := range act.DayTimes(i) {
-											<span class="time">{ timeLabel(tm) }</span>
+											<span class="time">
+												@timeText(tm)
+											</span>
 										}
 									</span>
 								</li>
@@ -249,10 +251,11 @@ templ websiteFacilitySchedule(sch ottrecidx.ScheduleRef) {
 					<th></th>
 					for i := range sch.NumDays() {
 						<th>
-							if d, ok := sch.GetDayDate(i); ok {
-								{ d.String() }
+							if full, abbr := scheduleDayLabels(sch, i); abbr != full {
+								<span class="day-full">{ full }</span>
+								<span class="day-abbr">{ abbr }</span>
 							} else {
-								{ sch.GetDay(i) }
+								{ full }
 							}
 						</th>
 					}
@@ -268,7 +271,9 @@ templ websiteFacilitySchedule(sch ottrecidx.ScheduleRef) {
 						for i := range sch.NumDays() {
 							<td>
 								for tm := range act.DayTimes(i) {
-									<span class="time">{ timeLabel(tm) }</span>
+									<span class="time">
+										@timeText(tm)
+									</span>
 								}
 							</td>
 						}
