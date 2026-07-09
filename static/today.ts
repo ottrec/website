@@ -261,6 +261,11 @@ function refreshFeed() {
 		}
 	}
 	noResultsEl.hidden = advanced || shownCount > 0 || pastHidden > 0
+	feedEl.hidden = !noResultsEl.hidden // its padding would leave a gap above the no-results note
+	if (!noResultsEl.hidden) {
+		const d = days.find((d) => d.date === activeDate)
+		if (d) noResultsEl.textContent = `Nothing matches these filters on ${d.weekday}, ${d.month}.`
+	}
 	markNow()
 }
 
