@@ -36,14 +36,14 @@ func buildActivityDirectory(data ottrecidx.DataRef) (cats []ScheduleCategory, ot
 
 // activityPeriods contains the time-of-day periods (inclusive start, exclusive
 // end minutes from midnight) used to build the weekday/period availability
-// masks on the activity landing pages and the today feed's time filter.
+// masks on the activity landing pages.
 var activityPeriods = [][2]int{
 	{0, 11 * 60},
 	{11 * 60, 17 * 60},
 	{17 * 60, 24 * 60},
 }
 
-// activityPeriodLong labels the periods (used by the today feed).
+// activityPeriodLong labels the periods (used by the when-summary note).
 var activityPeriodLong = []string{"Morning", "Afternoon", "Evening"}
 
 // activityDayShort/Name are the weekday labels, starting at Sunday, used by the

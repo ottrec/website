@@ -49,10 +49,6 @@ type WebsiteTodayParams struct {
 	QueryError string            // query parse/limit error to show instead of the feed
 }
 
-// todayPeriods are the time-of-day buckets for the time-range filter pill,
-// reusing the activities page's morning/afternoon/evening split.
-var todayPeriods = activityPeriods
-
 // todaySession is one placed drop-in session in the feed: a single parsed
 // clock range for an activity at a facility, on a concrete date. Recurring
 // weekday schedules and published fixed-date (holiday) schedules are both
@@ -184,15 +180,8 @@ type todayDataJSON struct {
 	Updated    string              `json:"updated"`
 	Weekdays   []string            `json:"weekdays"`   // Sun..Sat
 	Categories []string            `json:"categories"` // [ScheduleCategories] + Other
-	Periods    []todayPeriodJSON   `json:"periods"`
 	Sectors    []string            `json:"sectors"` // group order for the facility pill
 	Facilities []todayFacilityJSON `json:"facilities"`
-}
-
-type todayPeriodJSON struct {
-	Label string `json:"label"`
-	Start int    `json:"start"` // minutes from midnight
-	End   int    `json:"end"`
 }
 
 type todayFacilityJSON struct {
@@ -618,18 +607,12 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 	}
 	sectors = append(sectors, "Other")
 
-	periods := make([]todayPeriodJSON, len(todayPeriods))
-	for i, p := range todayPeriods {
-		periods[i] = todayPeriodJSON{Label: activityPeriodLong[i], Start: p[0], End: p[1]}
-	}
-
 	feed := todayFeed{
 		Days: days,
 		JSON: todayDataJSON{
 			Updated:    data.Index().Updated().In(loc).Format("2006-01-02"),
 			Weekdays:   slices.Clone(mapDays),
 			Categories: categoryNames(),
-			Periods:    periods,
 			Sectors:    sectors,
 			Facilities: facList,
 		},

@@ -14,7 +14,6 @@ interface DataJSON {
 	updated: string
 	weekdays: string[]
 	categories: string[]
-	periods: {label: string; start: number; end: number}[]
 	sectors: string[]
 	facilities: {slug: string; name: string; sector: string}[]
 }
