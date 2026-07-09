@@ -1,6 +1,7 @@
 'use strict'
 import * as L from 'leaflet'
 import {normalizeText} from './text'
+import {pinHTML, pinIcon} from './pin'
 
 // the shared starred facility store (starred.ts) is a global; see ottrecstarred.d.ts
 
@@ -384,22 +385,16 @@ map.on('dragend', () => { dragging = false })
 const markers = new Map<number, L.Marker>()   // facility index -> marker
 const pinIcons = new Map<number, L.DivIcon>()  // facility index -> pin icon
 const popupCache = new Map<string, Promise<string>>() // slug -> popup content
-const pinHTML = (slug: string) => '<div class="fac-pin' + (ottrecStarred.has(slug) ? ' starred' : '') + '"></div>'
 for (const f of data.facilities) {
 	if (!f.lat && !f.lng) continue
-	const icon = L.divIcon({
-		className: 'fac-pin-wrap',
-		html: pinHTML(f.slug),
-		iconSize: [30, 30],
-		iconAnchor: [15, 15],
-	})
+	const icon = pinIcon(ottrecStarred.has(f.slug))
 	const marker = L.marker([f.lat, f.lng], {icon})
 	// register this before bindTooltip so hoveredIndex is current by the time
 	// Leaflet's own mouseover handler opens the tooltip and fires tooltipopen
 	// (listeners run in registration order) otherwise the tooltipopen guard
 	// below sees a stale hoveredIndex and suppresses every genuine hover
 	marker.on('mouseover', () => { hoveredIndex = f.index; setHighlight(f.index, true) })
-	marker.bindTooltip(f.name, {direction: 'top', offset: [0, -12]})
+	marker.bindTooltip(f.name, {direction: 'top'})
 	marker.on('tooltipopen', () => {
 		// suppress tooltips opened while dragging or replayed afterwards for pins
 		// the cursor isn't actually over (see hoveredIndex above)
@@ -1046,7 +1041,7 @@ hideEmptyEl.addEventListener('change', () => {
 // sync when stars change (including from another tab)
 ottrecStarred.onchange(() => {
 	for (const [i, marker] of markers) {
-		const html = pinHTML(data.facilities[i]!.slug)
+		const html = pinHTML(ottrecStarred.has(data.facilities[i]!.slug))
 		pinIcons.get(i)!.options.html = html // for markers (re-)added later
 		const el = marker.getElement()
 		if (el) el.innerHTML = html

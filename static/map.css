@@ -359,28 +359,31 @@ ul#fac-list {
 
 /* map markers and popups */
 
+/* a thin teardrop (pin.ts) with its tip on the facility; the wrapper is larger
+ * than the visible pin to give a bigger click target */
 .fac-pin {
-	/* the wrapper is larger than the visible pin to give a bigger click target */
-	width: 20px;
-	height: 20px;
-	margin: 3px;
-	border-radius: 50%;
-	background: var(--fxki-bl);
-	border: 2px solid var(--fxki-bg);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, .4);
+	display: block;
+	width: 18px;
+	height: 26px;
+	margin: 4px auto 0; /* tip at the wrapper's bottom center (the icon anchor) */
+	fill: var(--fxki-bl);
+	stroke: var(--fxki-bg);
+	stroke-width: 1.2;
+	filter: drop-shadow(0 1px 2px rgb(0 0 0 / .4));
 	opacity: .75;
+	transform-origin: 50% 100%; /* grow from the tip so it stays anchored */
 	/* longhand: a comma-separated transition shorthand hangs the embedded
 	 * postcss (internal/postcss) in an infinite loop */
 	transition-property: transform, opacity;
 	transition-duration: .1s;
 
 	&.starred {
-		background: var(--fxki-gr);
+		fill: var(--fxki-gr);
 	}
 }
 .fac-pin-wrap.hl .fac-pin {
-	transform: scale(1.4);
-	background: var(--fxki-or);
+	transform: scale(1.25);
+	fill: var(--fxki-or);
 	opacity: 1;
 }
 /* edge arrows: blue indicators at the map edge pointing to off-screen facilities.

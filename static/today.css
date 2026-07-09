@@ -862,55 +862,8 @@ button.t-warn {
 	}
 }
 
-/* warning modal */
-.today-modal {
-	width: min(42rem, 92vw);
-	max-height: 85vh;
-	padding: 0;
-	border: 1px solid var(--fxki-ui-2);
-	border-radius: .6rem;
-	background: var(--fxki-bg);
-	color: var(--fxki-tx);
-	overflow: hidden;
-
-	/* the full-schedule modal (today.js sets .wide) fits the week's table
-	 * without scrolling; the text modals keep the narrower measure */
-	&.wide {
-		width: min(64rem, 94vw);
-	}
-
-	/* literal color + blur rather than the theme vars: custom properties don't
-	 * reach ::backdrop on the target browsers, and a plain black scrim alone is
-	 * nearly invisible over the dark theme's near-black page */
-	&::backdrop {
-		background: rgb(0 0 0 / .5);
-		backdrop-filter: blur(2px);
-	}
-}
-.today-modal-close {
-	position: absolute;
-	top: .4rem;
-	right: .5rem;
-	font-size: 1.3rem;
-	line-height: 1;
-	width: 1.6rem;
-	height: 1.6rem;
-	border: none;
-	border-radius: .3rem;
-	background: none;
-	color: var(--fxki-tx-3);
-	cursor: pointer;
-
-	&:hover {
-		background: var(--fxki-bg-2);
-		color: var(--fxki-tx);
-	}
-}
-.today-modal-content {
-	overflow-y: auto;
-	max-height: 85vh;
-	padding: 1rem 1.25rem 1.25rem;
-}
+/* warning modal: the shared modal shell (website.css); only the content
+ * styles live here */
 .today-modal-body {
 	h2 {
 		font-family: 'Source Serif 4', serif;

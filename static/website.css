@@ -531,6 +531,100 @@ button.fac-star {
     }
 }
 
+/* shared modal shell (modal.ts): the <dialog> is stretched over the whole
+ * viewport so its own background is the scrim (::backdrop renders unreliably
+ * on some devices, and custom properties don't reach it on the target
+ * browsers), with the visible box centered inside. Pages add their own content
+ * styles; "wide" widens the box for schedule tables. */
+.modal {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: rgb(0 0 0 / .5);
+    backdrop-filter: blur(2px);
+    overscroll-behavior: contain;
+    /* keep it above a Leaflet map when the top layer isn't engaged (e.g. it
+     * opens from a map marker); a no-op for a real top-layer dialog */
+    z-index: 3000;
+
+    &[open] {
+        display: grid;
+        place-items: center;
+        animation: modal-in .16s ease-out;
+    }
+    &[open] .modal-box {
+        animation: modal-box-in .16s ease-out;
+    }
+    /* modal.ts adds .closing for the exit fade, then closes for real */
+    &.closing {
+        animation: modal-out .13s ease-in forwards;
+    }
+    /* the scrim is the dialog itself */
+    &::backdrop {
+        background: transparent;
+    }
+}
+@keyframes modal-in {
+    from { opacity: 0; }
+}
+@keyframes modal-box-in {
+    from { transform: translateY(6px) scale(.98); }
+}
+@keyframes modal-out {
+    to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .modal[open],
+    .modal[open] .modal-box,
+    .modal.closing {
+        animation: none;
+    }
+}
+.modal-box {
+    position: relative;
+    width: min(42rem, 92vw);
+    max-height: 85vh;
+    border: 1px solid var(--fxki-ui-2);
+    border-radius: .6rem;
+    background: var(--fxki-bg);
+    color: var(--fxki-tx);
+    overflow: hidden;
+}
+.modal.wide .modal-box {
+    width: min(64rem, 94vw);
+}
+.modal-close {
+    position: absolute;
+    top: .4rem;
+    right: .5rem;
+    z-index: 1;
+    font-size: 1.3rem;
+    line-height: 1;
+    width: 1.6rem;
+    height: 1.6rem;
+    border: none;
+    border-radius: .3rem;
+    background: none;
+    color: var(--fxki-tx-3);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--fxki-bg-2);
+        color: var(--fxki-tx);
+    }
+}
+.modal-content {
+    overflow-y: auto;
+    max-height: 85vh;
+    padding: 1rem 1.25rem 1.25rem;
+}
+
 .ott-html {
     h1, h2, h3, h4, h5, h6 {
         font-size: inherit;

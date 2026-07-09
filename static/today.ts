@@ -1,6 +1,7 @@
 'use strict'
 import {normalizeText} from './text'
 import {quickNorm, quickTokens, quickMatch, stem, type QuickToken} from './quickfilter'
+import {createModal} from './modal'
 
 // The "what's on" feed. Sessions for each day are server-rendered (so the page
 // works without JS and for crawlers); this script turns the days into tabs and
@@ -783,36 +784,25 @@ function loadURL() {
 }
 
 // warning modal: fetches the changes / special-date schedule fragment and shows
-// it in a <dialog>, with the official-page link already at the bottom of the
-// fragment.
+// it in the shared modal shell (modal.ts), with the official-page link already
+// at the bottom of the fragment.
 
-const modal = document.createElement('dialog')
-modal.className = 'today-modal'
-modal.innerHTML =
-	'<button type="button" class="today-modal-close" aria-label="Close">×</button>' +
-	'<div class="today-modal-content"></div>'
-document.body.append(modal)
-const modalContent = modal.querySelector<HTMLElement>('.today-modal-content')!
-const modalClose = modal.querySelector<HTMLButtonElement>('.today-modal-close')!
-modalClose.addEventListener('click', () => modal.close())
-modal.addEventListener('click', (ev) => {
-	if (ev.target === modal) modal.close() // backdrop click
-})
+const modal = createModal('today-modal', 'Details')
 
 let modalToken = 0
 async function loadModal(url: string, fallbackSource?: string) {
 	const token = ++modalToken
-	modalContent.innerHTML = '<p class="today-modal-loading">Loading…</p>'
-	if (!modal.open) modal.showModal()
+	modal.content.innerHTML = '<p class="today-modal-loading">Loading…</p>'
+	modal.open()
 	try {
 		const resp = await fetch(url)
 		if (!resp.ok) throw new Error('status ' + resp.status)
 		const html = await resp.text()
 		if (token !== modalToken) return
-		modalContent.innerHTML = html
+		modal.content.innerHTML = html
 	} catch {
 		if (token !== modalToken) return
-		modalContent.innerHTML = '<p class="today-modal-empty">Couldn’t load the details.</p>' +
+		modal.content.innerHTML = '<p class="today-modal-empty">Couldn’t load the details.</p>' +
 			(fallbackSource ? '<p class="today-modal-source"><a href="' + fallbackSource + '" target="_blank" rel="noopener">View on the City of Ottawa website</a></p>' : '')
 	}
 }
@@ -826,7 +816,7 @@ function openWarnModal(btn: HTMLElement) {
 		: kind === 'reservations'
 			? '/api/reservations?facility=' + slug + '&group=' + group
 			: '/api/changes?facility=' + slug + '&group=' + group
-	modal.classList.remove('wide')
+	modal.dialog.classList.remove('wide')
 	loadModal(url, btn.dataset['source'])
 }
 
@@ -848,7 +838,7 @@ document.getElementById('today-facerrs')?.addEventListener('click', (ev) => {
 function openScheduleModal(btn: HTMLElement) {
 	const slug = encodeURIComponent(btn.dataset['slug'] || '')
 	const group = encodeURIComponent(btn.dataset['group'] || '')
-	modal.classList.add('wide') // room for the full week's schedule table
+	modal.dialog.classList.add('wide') // room for the full week's schedule table
 	loadModal('/map/facility/' + slug + (group ? '?group=' + group : ''), btn.dataset['source'])
 }
 

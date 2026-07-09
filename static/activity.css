@@ -630,15 +630,18 @@
 	}
 }
 
-/* facility markers (a trimmed copy of the full map's pins) */
+/* facility markers (a trimmed copy of the full map's pins in map.css, which
+ * this page doesn't load): a thin teardrop (pin.ts) with its tip on the
+ * facility, sized to leave the wrapper as a bigger click target */
 .fac-pin {
-	width: 20px;
-	height: 20px;
-	margin: 3px;
-	border-radius: 50%;
-	background: var(--fxki-bl);
-	border: 2px solid var(--fxki-bg);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, .4);
+	display: block;
+	width: 18px;
+	height: 26px;
+	margin: 4px auto 0; /* tip at the wrapper's bottom center (the icon anchor) */
+	fill: var(--fxki-bl);
+	stroke: var(--fxki-bg);
+	stroke-width: 1.2;
+	filter: drop-shadow(0 1px 2px rgb(0 0 0 / .4));
 	opacity: .8;
 }
 

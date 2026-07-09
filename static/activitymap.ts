@@ -7,6 +7,7 @@
 // (facilitymodal.ts) via the data-facility-modal link.
 
 import * as L from 'leaflet'
+import {pinIcon} from './pin'
 
 interface Fac {
 	name: string
@@ -52,14 +53,8 @@ if (el && dataEl) {
 	const bounds: L.LatLngTuple[] = []
 	for (const f of facs) {
 		if (!f.lat && !f.lng) continue
-		const icon = L.divIcon({
-			className: 'fac-pin-wrap',
-			html: '<div class="fac-pin"></div>',
-			iconSize: [30, 30],
-			iconAnchor: [15, 15],
-		})
-		const marker = L.marker([f.lat, f.lng], {icon}).addTo(map)
-		marker.bindTooltip(f.name, {direction: 'top', offset: [0, -12]})
+		const marker = L.marker([f.lat, f.lng], {icon: pinIcon(false)}).addTo(map)
+		marker.bindTooltip(f.name, {direction: 'top'})
 		// open the facility schedule modal directly (no intermediate popup)
 		marker.on('click', () => {
 			const open = (window as unknown as {ottrecFacilityModal?: (slug: string) => void}).ottrecFacilityModal

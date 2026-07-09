@@ -1,6 +1,7 @@
 'use strict'
 
 import {quickTarget, quickTokens, quickMatch, type QuickTarget} from './quickfilter'
+import {createModal, type Modal} from './modal'
 
 // Enhancements for the activity landing page's minimal today widget:
 //  - client-side filtering by facility/activity text and a start/end time window
@@ -200,47 +201,25 @@ sortStarred()
 
 // --- warning / reservation modals ---
 
-let dialog: HTMLDialogElement | null = null
-let dcontent: HTMLElement
+let modal: Modal | null = null
 let token = 0
 
-function ensureDialog(): HTMLDialogElement {
-	if (dialog) return dialog
-	const d = document.createElement('dialog')
-	d.className = 'today-modal'
-	d.innerHTML =
-		'<button type="button" class="today-modal-close" aria-label="Close">×</button>' +
-		'<div class="today-modal-content"></div>'
-	document.body.append(d)
-	dcontent = d.querySelector<HTMLElement>('.today-modal-content')!
-	d.querySelector<HTMLButtonElement>('.today-modal-close')!.addEventListener('click', () => d.close())
-	d.addEventListener('click', (ev) => {
-		if (ev.target === d) d.close()
-	})
-	d.addEventListener('close', () => {
-		document.body.style.overflow = ''
-	})
-	dialog = d
-	return d
-}
-
 async function openWarn(url: string) {
-	const d = ensureDialog()
+	modal ??= createModal('today-modal', 'Details')
 	const t = ++token
-	dcontent.innerHTML = '<div class="today-modal-body"><p>Loading…</p></div>'
-	document.body.style.overflow = 'hidden'
-	if (!d.open) d.showModal()
-	dcontent.scrollTop = 0
+	modal.content.innerHTML = '<div class="today-modal-body"><p>Loading…</p></div>'
+	modal.open()
+	modal.content.scrollTop = 0
 	try {
 		const resp = await fetch(url)
 		if (!resp.ok) throw new Error('status ' + resp.status)
 		const html = await resp.text()
 		if (t !== token) return
-		dcontent.innerHTML = html
-		dcontent.scrollTop = 0
+		modal.content.innerHTML = html
+		modal.content.scrollTop = 0
 	} catch {
 		if (t !== token) return
-		dcontent.innerHTML =
+		modal.content.innerHTML =
 			'<div class="today-modal-body"><p>Couldn’t load this. <a href="/today">Open the today page.</a></p></div>'
 	}
 }
