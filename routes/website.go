@@ -76,7 +76,10 @@ func Website(cfg WebsiteConfig) (http.Handler, error) {
 	mux.Handle("GET /api/reservations", &websiteTodayReservationsHandler{
 		websiteHandlerBase: base,
 	})
-	mux.Handle("GET /api/enrich/report", &websiteEnrichReportHandler{
+	mux.Handle("GET /api/data/enrichment", &websiteDataEnrichmentHandler{
+		websiteHandlerBase: base,
+	})
+	mux.Handle("GET /api/data/issues", &websiteDataIssuesHandler{
 		websiteHandlerBase: base,
 	})
 	mux.Handle("GET /api/facility", &websiteFacilityHandler{
@@ -864,14 +867,14 @@ func (h *websiteTodayReservationsHandler) ServeHTTP(w http.ResponseWriter, r *ht
 	})
 }
 
-// websiteEnrichReportHandler serves the enrichment debugging report from
+// websiteDataEnrichmentHandler serves the enrichment debugging report from
 // data-enrichment/report for the current dataset. Unlinked and noindex, for
 // internal use; it reruns the enrichment on a cache miss, so it's not cheap.
-type websiteEnrichReportHandler struct {
+type websiteDataEnrichmentHandler struct {
 	websiteHandlerBase
 }
 
-func (h *websiteEnrichReportHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *websiteDataEnrichmentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Robots-Tag", "noindex")
 
 	var (
