@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
+	"os"
 	"slices"
 	"sort"
 	"strconv"
@@ -28,6 +29,17 @@ const todayBadgeWindow = 7
 
 // timeNow is the wall clock used to anchor "today", overridable in tests.
 var timeNow = time.Now
+
+func init() {
+	if v := os.Getenv("OTTREC_FAKE_TODAY"); v != "" {
+		t, err := time.ParseInLocation("2006-01-02", v, ottrecidx.TZ)
+		if err != nil {
+			panic(err)
+		}
+		t = t.Add(6 * time.Hour)
+		timeNow = func() time.Time { return t }
+	}
+}
 
 // TodayFeedDate is the date (in the dataset timezone) the today feed is
 // anchored to, for mixing into the /today ETag.
@@ -55,20 +67,20 @@ type WebsiteTodayParams struct {
 // placed by their own date semantics, independently — we never merge or
 // override across them (see PLAN.md "flag, never resolve").
 type todaySession struct {
-	Start      int    // start minutes from midnight (for sorting/filtering)
-	End        int    // end minutes from midnight (may exceed 1440 for overnight)
-	Time       string // human clock-range label
-	Activity   string
-	Facility   string
-	Slug       string
-	Region     string
-	Sector     string // sector display label ("Central"…/"Other")
-	Cats       int    // bitmask of [ScheduleCategories] indexes (+ Other bit)
-	Weekday    int    // 0 = Sunday, for the weekday filter
-	Qual       string // date-range qualifier, shown only for bounded/seasonal schedules
-	Fixed      bool   // a published fixed-date (holiday/special) session
-	SourceURL  string // City of Ottawa facility page (for warning lines + the source link)
-	GroupKey   string // the session's schedule group key (see [ScheduleGroupKey]; for /api/changes)
+	Start     int    // start minutes from midnight (for sorting/filtering)
+	End       int    // end minutes from midnight (may exceed 1440 for overnight)
+	Time      string // human clock-range label
+	Activity  string
+	Facility  string
+	Slug      string
+	Region    string
+	Sector    string // sector display label ("Central"…/"Other")
+	Cats      int    // bitmask of [ScheduleCategories] indexes (+ Other bit)
+	Weekday   int    // 0 = Sunday, for the weekday filter
+	Qual      string // date-range qualifier, shown only for bounded/seasonal schedules
+	Fixed     bool   // a published fixed-date (holiday/special) session
+	SourceURL string // City of Ottawa facility page (for warning lines + the source link)
+	GroupKey  string // the session's schedule group key (see [ScheduleGroupKey]; for /api/changes)
 
 	// warning flags (per facility/group), each shown as a warning line under
 	// the session opening a modal sourced from /api/changes or
@@ -180,7 +192,7 @@ type todayDataJSON struct {
 	Updated    string              `json:"updated"`
 	Weekdays   []string            `json:"weekdays"`   // Sun..Sat
 	Categories []string            `json:"categories"` // [ScheduleCategories] + Other
-	Sectors    []string            `json:"sectors"` // group order for the facility pill
+	Sectors    []string            `json:"sectors"`    // group order for the facility pill
 	Facilities []todayFacilityJSON `json:"facilities"`
 }
 
@@ -402,18 +414,18 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							continue // can't place on a timeline
 						}
 						base := todaySession{
-							Start:       int(r.Start),
-							End:         int(r.End),
-							Time:        todayClockLabel(r),
-							Activity:    label,
-							Facility:    fac.GetName(),
-							Slug:        meta.slug,
-							Region:      meta.region,
-							Sector:      meta.sector,
-							Cats:        cats,
-							Qual:        qual,
-							SourceURL:   sourceURL,
-							GroupKey:    gk,
+							Start:                int(r.Start),
+							End:                  int(r.End),
+							Time:                 todayClockLabel(r),
+							Activity:             label,
+							Facility:             fac.GetName(),
+							Slug:                 meta.slug,
+							Region:               meta.region,
+							Sector:               meta.sector,
+							Cats:                 cats,
+							Qual:                 qual,
+							SourceURL:            sourceURL,
+							GroupKey:             gk,
 							Holiday:              holiday,
 							EnrichedSeeSchedule:  seeSched,
 							Changes:              changes,
@@ -523,18 +535,18 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 					continue
 				}
 				daySessions[i] = append(daySessions[i], todaySession{
-					Start:       ad.Start,
-					End:         ad.End,
-					Time:        todayClockLabel(schema.ClockRange{Start: schema.ClockTime(ad.Start), End: schema.ClockTime(ad.End)}),
-					Activity:    label,
-					Facility:    fac.GetName(),
-					Slug:        meta.slug,
-					Region:      meta.region,
-					Sector:      meta.sector,
-					Cats:        cats,
-					Weekday:     int(dates[i].Weekday()),
-					SourceURL:   sourceURL,
-					GroupKey:    gk,
+					Start:               ad.Start,
+					End:                 ad.End,
+					Time:                todayClockLabel(schema.ClockRange{Start: schema.ClockTime(ad.Start), End: schema.ClockTime(ad.End)}),
+					Activity:            label,
+					Facility:            fac.GetName(),
+					Slug:                meta.slug,
+					Region:              meta.region,
+					Sector:              meta.sector,
+					Cats:                cats,
+					Weekday:             int(dates[i].Weekday()),
+					SourceURL:           sourceURL,
+					GroupKey:            gk,
 					Holiday:             holiday,
 					EnrichedSeeSchedule: seeSched,
 					Incomplete:          incomplete,
