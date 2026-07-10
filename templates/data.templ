@@ -71,10 +71,59 @@ templ DataHome(params DataHomeParams) {
 					This page provides an unofficial dataset of the City of Ottawa drop-in recreation schedules, updated daily.
 				</p>
 				<p>
-					If you encounter any problems or inaccurate data, please <a href="https://github.com/ottrec/scraper/issues/new">open an issue</a>.
+					If you encounter any problems or inaccurate data, please <a href="https://github.com/ottrec/scraper/issues/new">open an issue</a> or email me.
 				</p>
 				<p>
 					The data was last updated on { params.Latest.Updated.In(ottrecdata.TZ).Format("2006-01-02") }.
+				</p>
+			</section>
+			<section id="usage">
+				<h2>Usage</h2>
+				<p>
+					This section covers some common questions and pitfalls for using the data. Also see the schema further down this page for more detailed information about the available fields.
+				</p>
+				<h3>Data updates</h3>
+				<p>
+					I recommend polling for dataset updates every 10-60 minutes to ensure you catch updates soon after they occur. You can use standard ETag-based caching to avoid redownloading the same dataset. You should use a descriptive user-agent when fetching.
+				</p>
+				<h3>Facility keys</h3>
+				<p>
+					Facilities are keyed by their URL. Obviously, this may change, but within a single dataset, you should use this for cross-referencing. If you need a stable identifier for a facility over time, you'll need to figure that out yourself. I personally use either the first part of the address, or a an accent-stripped and sluggified facility name.
+				</p>
+				<h3>Accuracy</h3>
+				<p>
+					This dataset is scraped and parsed from the city website in a deterministic manner using a carefully designed hand-written script to ensure all times on the website are included and valid, emitting errors for any potential issues. The city has made typos and mistakes in the website on a semi-regular basis. You should display the text in the "errors" field in the dataset, if any, to avoid silently missing relevant content. I check these daily and report them to the city when necessary.
+				</p>
+				<p>
+					In some cases, the StartTime/EndTime may be empty due to the time being unparseable. If this is the case, you should fall back to displaying the RawTime.
+				</p>
+				<p>
+					The city cancels drop-in sessions on a regular basis. Usually, they update the site at least a day before (occasionally, they don't post them at all), which will cause them to appear in the facility special-hours and/or the schedule group schedule-changes. If these are present, display them to the user.
+				</p>
+				<p>
+					Holiday schedules may overlap with time ranges of regular schedules. It is not possible to disambiguate them unambiguously, so do not try. Showing the schedule-changes or facility notifications/special-hours if present is the best way to notify users.
+				</p>
+				<p>
+					The ReservationRequired field errs on the side of being true if the city website is ambiguous. Keep this in mind if designing user interfaces around it.
+				</p>
+				<p>
+					I'm working on an extended dataset which labels portions of the special-hours/notifications/schedule-changes on a best-effort basis so ones not relevant to a specific instance of a session can be hidden to reduce the amount of warnings which would end up needing to be displayed. I'm already using this on the main ottrec website, but I still need to design a stable schema to expose this in a usable, non-error-prone, and future-proof way.
+				</p>
+				<h3>Raw fields</h3>
+				<p>
+					The raw fields in the dataset contain the raw text from the city website most of the other fields are derived from. They have minimal whitespace and unicode normalization applied, but are otherwise unchanged.
+				</p>
+				<p>
+					You may find it useful to use the raw fields internally for grouping or for displaying to the user. This is okay, but be warned that they may change (or be removed entirely) if the city changes the website structure, and do not attempt to parse them (any parseable information from them is already exposed in the other stable fields).
+				</p>
+				<h3>Other stuff</h3>
+				<p>
+					In addition to the required attribution text, I'd appreciate a link to
+					{ " https://ottrec.ca if " }
+					or a mention on social media you use this data in an app or website.
+				</p>
+				<p>
+					If you make something, I'm also always happy to hear about it and take a look, so feel free to send me an email.
 				</p>
 			</section>
 			<section id="preview">
@@ -83,7 +132,7 @@ templ DataHome(params DataHomeParams) {
 					You can view all schedules on a single webpage.
 				</p>
 				<p>
-					This format is also best for one-off LLM queries.
+					If you're not a developer and just looking for recreation schedules, see <a href="https://ottrec.ca">ottrec.ca</a>.
 				</p>
 				<p>
 					<a class="dl" href="/preview">HTML</a>
