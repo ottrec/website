@@ -323,8 +323,17 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			if err != nil {
 				return nil, 0, err
 			}
-			if tip, ok := templates.SchedulesCategoryTip(filtered); ok {
+			// at most one tip, most specific signal first; the operator tip only
+			// fires on empty results, since names can legitimately contain "and"
+			// (e.g. "stick and puck")
+			if templates.SchedulesQueryIsOttrecql(q) {
+				params.OttrecqlTip = true
+			} else if tip, ok := templates.SchedulesCategoryTip(filtered); ok {
 				params.CategoryTip = &tip
+			} else if templates.SchedulesQueryHasOperators(q) && filtered.Facilities().Empty() {
+				params.OperatorTip = true
+			} else if name, ok := templates.SchedulesRegionTip(q); ok {
+				params.RegionTip = name
 			}
 		}
 		if params.QueryError == "" {

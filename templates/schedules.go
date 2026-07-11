@@ -4,9 +4,16 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
+	"sync"
+	"unicode"
 
 	"github.com/ottrec/website/pkg/ottrecidx"
 	"github.com/ottrec/website/pkg/ottrecql"
+	"github.com/ottrec/website/pkg/ottregions"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 // SchedulesSearchQuery returns the ottrecql AST for the schedules page search
@@ -46,6 +53,134 @@ func SchedulesCategoryTip(filtered ottrecidx.DataRef) (ScheduleCategory, bool) {
 	return ScheduleCategories[best], true
 }
 
+// SchedulesQueryIsOttrecql reports whether a simple search query parses as a
+// valid ottrecql query (plain words don't; only function-call expressions do),
+// suggesting the user meant to use advanced mode.
+func SchedulesQueryIsOttrecql(q string) bool {
+	_, err := SchedulesParseQuery(q)
+	return err == nil
+}
+
+// SchedulesQueryHasOperators reports whether a simple search query contains
+// boolean-operator-like syntax (and/or/not words, negation dashes) that the
+// simple search would treat as literal text, suggesting advanced mode.
+func SchedulesQueryHasOperators(q string) bool {
+	for w := range strings.FieldsSeq(q) {
+		switch strings.ToLower(w) {
+		case "and", "or", "not", "&&", "||":
+			return true
+		}
+		if len(w) > 1 && w[0] == '-' {
+			return true
+		}
+	}
+	return false
+}
+
+// schedulesOperatorQuery translates a simple search containing operator-like
+// syntax into ottrecql: runs of plain words become parenthesized terms matched
+// like the simple search (activity or facility name), and/or join terms, and
+// "not" or a leading dash negates the term it introduces.
+func schedulesOperatorQuery(q string) string {
+	var (
+		b     strings.Builder
+		words []string
+		neg   bool
+		useOr bool
+	)
+	flush := func() {
+		if len(words) == 0 {
+			return
+		}
+		if b.Len() > 0 {
+			if useOr {
+				b.WriteString(" or ")
+			} else {
+				b.WriteString(" and ")
+			}
+		}
+		if neg {
+			b.WriteString("not ")
+		}
+		b.WriteString("(")
+		b.WriteString(ottrecql.Render(SchedulesSearchQuery(strings.Join(words, " "))))
+		b.WriteString(")")
+		words, neg, useOr = nil, false, false
+	}
+	for w := range strings.FieldsSeq(q) {
+		switch strings.ToLower(w) {
+		case "and", "&&":
+			flush()
+			continue
+		case "or", "||":
+			flush()
+			useOr = true
+			continue
+		case "not":
+			flush()
+			neg = true
+			continue
+		}
+		if len(w) > 1 && w[0] == '-' {
+			flush()
+			neg = true
+			w = w[1:]
+		}
+		words = append(words, w)
+	}
+	flush()
+	if b.Len() == 0 {
+		return ottrecql.Render(SchedulesSearchQuery(q))
+	}
+	return b.String()
+}
+
+// schedulesOperatorHref returns the advanced-mode link for the operator tip,
+// with the query's operators translated into ottrecql syntax.
+func schedulesOperatorHref(q string, list bool) string {
+	return schedulesOttrecqlRunHref(schedulesOperatorQuery(q), list)
+}
+
+// normalizeRegionQuery lowercases s, folds diacritics, drops periods, and
+// collapses dashes and whitespace runs to single spaces, roughly mirroring how
+// ottrecql fuzzy matching normalizes names.
+func normalizeRegionQuery(s string) string {
+	t := transform.Chain(
+		runes.Map(func(r rune) rune {
+			if unicode.Is(unicode.Pd, r) {
+				return ' '
+			}
+			return r
+		}),
+		norm.NFKD,
+		runes.Remove(runes.In(unicode.Mn)),
+		runes.Map(unicode.ToLower),
+		runes.Remove(runes.Predicate(func(r rune) bool { return r == '.' })),
+	)
+	if out, _, err := transform.String(t, s); err == nil {
+		s = out
+	} else {
+		s = strings.ToLower(s)
+	}
+	return strings.Join(strings.Fields(s), " ")
+}
+
+var regionsByNormName = sync.OnceValue(func() map[string]string {
+	m := make(map[string]string, len(ottregions.Regions()))
+	for _, r := range ottregions.Regions() {
+		m[normalizeRegionQuery(r.Name())] = r.Name()
+	}
+	return m
+})
+
+// SchedulesRegionTip returns the display name of the region a simple search
+// query names exactly (ignoring case, punctuation, and diacritics), for the
+// tip pointing at the map.
+func SchedulesRegionTip(q string) (string, bool) {
+	name, ok := regionsByNormName()[normalizeRegionQuery(q)]
+	return name, ok
+}
+
 // SchedulesMaxQueryLen and SchedulesMaxQueryCost limit user-specified queries
 // (see the ottrecql package docs).
 const (
@@ -79,6 +214,26 @@ func schedulesAdvancedHref(q string, list bool) string {
 	}
 	if q != "" {
 		href += "&q=" + url.QueryEscape(ottrecql.Render(SchedulesSearchQuery(q)))
+	}
+	return href
+}
+
+// schedulesOttrecqlRunHref returns the link running the simple search box
+// contents as an ottrecql query in advanced mode.
+func schedulesOttrecqlRunHref(q string, list bool) string {
+	href := "/schedules?advanced=1"
+	if list {
+		href += "&mode=list"
+	}
+	return href + "&q=" + url.QueryEscape(q)
+}
+
+// advancedCrossHref returns the other advanced search page's link carrying the
+// current query, for the cross-link tips between /schedules and /today.
+func advancedCrossHref(path, q string) string {
+	href := path + "?advanced=1"
+	if q != "" {
+		href += "&q=" + url.QueryEscape(q)
 	}
 	return href
 }
@@ -216,6 +371,9 @@ type WebsiteSchedulesParams struct {
 	Query           string                 // current search box contents
 	QueryError      string                 // query parse/limit error to show instead of results
 	CategoryTip     *ScheduleCategory      // simple search: landing page tip (see SchedulesCategoryTip)
+	OttrecqlTip     bool                   // simple search: the query parses as ottrecql; link to advanced mode
+	OperatorTip     bool                   // simple search: the query contains operator-like syntax; link to advanced mode
+	RegionTip       string                 // simple search: the query names a region; link to the map
 	Single          bool                   // single-facility page: hide the page header and facility page links
 	List            bool                   // compact list view (?mode=list) instead of the schedule tables
 	NoIndex         bool                   // emit a noindex robots meta (e.g. the per-activity /all full views)

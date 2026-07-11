@@ -91,7 +91,15 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 						<a class="activity-today-more" href={ templ.URL(todayHref) }>More days</a>
 					</div>
 					if !hasToday || today.Empty {
-						<p class="activity-today-empty">No drop-in sessions today.</p>
+						{{ next, hasNext := activityNextDay(feed) }}
+						<p class="activity-today-empty">
+							No drop-in sessions today.
+							if hasNext {
+								The next ones are on <a href={ templ.URL(todayHref) }>{ next.Weekday }, { next.Month }</a>.
+							} else {
+								See the <a href={ templ.URL("/schedules/" + params.Cat.Slug + "/all") }>full schedule</a>.
+							}
+						</p>
 					} else {
 						// the filters need JS; activitytoday.ts unhides them
 						<div class="activity-today-filters" hidden>

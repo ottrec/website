@@ -54,6 +54,9 @@ const advanced = document.body.classList.contains('today-advanced')
 const feedEl = document.getElementById('today-feed')!
 const tabsEl = document.getElementById('today-tabs')!
 const noResultsEl = document.getElementById('today-noresults')!
+const noResultsMsgEl = document.getElementById('today-noresults-msg')!
+const noResultsNextEl = document.getElementById('today-noresults-next')
+const noResultsClearEl = document.getElementById('today-noresults-clear')
 
 const days: Day[] = [...feedEl.querySelectorAll<HTMLElement>('.today-day')].map((el) => {
 	const head = el.querySelector('.today-day-head')!
@@ -264,7 +267,17 @@ function refreshFeed() {
 	feedEl.hidden = !noResultsEl.hidden // its padding would leave a gap above the no-results note
 	if (!noResultsEl.hidden) {
 		const d = days.find((d) => d.date === activeDate)
-		if (d) noResultsEl.textContent = `Nothing matches these filters on ${d.weekday}, ${d.month}.`
+		if (d) noResultsMsgEl.textContent = `Nothing matches these filters on ${d.weekday}, ${d.month}.`
+		// prefer jumping to the next day with matches over clearing the filters
+		const next = nextMatchingDay()
+		if (noResultsNextEl) {
+			noResultsNextEl.hidden = !next
+			if (next) {
+				noResultsNextEl.textContent = `Skip to ${next.weekday}, ${next.month}`
+				noResultsNextEl.dataset['date'] = next.date
+			}
+		}
+		if (noResultsClearEl) noResultsClearEl.hidden = !!next || !anyFilters()
 	}
 	markNow()
 }
@@ -275,9 +288,49 @@ function apply() {
 	if (!advanced) {
 		updateExcludeButtons()
 		renderChips()
+		updateCatTip()
 		for (const p of pills) p.updateButton()
 		writeURL()
 	}
+}
+
+function anyFilters(): boolean {
+	return !!(filter.q.trim() || filter.include.size || filter.exclude.size || filter.cats.size ||
+		filter.timeFrom !== null || filter.timeTo !== null || filter.starredOnly)
+}
+
+function clearAllFilters() {
+	filter.q = ''
+	filter.include.clear()
+	filter.exclude.clear()
+	filter.cats.clear()
+	filter.timeFrom = filter.timeTo = null
+	filter.starredOnly = false
+	syncAll()
+	apply()
+}
+noResultsClearEl?.addEventListener('click', clearAllFilters)
+
+// the next day after the active one where the current filters match something
+function nextMatchingDay(): Day | undefined {
+	const idx = days.findIndex((d) => d.date === activeDate)
+	if (idx < 0) return undefined
+	return days.slice(idx + 1).find((d) => d.sessions.some(sessionVisible))
+}
+noResultsNextEl?.addEventListener('click', () => {
+	const date = noResultsNextEl.dataset['date']
+	if (date && days.some((d) => d.date === date)) {
+		activeDate = date
+		apply()
+	}
+})
+
+// the server renders a hidden activity-page link for each category; show the
+// one matching the category filter when it's narrowed to a single category
+const catTipEls = [...document.querySelectorAll<HTMLElement>('[data-cat-tip]')]
+function updateCatTip() {
+	const name = filter.cats.size === 1 ? data.categories[[...filter.cats][0]!] : undefined
+	for (const el of catTipEls) el.hidden = el.dataset['catTip'] !== name
 }
 
 // "now" line, in Ottawa time. Only the active day is shown, so this just tags
@@ -724,16 +777,7 @@ function renderChips() {
 		all.type = 'button'
 		all.className = 'fchip clear-all'
 		all.textContent = 'Clear all'
-		all.addEventListener('click', () => {
-			filter.q = ''
-			filter.include.clear()
-			filter.exclude.clear()
-			filter.cats.clear()
-			filter.timeFrom = filter.timeTo = null
-			filter.starredOnly = false
-			syncAll()
-			apply()
-		})
+		all.addEventListener('click', clearAllFilters)
 		chipsEl.append(all)
 	}
 }

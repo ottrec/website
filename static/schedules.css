@@ -256,9 +256,9 @@
 			padding: 0 .25em;
 		}
 	}
-	/* simple search: quiet tip linking to the category landing page when the
-	 * results all fall within one category (the whole box is the link) */
-	.schedules-cat-tip {
+	/* simple search: quiet contextual tips (category landing page, advanced
+	 * query detection, region hint); the whole box is the link */
+	.schedules-tip {
 		display: block;
 		margin: -.25rem 0 .75rem;
 		padding: .5rem .75rem;
@@ -344,6 +344,35 @@
 
 .schedules-empty {
 	color: var(--fxki-tx-2);
+}
+/* search empty state: a short title with pointers to other ways to browse */
+.schedules-notfound {
+	margin: 1.5rem 0;
+
+	h2 {
+		font-size: 1.05rem;
+		margin-bottom: .25rem;
+	}
+	p {
+		font-size: .85rem;
+		color: var(--fxki-tx-2);
+		margin-bottom: .75rem;
+	}
+	ul {
+		list-style: none;
+		padding: 0;
+		font-size: .85rem;
+	}
+	li {
+		margin: .4rem 0;
+	}
+	li span {
+		color: var(--fxki-tx-3);
+
+		&::before {
+			content: '· ';
+		}
+	}
 }
 .schedules-facility {
 	margin: 1.5rem 0;

@@ -397,6 +397,17 @@ func activityTodayDay(feed todayFeed) (todayFeedDay, bool) {
 	return todayFeedDay{}, false
 }
 
+// activityNextDay returns the first non-empty day after today, for the today
+// widget's empty state.
+func activityNextDay(feed todayFeed) (todayFeedDay, bool) {
+	for _, d := range feed.Days {
+		if d.Rel != "Today" && !d.Empty {
+			return d, true
+		}
+	}
+	return todayFeedDay{}, false
+}
+
 // activityLandingFacility is one facility offering the category, with a concise
 // summary of when it does.
 type activityLandingFacility struct {

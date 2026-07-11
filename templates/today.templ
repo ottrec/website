@@ -41,12 +41,22 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 			if params.Advanced {
 				@ottrecqlSearchForm("/today", `activity("lane sw") and time(18:00-21:00)`, params.Query, "/today", "Simple filters")
 				@schedulesQueryHelp()
+				<a class="today-tip msym" href={ templ.URL(advancedCrossHref("/schedules", params.Query)) }>
+					To compare full weekly schedules instead, run this query <span>on the schedules page</span>.
+				</a>
 			}
 			<div class="today-filters" id="today-filters" hidden></div>
 			if !params.Advanced {
 				<a class="search-mode today-advanced-link" href="/today?advanced=1">Advanced search</a>
 			}
 			<div class="today-chips" id="today-chips"></div>
+			if !params.Advanced {
+				for _, cat := range ScheduleCategories {
+					<a class="today-tip msym" href={ templ.URL("/schedules/" + cat.Slug) } data-cat-tip={ cat.Name } hidden>
+						See the <span>{ cat.Name } activity page</span> { "for" } locations and cancellations at a glance.
+					</a>
+				}
+			}
 			if params.QueryError != "" {
 				<p class="query-error today-query-error">{ params.QueryError }</p>
 			}
@@ -121,7 +131,7 @@ templ WebsiteTodayPage(params WebsiteTodayParams) {
 						}
 					}
 				</div>
-				<p class="today-noresults" id="today-noresults" hidden>Nothing matches these filters on this day.</p>
+				<p class="today-noresults" id="today-noresults" hidden><span id="today-noresults-msg">Nothing matches these filters on this day.</span> <button type="button" id="today-noresults-next" hidden></button> <button type="button" id="today-noresults-clear" hidden>Clear the filters</button></p>
 			</div>
 			@facilityErrorsSection(buildFacilityErrors(params.Filtered, MapFacilitySlugger(params.Data)), "today-facerrs")
 		</main>

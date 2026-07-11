@@ -323,6 +323,40 @@
 	}
 }
 
+/* contextual tips (the activity page link when the category filter is narrowed
+ * to a single category, and the advanced-search cross-link to /schedules); the
+ * whole box is the link */
+.today-tip {
+	display: block;
+	margin: 0 0 1rem;
+	padding: .5rem .75rem;
+	border: 1px solid var(--fxki-ui);
+	border-radius: .35rem;
+	background: var(--fxki-bg-2);
+	font-size: .9rem;
+	color: var(--fxki-tx-2);
+
+	&[hidden] {
+		display: none;
+	}
+	&::before {
+		content: '\e90f'; /* lightbulb */
+		font-size: 1.15em;
+		vertical-align: -.15em;
+		margin-right: .4em;
+		color: var(--fxki-tx-3);
+	}
+	span {
+		color: var(--fxki-bl);
+	}
+	&:hover {
+		text-decoration: none;
+
+		span {
+			text-decoration: underline;
+		}
+	}
+}
 /* active-filter chips, set off from the dropdowns above */
 .today-chips {
 	display: flex;
@@ -859,6 +893,21 @@ button.t-warn {
 
 	&[hidden] {
 		display: none;
+	}
+	button {
+		border: none;
+		background: none;
+		padding: 0;
+		font: inherit;
+		color: var(--fxki-bl);
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+		&[hidden] {
+			display: none;
+		}
 	}
 }
 

@@ -119,6 +119,9 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 										}
 									}
 									@schedulesQueryHelp()
+									<a class="schedules-tip msym" href={ templ.URL(advancedCrossHref("/today", params.Query)) }>
+										To view matching sessions for this week in chronological order, see the <span>upcoming sessions</span> page.
+									</a>
 								} else {
 									<form class="search-form schedules-search" action="/schedules" method="get">
 										if params.List {
@@ -129,9 +132,24 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 										<a class="search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query, params.List)) }>Advanced search</a>
 									</form>
 									if params.CategoryTip != nil {
-										<a class="schedules-cat-tip msym" href={ templ.URL("/schedules/" + params.CategoryTip.Slug) }>
+										<a class="schedules-tip msym" href={ templ.URL("/schedules/" + params.CategoryTip.Slug) }>
 											See the <span>{ params.CategoryTip.Name } activity page</span>
 											{ "for" } an overview of locations, this week's sessions, and cancellations.
+										</a>
+									}
+									if params.OttrecqlTip {
+										<a class="schedules-tip msym" href={ templ.URL(schedulesOttrecqlRunHref(params.Query, params.List)) }>
+											This looks like an advanced query. <span>Click here to use advanced search</span>.
+										</a>
+									}
+									if params.OperatorTip {
+										<a class="schedules-tip msym" href={ templ.URL(schedulesOperatorHref(params.Query, params.List)) }>
+											Operators (and, or, not) aren't supported in the simple search. <span>Try the advanced search</span>.
+										</a>
+									}
+									if params.RegionTip != "" {
+										<a class="schedules-tip msym" href="/map">
+											Looking for facilities near { params.RegionTip }? The <span>map</span> shows every facility by location.
 										</a>
 									}
 								}
@@ -146,7 +164,19 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 					if params.QueryError != "" {
 						<p class="query-error">{ params.QueryError }</p>
 					} else if len(params.TOC) == 0 {
-						<p class="schedules-empty">No matching schedules.</p>
+						if params.Search && params.Query != "" {
+							<div class="schedules-notfound">
+								<h2>Nothing found</h2>
+								<p>No schedules match <q>{ params.Query }</q>. Try a shorter or more general term, or browse another way:</p>
+								<ul>
+									<li><a href="/activities">Activities</a> <span>overview of drop-in activity times and locations</span></li>
+									<li><a href="/map">Map</a> <span>facilities on a map, filterable by activity and time</span></li>
+									<li><a href="/today">Today</a> <span>this week's sessions, including cancellations and schedule changes</span></li>
+								</ul>
+							</div>
+						} else {
+							<p class="schedules-empty">No matching schedules.</p>
+						}
 					} else {
 						for _, f := range params.TOC {
 							<section class="schedules-facility" id={ f.Slug }>
