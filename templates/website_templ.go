@@ -1196,14 +1196,14 @@ func WebsiteHomePage(params WebsiteParams) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "</ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-07-08\">July 8, 2026</time><p>The activity pages have been completely revamped and now include facility information and a list of upcoming activities.</p></li><li><time datetime=\"2026-07-07\">July 7, 2026</time><p>The <a href=\"/today\">today</a> page now shows more helpful warnings about potential cancellations or time changes.</p></li><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 78, "</ul></section><section class=\"home-news\" aria-labelledby=\"home-news-heading\"><h2 id=\"home-news-heading\">What's new</h2><ul><li><time datetime=\"2026-07-10\">July 10, 2026</time><p>I've added some tips to various parts of the website to make it easier to use.</p></li><li><time datetime=\"2026-07-08\">July 8, 2026</time><p>The activity pages have been completely revamped and now include facility information and a list of upcoming activities.</p></li><li><time datetime=\"2026-07-07\">July 7, 2026</time><p>The <a href=\"/today\">today</a> page now shows more helpful warnings about potential cancellations or time changes.</p></li><li><time datetime=\"2026-06-15\">Jun 15, 2026</time><p>You can now find <a href=\"/today\">upcoming activities</a> over the next week as a chronological timeline, which should be much easier to read on small screens.</p></li><li><time datetime=\"2026-06-14\">Jun 14, 2026</time><p>You can now get a rough idea of where a facility is with the new region/area labels. See <a href=\"/about/regions\">here</a> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var59 string
 			templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs("for more info")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 331, Col: 149}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 335, Col: 149}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var59))
 			if templ_7745c5c3_Err != nil {
@@ -1284,7 +1284,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 			var templ_7745c5c3_Var62 string
 			templ_7745c5c3_Var62, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 358, Col: 14}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 362, Col: 14}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var62))
 			if templ_7745c5c3_Err != nil {
@@ -1297,7 +1297,7 @@ func WebsiteErrorPage(title, message string) templ.Component {
 			var templ_7745c5c3_Var63 string
 			templ_7745c5c3_Var63, templ_7745c5c3_Err = templ.JoinStringErrs(message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 359, Col: 15}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `website.templ`, Line: 363, Col: 15}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var63))
 			if templ_7745c5c3_Err != nil {
