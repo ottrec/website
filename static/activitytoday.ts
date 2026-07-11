@@ -5,6 +5,8 @@ import {createModal, type Modal} from './modal'
 
 // Enhancements for the activity landing page's minimal today widget:
 //  - client-side filtering by facility/activity text and a start/end time window
+//  - past sessions hidden by default, with a note at the top of the list to
+//    show them (like the /today feed)
 //  - an expand toggle that makes the scroll box taller
 //  - opening the session warning/reservation modals (the same /api/changes,
 //    /api/errors, /api/reservations fragments the full /today page uses)
@@ -12,7 +14,17 @@ import {createModal, type Modal} from './modal'
 //    before this script)
 // The list is server-rendered and works without JS; this only enhances it.
 
-// --- filtering ---
+// --- filtering + session states ---
+
+// session times are in minutes from midnight Ottawa time (same trick as
+// today.ts, since cached pages can't trust the client clock)
+function ottawaNowMinutes(): number {
+	const parts = new Intl.DateTimeFormat('en-GB', {
+		timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false,
+	}).formatToParts(new Date())
+	const get = (t: string) => Number(parts.find((p) => p.type === t)?.value || 0)
+	return (get('hour') % 24) * 60 + get('minute')
+}
 
 const list = document.getElementById('activity-today-list')
 if (list) {
@@ -48,20 +60,66 @@ if (list) {
 		return m ? +m[1]! * 60 + +m[2]! : null
 	}
 
+	// past sessions are hidden by default, with a note at the top of the
+	// scroll box to show them (dimmed via the .past class, like the /today
+	// feed)
+	let showPast = false
+	const pastNote = document.createElement('p')
+	pastNote.className = 'today-past-note'
+	pastNote.hidden = true
+	const pastText = document.createElement('span')
+	const pastBtn = document.createElement('button')
+	pastBtn.type = 'button'
+	pastBtn.className = 'msym' // the expand/collapse chevron base (website.css)
+	const pastBtnLabel = document.createElement('span')
+	pastBtn.append(pastBtnLabel)
+	pastNote.append(pastText, pastBtn)
+	list.before(pastNote)
+	pastBtn.addEventListener('click', () => {
+		showPast = !showPast
+		apply()
+	})
+
 	const apply = () => {
 		const tokens = quickTokens(q?.value || '')
 		const fromMin = parseTime(from?.value || '')
 		const toMin = parseTime(to?.value || '')
+		// grey out sessions that have ended and tint the ones on now (the same
+		// classes the /today feed uses)
+		const now = ottawaNowMinutes()
 		let shown = 0
+		let past = 0
+		let pastHidden = 0
 		for (const r of rows) {
+			r.li.classList.remove('now', 'past')
+			const isPast = r.end <= now
+			if (isPast) r.li.classList.add('past')
+			else if (r.start <= now) r.li.classList.add('now')
 			let ok = true
 			if (tokens.length && !quickMatch(r.target, tokens)) ok = false
 			if (fromMin !== null && r.start < fromMin) ok = false
 			if (toMin !== null && r.end > toMin) ok = false
+			if (ok && isPast) {
+				past++
+				if (!showPast) {
+					ok = false
+					pastHidden++
+				}
+			}
 			r.li.hidden = !ok
 			if (ok) shown++
 		}
-		if (noMatch) noMatch.hidden = shown !== 0
+		pastNote.hidden = past === 0
+		pastText.textContent = showPast
+			? 'Earlier sessions are greyed out.'
+			: past === 1
+				? '1 earlier session is hidden.'
+				: past + ' earlier sessions are hidden.'
+		pastBtnLabel.textContent = showPast ? 'Hide earlier sessions' : 'Show earlier sessions'
+		pastBtn.classList.toggle('open', showPast)
+		// hidden past sessions explain an otherwise empty list; don't claim no
+		// matches
+		if (noMatch) noMatch.hidden = shown !== 0 || pastHidden > 0
 		// the banner always shows the count; shown/total (and the clear button)
 		// only while a filter is active
 		const active = tokens.length > 0 || fromMin !== null || toMin !== null
@@ -94,31 +152,23 @@ if (list) {
 		jumpToNow(true)
 	})
 
+	// hide past sessions before the initial jump below
+	apply()
+
 	// don't retain filter values across reloads or bfcache restores
 	window.addEventListener('pageshow', clearFilters)
 }
 
-// --- session states + scroll to now ---
+// --- scroll to now ---
 
-// grey out sessions that have ended and tint the ones on now (the same classes
-// the /today feed uses), then start the list at the first session that hasn't
-// ended yet, so the visitor sees what's on now rather than this morning's
-// sessions. Session times are in Ottawa time (same trick as today.ts). The Now
-// button re-runs this, skipping filtered-out rows.
+// start the list at the first visible session that hasn't ended yet, so the
+// visitor sees what's on now rather than this morning's sessions when earlier
+// ones are shown. The Now button re-runs this, skipping filtered-out rows.
 function jumpToNow(smooth?: boolean) {
 	const box = document.querySelector<HTMLElement>('.activity-today-scroll')
 	const items = box ? [...box.querySelectorAll<HTMLLIElement>('.today-session')] : []
 	if (!box || !items.length) return
-	const parts = new Intl.DateTimeFormat('en-GB', {
-		timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', hour12: false,
-	}).formatToParts(new Date())
-	const get = (t: string) => Number(parts.find((p) => p.type === t)?.value || 0)
-	const now = (get('hour') % 24) * 60 + get('minute')
-	for (const li of items) {
-		li.classList.remove('now', 'past')
-		if (+(li.dataset['end'] || '0') <= now) li.classList.add('past')
-		else if (+(li.dataset['start'] || '0') <= now) li.classList.add('now')
-	}
+	const now = ottawaNowMinutes()
 	const visible = items.filter((li) => !li.hidden)
 	const target = visible.find((li) => +(li.dataset['end'] || '0') > now)
 	let top = 0

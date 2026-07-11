@@ -127,6 +127,8 @@ const pastText = document.createElement('span')
 const pastBtn = document.createElement('button')
 pastBtn.type = 'button'
 pastBtn.className = 'msym' // the expand/collapse chevron base (website.css)
+const pastBtnLabel = document.createElement('span')
+pastBtn.append(pastBtnLabel)
 pastNote.append(pastText, pastBtn)
 pastBtn.addEventListener('click', () => {
 	showPast = !showPast
@@ -257,7 +259,7 @@ function refreshFeed() {
 						: past === 1
 							? `1 session that ended before ${clockLabel(nowMins)} is hidden.`
 							: `${past} sessions that ended before ${clockLabel(nowMins)} are hidden.`
-					pastBtn.textContent = showPast ? 'Hide earlier sessions' : 'Show earlier sessions'
+					pastBtnLabel.textContent = showPast ? 'Hide earlier sessions' : 'Show earlier sessions'
 					pastBtn.classList.toggle('open', showPast)
 				}
 			}

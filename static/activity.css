@@ -261,6 +261,12 @@
 	}
 }
 
+/* the hidden-past-sessions note activitytoday.ts pins at the top of the list
+ * (base styles in today.css) */
+.activity-today .today-past-note {
+	margin: .45rem .3rem .35rem;
+}
+
 /* denser session rows in the narrow activity-page column (the time column
  * still fits "11:30am–1:30pm" at this font size) */
 .activity-today .today-session {
