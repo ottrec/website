@@ -14,7 +14,7 @@ require (
 	github.com/ottrec/data-enrichment v0.0.0-20260708214254-0dea602ab735
 	github.com/ottrec/scraper v0.0.0-20260617053659-f8e60d2d1db7
 	github.com/pgaskin/go-gfsubsets v0.0.1
-	github.com/pgaskin/go-hbsubset v0.0.0-20260705025545-204e493c74bb
+	github.com/pgaskin/go-hbsubset v0.0.0-20260711183714-7d8dc5e2cb8d
 	github.com/pgaskin/go-lightningcss v0.0.0-20260614010002-b10cc786152c
 	github.com/pgaskin/go-woff2 v0.0.2
 	github.com/pgaskin/xmlwriter v0.0.4

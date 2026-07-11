@@ -90,7 +90,7 @@
 	line-height: 1;
 
 	&::before {
-		content: '\e941'; /* arrow_right_alt */
+		content: icon(arrow_right_alt);
 		font-size: 1.15em;
 		line-height: 1;
 	}
@@ -323,7 +323,7 @@
 	line-height: 1;
 
 	&::before {
-		content: '\ebcc'; /* calendar_month */
+		content: icon(calendar_month);
 		font-size: 1.05rem;
 	}
 }
@@ -358,7 +358,7 @@
 	line-height: 1;
 
 	&::before {
-		content: '\e5cf'; /* expand_more */
+		content: icon(expand_more);
 		font-size: 1.05rem;
 	}
 }
@@ -417,16 +417,16 @@
 	line-height: 1;
 }
 .activity-today .t-note-ico.warn::before {
-	content: '\e002'; /* warning */
+	content: icon(warning);
 }
 .activity-today .t-note-ico.info::before {
-	content: '\e88e'; /* info */
+	content: icon(info);
 }
 
 /* starred facility indicator on the widget's session rows (.starred set by
  * starred.js on the msym facility links; mirrors the schedules TOC) */
 .activity-today .t-fac-name.starred::after {
-	content: '\f09a'; /* star */
+	content: icon(star);
 	font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
 	font-size: 1.15em;
 	vertical-align: -.2em;
@@ -496,16 +496,16 @@
 		}
 	}
 
-	/* category icons (Material Symbols; codepoints mirror home.css) */
-	[data-icon="pool"]::before { content: '\eb48'; }
-	[data-icon="water"]::before { content: '\f084'; }
-	[data-icon="ice_skating"]::before { content: '\e50b'; }
-	[data-icon="sports_hockey"]::before { content: '\ea2b'; }
-	[data-icon="badminton"]::before { content: '\f2a8'; }
-	[data-icon="sports_basketball"]::before { content: '\ea26'; }
-	[data-icon="sports_volleyball"]::before { content: '\ea31'; }
-	[data-icon="pickleball"]::before { content: '\f2a6'; }
-	[data-icon="sports_tennis"]::before { content: '\ea32'; }
+	/* category icons (Material Symbols; icons mirror home.css) */
+	[data-icon="pool"]::before { content: icon(pool); }
+	[data-icon="water"]::before { content: icon(water); }
+	[data-icon="ice_skating"]::before { content: icon(ice_skating); }
+	[data-icon="sports_hockey"]::before { content: icon(sports_hockey); }
+	[data-icon="badminton"]::before { content: icon(badminton); }
+	[data-icon="sports_basketball"]::before { content: icon(sports_basketball); }
+	[data-icon="sports_volleyball"]::before { content: icon(sports_volleyball); }
+	[data-icon="pickleball"]::before { content: icon(pickleball); }
+	[data-icon="sports_tennis"]::before { content: icon(sports_tennis); }
 }
 
 .activities-dir-ico {

@@ -81,7 +81,7 @@
 		cursor: pointer;
 
 		&::before {
-			content: '\e5cd'; /* close */
+			content: icon(close);
 			font-size: 1rem;
 		}
 		&:hover {
@@ -132,7 +132,7 @@
 		color: var(--fxki-bl);
 	}
 	&:not(.toggle) > button::after {
-		content: '\e5c5'; /* arrow_drop_down */
+		content: icon(arrow_drop_down);
 		font-size: 1.5em;
 		margin: -.4em -.2em -.4em -.1em; /* keep the bigger glyph from inflating the pill */
 		color: var(--fxki-tx-2);
@@ -340,7 +340,7 @@
 		display: none;
 	}
 	&::before {
-		content: '\e90f'; /* lightbulb */
+		content: icon(lightbulb);
 		font-size: 1.15em;
 		vertical-align: -.15em;
 		margin-right: .4em;
@@ -697,7 +697,7 @@
 	cursor: pointer;
 
 	&::before {
-		content: '\e5cd'; /* close */
+		content: icon(close);
 		font-size: .9em;
 	}
 	&:hover {
@@ -790,7 +790,7 @@
 		color: var(--fxki-tx-2);
 
 		.t-warn-ico { color: var(--fxki-tx-2); }
-		.t-warn-ico::before { content: '\e88e'; /* info */ }
+		.t-warn-ico::before { content: icon(info); }
 	}
 	/* session cancelled by a posted change: struck-through row + red-tinted
 	   line. scope-cancelled (a group/facility-wide cancellation that may apply)
@@ -809,7 +809,7 @@
 		border-color: light-dark(rgb(102 128 11 / .35), rgb(135 154 57 / .35));
 
 		.t-warn-ico { color: var(--fxki-gr); }
-		.t-warn-ico::before { content: '\e88e'; /* info */ }
+		.t-warn-ico::before { content: icon(info); }
 	}
 	/* reservation note (grey box, info icon), below the warnings */
 	&.t-resv {
@@ -818,7 +818,7 @@
 		color: var(--fxki-tx-2);
 
 		.t-warn-ico { color: var(--fxki-tx-2); }
-		.t-warn-ico::before { content: '\e88e'; /* info */ }
+		.t-warn-ico::before { content: icon(info); }
 	}
 }
 button.t-warn {
@@ -834,7 +834,7 @@ button.t-warn {
 	top: .1em;
 
 	&::before {
-		content: '\e002'; /* warning */
+		content: icon(warning);
 		font-size: .95rem;
 	}
 }
@@ -869,12 +869,12 @@ button.t-warn {
 		cursor: pointer;
 
 		&::before {
-			content: '\e5cf'; /* expand_more */
+			content: icon(expand_more);
 			font-size: 1.35em;
 			margin: -.3em 0;
 		}
 		&.open::before {
-			content: '\e5ce'; /* expand_less */
+			content: icon(expand_less);
 		}
 		&:hover span {
 			text-decoration: underline;

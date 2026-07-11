@@ -450,9 +450,9 @@ table.tm-grid tbody th {
 	margin-bottom: .35rem;
 	color: var(--fxki-bl);
 }
-.tm-tiles [data-icon="calendar_month"]::before { content: '\ebcc'; }
-.tm-tiles [data-icon="overview"]::before { content: '\e4a7'; }
-.tm-tiles [data-icon="trending_up"]::before { content: '\e8e5'; }
+.tm-tiles [data-icon="calendar_month"]::before { content: icon(calendar_month); }
+.tm-tiles [data-icon="overview"]::before { content: icon(overview); }
+.tm-tiles [data-icon="trending_up"]::before { content: icon(trending_up); }
 
 /* index page */
 .tm-section {
@@ -629,15 +629,15 @@ a.tm-fac-card:focus {
 .tm-cat-pill[data-icon]::before {
 	font-size: 1.1rem;
 }
-.tm-cat-pill[data-icon="pool"]::before { content: '\eb48'; }
-.tm-cat-pill[data-icon="water"]::before { content: '\f084'; }
-.tm-cat-pill[data-icon="ice_skating"]::before { content: '\e50b'; }
-.tm-cat-pill[data-icon="sports_hockey"]::before { content: '\ea2b'; }
-.tm-cat-pill[data-icon="badminton"]::before { content: '\f2a8'; }
-.tm-cat-pill[data-icon="sports_basketball"]::before { content: '\ea26'; }
-.tm-cat-pill[data-icon="sports_volleyball"]::before { content: '\ea31'; }
-.tm-cat-pill[data-icon="pickleball"]::before { content: '\f2a6'; }
-.tm-cat-pill[data-icon="sports_tennis"]::before { content: '\ea32'; }
+.tm-cat-pill[data-icon="pool"]::before { content: icon(pool); }
+.tm-cat-pill[data-icon="water"]::before { content: icon(water); }
+.tm-cat-pill[data-icon="ice_skating"]::before { content: icon(ice_skating); }
+.tm-cat-pill[data-icon="sports_hockey"]::before { content: icon(sports_hockey); }
+.tm-cat-pill[data-icon="badminton"]::before { content: icon(badminton); }
+.tm-cat-pill[data-icon="sports_basketball"]::before { content: icon(sports_basketball); }
+.tm-cat-pill[data-icon="sports_volleyball"]::before { content: icon(sports_volleyball); }
+.tm-cat-pill[data-icon="pickleball"]::before { content: icon(pickleball); }
+.tm-cat-pill[data-icon="sports_tennis"]::before { content: icon(sports_tennis); }
 
 /* methodology / caveat note */
 .tm-trend-caveat {

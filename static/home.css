@@ -12,22 +12,22 @@ body.home-page {
 }
 
 /* material symbols icons (the glyph base comes from [data-icon] in
- * website.css; the codepoints must be listed in static/static.go) */
+ * website.css; the icons must be listed in static/static.go) */
 
 .home-page {
-	[data-icon="schedule"]::before { content: '\e192'; }
-	[data-icon="map"]::before { content: '\e55b'; }
-	[data-icon="calendar_month"]::before { content: '\ebcc'; }
-	[data-icon="overview"]::before { content: '\e4a7'; }
-	[data-icon="pool"]::before { content: '\eb48'; }
-	[data-icon="water"]::before { content: '\f084'; }
-	[data-icon="ice_skating"]::before { content: '\e50b'; }
-	[data-icon="sports_hockey"]::before { content: '\ea2b'; }
-	[data-icon="badminton"]::before { content: '\f2a8'; }
-	[data-icon="sports_basketball"]::before { content: '\ea26'; }
-	[data-icon="sports_volleyball"]::before { content: '\ea31'; }
-	[data-icon="pickleball"]::before { content: '\f2a6'; }
-	[data-icon="sports_tennis"]::before { content: '\ea32'; }
+	[data-icon="schedule"]::before { content: icon(schedule); }
+	[data-icon="map"]::before { content: icon(map); }
+	[data-icon="calendar_month"]::before { content: icon(calendar_month); }
+	[data-icon="overview"]::before { content: icon(overview); }
+	[data-icon="pool"]::before { content: icon(pool); }
+	[data-icon="water"]::before { content: icon(water); }
+	[data-icon="ice_skating"]::before { content: icon(ice_skating); }
+	[data-icon="sports_hockey"]::before { content: icon(sports_hockey); }
+	[data-icon="badminton"]::before { content: icon(badminton); }
+	[data-icon="sports_basketball"]::before { content: icon(sports_basketball); }
+	[data-icon="sports_volleyball"]::before { content: icon(sports_volleyball); }
+	[data-icon="pickleball"]::before { content: icon(pickleball); }
+	[data-icon="sports_tennis"]::before { content: icon(sports_tennis); }
 }
 
 /* hero */

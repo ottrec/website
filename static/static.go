@@ -34,7 +34,6 @@ import (
 //go:generate go run fetch.go https://github.com/adobe-fonts/source-sans/raw/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/VF/SourceSans3VF-Upright.ttf fonts/sourcesans3.ttf
 //go:generate go run fetch.go https://github.com/adobe-fonts/source-sans/raw/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/VF/SourceSans3VF-Italic.ttf fonts/sourcesans3it.ttf
 //go:generate go run fetch.go https://github.com/google/material-design-icons/raw/fe742c4072d4e3b8b899170109d9f710e89f082e/variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf fonts/materialsymbolsoutlined.ttf
-//go:generate go run fetch.go https://github.com/google/material-design-icons/raw/fe742c4072d4e3b8b899170109d9f710e89f082e/variablefont/MaterialSymbolsOutlined%5BFILL%2CGRAD%2Copsz%2Cwght%5D.codepoints fonts/materialsymbolsoutlined.codepoints
 
 // Base is the path prefix under which assets are served.
 const Base = "/static/"
@@ -123,6 +122,12 @@ var cssURL = regexp.MustCompile(`url\([^)]+\)`)
 // compileCSS minifies a stylesheet with lightningcss and rewrites its url()
 // references to the content-addressed names of the assets they point at.
 func compileCSS(name string, data []byte, resolve func(string) (string, error)) ([]byte, string, error) {
+	// expand icon(name) references first, so lightningcss only sees a plain
+	// string token and the expansion also applies under DEBUG_POSTCSS_NOOP
+	data, err := expandCSSIcons(data)
+	if err != nil {
+		return nil, "", err
+	}
 	if noop, _ := strconv.ParseBool(os.Getenv("DEBUG_POSTCSS_NOOP")); !noop {
 		res, err := lightningcss.Transform(data, &lightningcss.Options{
 			Filename: name,
@@ -225,10 +230,15 @@ func webfont(u *unicode.RangeTable) asset.Option {
 	})
 }
 
-func iconfont(a map[hbsubset.Tag]hbsubset.AxisRange, p map[hbsubset.Tag]float32, r []rune) asset.Option {
+func iconfont(a map[hbsubset.Tag]hbsubset.AxisRange, p map[hbsubset.Tag]float32) asset.Option {
 	return asset.Compile(func(name string, data []byte, _ func(string) (string, error)) ([]byte, string, error) {
 		if noop, _ := strconv.ParseBool(os.Getenv("DEBUG_WEBFONT_NOOP")); noop {
 			return data, ".ttf", nil
+		}
+
+		r, err := subsetRunes()
+		if err != nil {
+			return nil, "", err
 		}
 
 		slog.Info("static: subsetting font", "name", name)
@@ -298,6 +308,58 @@ var (
 		},
 	)
 
+	// the Material Symbols icons subset into the icon font, by name (see
+	// icons.go); referenced as icon(name) in stylesheets and via Icon in
+	// templates, both of which fail loudly on icons not listed here
+	subsetIcons = []string{
+		"search",
+		"pool",
+		"directions_run",
+		"schedule",
+		"location_on",
+		"filter_list",
+		"filter_list_off",
+		"map",
+		"explore",
+		"explore_nearby",
+		"close",
+		"close_small",
+		"table_view",
+		"view_column",
+		"menu",
+		"share",
+		"open_in_new",
+		"overview",
+		"ice_skating",
+		"water",
+		"sports_and_outdoors",
+		"fitness_center",
+		"more_vert",
+		"more_horiz",
+		"history",
+		"trending_up",
+		"code_blocks",
+		"calendar_month",
+		"sports_hockey",
+		"sports_basketball",
+		"sports_volleyball",
+		"badminton",
+		"pickleball",
+		"sports_tennis",
+		"database",
+		"star",
+		"warning",
+		"info",
+		"lightbulb",
+		"arrow_drop_down",
+		"expand_more",
+		"expand_less",
+		"arrow_right_alt",
+		"light_mode",
+		"dark_mode",
+		"brightness_auto",
+	}
+
 	textFontSubset = rangetable.Merge(
 		gfsubsets.Latin,
 		&unicode.RangeTable{
@@ -326,54 +388,6 @@ var (
 			hbsubset.MakeTag("opsz"): 24,
 			hbsubset.MakeTag("wght"): 300,
 			hbsubset.MakeTag("GRAD"): 0,
-		},
-		[]rune{
-			'\ue8b6', // search
-			'\ueb48', // pool
-			'\ue566', // directions_run
-			'\ue192', // schedule
-			'\ue55f', // location_on
-			'\ue152', // filter_list
-			'\ueb57', // filter_list_off
-			'\ue55b', // map
-			'\ue87a', // explore
-			'\ue538', // explore_nearby
-			'\ue5cd', // close
-			'\uf508', // close_small
-			'\uf1be', // table_view
-			'\ue8ec', // view_column
-			'\ue5d2', // menu
-			'\ue80d', // share
-			'\ue89e', // open_in_new
-			'\ue4a7', // overview
-			'\ue50b', // ice_skating
-			'\uf084', // water
-			'\uefb8', // sports_and_outdoors
-			'\ueb43', // fitness_center
-			'\ue5d4', // more_vert
-			'\ue5d3', // more_horiz
-			'\ue889', // history
-			'\ue8e5', // trending_up
-			'\uf84d', // code_blocks
-			'\uebcc', // calendar_month
-			'\uea2b', // sports_hockey
-			'\uea26', // sports_basketball
-			'\uea31', // sports_volleyball
-			'\uf2a8', // badminton
-			'\uf2a6', // pickleball
-			'\uea32', // sports_tennis
-			'\uf20e', // database
-			'\uf09a', // star
-			'\ue002', // warning
-			'\ue88e', // info
-			'\ue90f', // lightbulb
-			'\ue5c5', // arrow_drop_down
-			'\ue5cf', // expand_more
-			'\ue5ce', // expand_less
-			'\ue941', // arrow_right_alt
-			'\ue518', // light_mode
-			'\ue51c', // dark_mode
-			'\ue1ab', // brightness_auto
 		},
 	))
 

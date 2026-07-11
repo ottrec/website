@@ -415,9 +415,9 @@ main.error-page {
         &::before {
             font-size: 1rem;
         }
-        &[data-theme="auto"]::before { content: '\e1ab'; }
-        &[data-theme="light"]::before { content: '\e518'; }
-        &[data-theme="dark"]::before { content: '\e51c'; }
+        &[data-theme="auto"]::before { content: icon(brightness_auto); }
+        &[data-theme="light"]::before { content: icon(light_mode); }
+        &[data-theme="dark"]::before { content: icon(dark_mode); }
         &:hover {
             color: var(--fxki-tx);
             border-color: var(--fxki-ui-3);
@@ -479,8 +479,10 @@ body.about-page .site-footer {
 }
 
 /* Material Symbols glyph base: .msym elements render an icon in ::before or
- * ::after (each site sets its own content escape; ligature names don't work in
- * the subset), and [data-icon] elements get the same base for their ::before */
+ * ::after (each site sets its own icon via the content property; ligature
+ * names don't
+ * work in the subset), and [data-icon] elements get the same base for their
+ * ::before */
 .msym::before,
 .msym::after,
 [data-icon]::before,
@@ -516,7 +518,7 @@ button.fac-star {
     vertical-align: -.2em;
 
     &::before {
-        content: '\f09a'; /* star */
+        content: icon(star);
         font-size: 1.1em;
     }
     &:hover {
