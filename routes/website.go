@@ -323,6 +323,9 @@ func (h *websiteSchedulesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 			if err != nil {
 				return nil, 0, err
 			}
+			if tip, ok := templates.SchedulesCategoryTip(filtered); ok {
+				params.CategoryTip = &tip
+			}
 		}
 		if params.QueryError == "" {
 			params.TOC = templates.SchedulesTOC(filtered, templates.MapFacilitySlugger(data))

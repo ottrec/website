@@ -366,6 +366,7 @@ var (
 			'\uf09a', // star
 			'\ue002', // warning
 			'\ue88e', // info
+			'\ue90f', // lightbulb
 			'\ue5c5', // arrow_drop_down
 			'\ue5cf', // expand_more
 			'\ue5ce', // expand_less

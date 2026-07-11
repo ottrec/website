@@ -256,6 +256,36 @@
 			padding: 0 .25em;
 		}
 	}
+	/* simple search: quiet tip linking to the category landing page when the
+	 * results all fall within one category (the whole box is the link) */
+	.schedules-cat-tip {
+		display: block;
+		margin: -.25rem 0 .75rem;
+		padding: .5rem .75rem;
+		border: 1px solid var(--fxki-ui);
+		border-radius: .35rem;
+		background: var(--fxki-bg-2);
+		font-size: .9rem;
+		color: var(--fxki-tx-2);
+
+		&::before {
+			content: '\e90f'; /* lightbulb */
+			font-size: 1.15em;
+			vertical-align: -.15em;
+			margin-right: .4em;
+			color: var(--fxki-tx-3);
+		}
+		span {
+			color: var(--fxki-bl);
+		}
+		&:hover {
+			text-decoration: none;
+
+			span {
+				text-decoration: underline;
+			}
+		}
+	}
 	/* category pages: plain blue link out to the pre-filtered /today feed (the
 	 * arrow glyph base comes from .msym in website.css) */
 	.schedules-today-cta {

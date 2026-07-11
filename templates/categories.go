@@ -69,6 +69,19 @@ func categoryNames() []string {
 	return append(names, categoryOther)
 }
 
+// categoryRefines reports whether every activity term of a contains a term of
+// b, making a's category a subset of b's (e.g. lane-swim refines swimming).
+func categoryRefines(a, b ScheduleCategory) bool {
+	for _, at := range a.Activities {
+		if !slices.ContainsFunc(b.Activities, func(bt string) bool {
+			return strings.Contains(at, bt)
+		}) {
+			return false
+		}
+	}
+	return true
+}
+
 // activityCategoryMask returns the bitmask of [ScheduleCategories] indexes
 // whose Activities terms are substrings of the normalized activity name, or
 // the [categoryOther] bit if none match.

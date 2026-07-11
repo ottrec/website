@@ -128,6 +128,12 @@ templ WebsiteSchedulesPage(params WebsiteSchedulesParams) {
 										<button type="submit">Search</button>
 										<a class="search-mode" href={ templ.URL(schedulesAdvancedHref(params.Query, params.List)) }>Advanced search</a>
 									</form>
+									if params.CategoryTip != nil {
+										<a class="schedules-cat-tip msym" href={ templ.URL("/schedules/" + params.CategoryTip.Slug) }>
+											See the <span>{ params.CategoryTip.Name } activity page</span>
+											{ "for" } an overview of locations, this week's sessions, and cancellations.
+										</a>
+									}
 								}
 							}
 							if params.Active == "all" && params.Query == "" && !params.Advanced && !params.List {

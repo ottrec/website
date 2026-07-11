@@ -18,6 +18,34 @@ func SchedulesSearchQuery(q string) ottrecql.Node {
 	}
 }
 
+// SchedulesCategoryTip returns the category landing page to suggest under the
+// simple search box: the one containing every activity in the filtered results,
+// as long as they span more than one facility. When nested categories both
+// qualify (e.g. lane-swim within swimming), the more specific one wins.
+func SchedulesCategoryTip(filtered ottrecidx.DataRef) (ScheduleCategory, bool) {
+	mask, nfac, nact := -1, 0, 0
+	for fac := range filtered.Facilities() {
+		nfac++
+		for act := range fac.Activities() {
+			nact++
+			if mask &= activityCategoryMask(act.GetName()); mask == 0 {
+				return ScheduleCategory{}, false
+			}
+		}
+	}
+	mask &^= 1 << len(ScheduleCategories) // all-other results get no tip
+	if nfac < 2 || nact == 0 || mask == 0 {
+		return ScheduleCategory{}, false
+	}
+	best := -1
+	for c, cat := range ScheduleCategories {
+		if mask&(1<<c) != 0 && (best < 0 || categoryRefines(cat, ScheduleCategories[best])) {
+			best = c
+		}
+	}
+	return ScheduleCategories[best], true
+}
+
 // SchedulesMaxQueryLen and SchedulesMaxQueryCost limit user-specified queries
 // (see the ottrecql package docs).
 const (
@@ -187,6 +215,7 @@ type WebsiteSchedulesParams struct {
 	Advanced        bool                   // advanced (ottrecql) search mode
 	Query           string                 // current search box contents
 	QueryError      string                 // query parse/limit error to show instead of results
+	CategoryTip     *ScheduleCategory      // simple search: landing page tip (see SchedulesCategoryTip)
 	Single          bool                   // single-facility page: hide the page header and facility page links
 	List            bool                   // compact list view (?mode=list) instead of the schedule tables
 	NoIndex         bool                   // emit a noindex robots meta (e.g. the per-activity /all full views)
