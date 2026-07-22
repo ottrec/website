@@ -371,6 +371,17 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 				seeSched = true
 			}
 
+			// if an enriched see-schedule notice has a specific date, only show
+			// it for that one, not every day on the feed
+			var seeSchedDay [todayWindowDays]bool
+			if seeSched {
+				for i, d := range dates {
+					dd := schema.MakeDateFromGo(d)
+					seeSchedDay[i] = facSee && enFac.SeeSchedule(dd, dd) ||
+						enGrp.SeeSchedule(dd, dd)
+				}
+			}
+
 			// posted content exists but enrichment placed none of it in the
 			// feed window: offer a muted link to the changes modal in place of
 			// the warning line it suppressed
@@ -427,7 +438,6 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							SourceURL:            sourceURL,
 							GroupKey:             gk,
 							Holiday:              holiday,
-							EnrichedSeeSchedule:  seeSched,
 							Changes:              changes,
 							EnrichedNotice:       notice,
 							EnrichedOtherChanges: otherChanges,
@@ -440,6 +450,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 						place := func(i int, wd time.Weekday, day schema.Date) {
 							s := base
 							s.Weekday = int(wd)
+							s.EnrichedSeeSchedule = seeSchedDay[i]
 							if enOK {
 								m := enGrp.Session(rawLabel, day, s.Start, s.End)
 								s.EnrichedCancelled = m.Cancelled
@@ -548,7 +559,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 					SourceURL:           sourceURL,
 					GroupKey:            gk,
 					Holiday:             holiday,
-					EnrichedSeeSchedule: seeSched,
+					EnrichedSeeSchedule: seeSchedDay[i],
 					Incomplete:          incomplete,
 					EnrichedAdded:       true,
 				})
