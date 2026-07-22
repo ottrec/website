@@ -208,7 +208,7 @@ templ WebsiteActivityPage(params WebsiteActivityParams) {
 								for _, f := range sec.Facilities {
 									<li>
 										<span class="activity-fac-head">
-											<span class="activity-fac-name">{ f.Name }</span>
+											<a class="activity-fac-name" href={ templ.URL("/schedules/facility/" + f.Slug) } data-facility-modal={ f.Slug }>{ f.Name }</a>
 											if f.Region != "" {
 												<span class="activity-fac-region">{ f.Region }</span>
 											}
