@@ -329,18 +329,26 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 			facWarn = enFac.Warning(feedFrom, feedTo)
 		}
 
-		// strong (holiday/special-date) badge: the facility has a fixed-date
-		// schedule whose dates fall near the feed (or one we can't place, which
-		// we can't rule out). Computed once for the whole facility.
-		holiday := false
+		// if a likely holiday schedule has a date range or specific dates for a
+		// feed day (or if there's a likely holiday schedule for which we can't
+		// properly parse the date range), show a strong warning for all
+		// activities
+		var holidayDay [todayWindowDays]bool
+		var holidayAll bool
 		for s := range fac.Schedules() {
 			if !s.LikelyHolidaySchedule() {
 				continue
 			}
 			er, ok := s.ComputeEffectiveDateRange()
-			if !ok || todayRangeIntersects(er, winStart, winEnd) {
-				holiday = true
+			if !ok {
+				holidayAll = true
 				break
+			}
+			for i, d := range dates {
+				dd := schema.MakeDateFromGo(d)
+				if todayRangeIntersects(er, dd, dd) {
+					holidayDay[i] = true
+				}
 			}
 		}
 		// posted "See <holiday> schedule" notices are the same signal, stated
@@ -437,7 +445,6 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 							Qual:                 qual,
 							SourceURL:            sourceURL,
 							GroupKey:             gk,
-							Holiday:              holiday,
 							Changes:              changes,
 							EnrichedNotice:       notice,
 							EnrichedOtherChanges: otherChanges,
@@ -450,6 +457,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 						place := func(i int, wd time.Weekday, day schema.Date) {
 							s := base
 							s.Weekday = int(wd)
+							s.Holiday = holidayAll || holidayDay[i]
 							s.EnrichedSeeSchedule = seeSchedDay[i]
 							if enOK {
 								m := enGrp.Session(rawLabel, day, s.Start, s.End)
@@ -558,7 +566,7 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 					Weekday:             int(dates[i].Weekday()),
 					SourceURL:           sourceURL,
 					GroupKey:            gk,
-					Holiday:             holiday,
+					Holiday:             holidayAll || holidayDay[i],
 					EnrichedSeeSchedule: seeSchedDay[i],
 					Incomplete:          incomplete,
 					EnrichedAdded:       true,
