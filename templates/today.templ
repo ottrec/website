@@ -162,7 +162,11 @@ templ todaySessionWarnings(s todaySession) {
 	if s.EnrichedAdded {
 		// enrichment-derived
 		@todayWarnButton("added", "changes", s) {
-			This session was added based on posted special hours or schedule changes. Click here for more information.
+			if s.EnrichedAddedUncertain {
+				This session may have been added based on posted special hours or schedule changes. Click here for more information.
+			} else {
+				This session was added based on posted special hours or schedule changes. Click here for more information.
+			}
 		}
 	}
 	if s.EnrichedTimeChanged {

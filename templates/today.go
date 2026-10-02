@@ -98,8 +98,9 @@ type todaySession struct {
 	// Time/Start/End hold the trimmed effective time when one was derived,
 	// with the published one kept in OldTime.
 	EnrichedCancelled      bool   // a validated notice cancels/closes this exact session
-	EnrichedScopeCancelled bool   // a whole-scope (group/facility) cancellation may apply on this date
+	EnrichedScopeCancelled bool   // a whole-scope (group/facility) cancellation may apply on this date, or a session-level one the enrichment rates likely
 	EnrichedAdded          bool   // this session comes from a notice, not the published schedule
+	EnrichedAddedUncertain bool   // the added session rests on an inference the enrichment marked (a wrong-group posting, a typo match)
 	EnrichedTimeChanged    bool   // a time-change notice affects this session
 	OldTime                string // the published clock label when the time was trimmed (struck out below)
 
@@ -474,8 +475,11 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 									// the rest of the whole-scope tier is a
 									// closure the scope only implies, which
 									// gets the softer likely-cancelled warning
-									// rather than the strike
-									s.EnrichedScopeCancelled = enFac.ScopeCancelled(day, s.Start, s.End) ||
+									// rather than the strike, as does a
+									// session-level cancellation resting on a
+									// marked inference
+									s.EnrichedScopeCancelled = m.LikelyCancelled ||
+										enFac.ScopeCancelled(day, s.Start, s.End) ||
 										enGrp.ScopeCancelled(day, s.Start, s.End)
 									s.EnrichedTimeChanged = m.TimeChange
 									if m.NewTime {
@@ -560,22 +564,23 @@ func buildTodayFeed(data ottrecidx.DataRef, enrich enrichidx.Ref, slug func(stri
 					continue
 				}
 				daySessions[i] = append(daySessions[i], todaySession{
-					Start:               ad.Start,
-					End:                 ad.End,
-					Time:                todayClockLabel(schema.ClockRange{Start: schema.ClockTime(ad.Start), End: schema.ClockTime(ad.End)}),
-					Activity:            label,
-					Facility:            fac.GetName(),
-					Slug:                meta.slug,
-					Region:              meta.region,
-					Sector:              meta.sector,
-					Cats:                cats,
-					Weekday:             int(dates[i].Weekday()),
-					SourceURL:           sourceURL,
-					GroupKey:            gk,
-					Holiday:             holidayAll || holidayDay[i],
-					EnrichedSeeSchedule: seeSchedDay[i],
-					Incomplete:          incomplete,
-					EnrichedAdded:       true,
+					Start:                  ad.Start,
+					End:                    ad.End,
+					Time:                   todayClockLabel(schema.ClockRange{Start: schema.ClockTime(ad.Start), End: schema.ClockTime(ad.End)}),
+					Activity:               label,
+					Facility:               fac.GetName(),
+					Slug:                   meta.slug,
+					Region:                 meta.region,
+					Sector:                 meta.sector,
+					Cats:                   cats,
+					Weekday:                int(dates[i].Weekday()),
+					SourceURL:              sourceURL,
+					GroupKey:               gk,
+					Holiday:                holidayAll || holidayDay[i],
+					EnrichedSeeSchedule:    seeSchedDay[i],
+					Incomplete:             incomplete,
+					EnrichedAdded:          true,
+					EnrichedAddedUncertain: ad.Uncertain,
 				})
 				facHasSession = true
 			}

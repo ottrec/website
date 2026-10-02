@@ -115,7 +115,11 @@ func activitySessionNotices(s todaySession) []activityNotice {
 		return activityNotice{Label: label, Kind: kind, Icon: icon, Warn: "changes", Slug: s.Slug, Group: s.GroupKey}
 	}
 	if s.EnrichedAdded {
-		ns = append(ns, modal("added", "good", "info"))
+		label := "added"
+		if s.EnrichedAddedUncertain {
+			label = "added?"
+		}
+		ns = append(ns, modal(label, "good", "info"))
 	}
 	if s.EnrichedTimeChanged {
 		ns = append(ns, modal("time changed", "good", "info"))
@@ -286,7 +290,9 @@ func buildActivityChanges(filtered ottrecidx.DataRef, enrich enrichidx.Ref, slug
 //
 // A chip must never claim more or less than what actually resolved, so
 // anything this can't express faithfully (a partial weekday resolution, an
-// unformattable date, an empty result for a span that claimed to resolve)
+// end the enrichment could only approximate, "until September 2026" or
+// "to spring 2028", an unformattable date, an empty result for a span that
+// claimed to resolve)
 // falls back to the raw date text as the facility wrote it, returned with
 // exact=false; (nil, false) means there's nothing usable at all.
 func activityChangeDateChips(it enrichidx.Item, from schema.Date) ([]string, bool) {
@@ -296,7 +302,7 @@ func activityChangeDateChips(it enrichidx.Item, from schema.Date) ([]string, boo
 		}
 		return nil, false
 	}
-	if !it.Dated || it.WeekdaysPartial {
+	if !it.Dated || it.WeekdaysPartial || it.EndInexact {
 		return raw()
 	}
 	f := func(d schema.Date) string {

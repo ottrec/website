@@ -810,6 +810,11 @@
 	color: var(--fxki-tx-2);
 }
 
+/* the text as posted: a list head and its child line on two lines */
+.activity-change-text {
+	white-space: pre-line;
+}
+
 /* quiet facility link (the row itself is the affordance): body text color,
  * just slightly heavier, underlining on hover */
 .activity-change-fac {
